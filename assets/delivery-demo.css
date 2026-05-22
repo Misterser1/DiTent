@@ -1,0 +1,417 @@
+.delivery-showcase {
+    background: #FAFAFA;
+    color: #121212;
+    overflow-x: hidden;
+}
+
+.delivery-showcase-hero {
+    position: relative;
+    min-height: 560px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background: #121212;
+}
+
+.delivery-showcase-hero__media {
+    position: absolute;
+    inset: 0;
+}
+
+.delivery-showcase-hero__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    filter: brightness(42%);
+}
+
+.delivery-showcase-hero__content {
+    position: relative;
+    z-index: 2;
+    max-width: 1390px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 120px 30px 70px;
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.delivery-showcase-back {
+    width: fit-content;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: #FFFFFF14;
+    color: #FFFFFF;
+    font-size: 13px;
+    line-height: 100%;
+    font-weight: 600;
+    transition: .3s ease-in-out;
+}
+
+.delivery-showcase-back:hover {
+    background: #FFFFFF28;
+}
+
+.delivery-showcase-hero__content > p,
+.delivery-option__heading p {
+    font-size: 15px;
+    line-height: 100%;
+    font-weight: 600;
+    color: #6CAFD8;
+}
+
+.delivery-showcase-hero__content h1 {
+    max-width: 760px;
+    font-size: 58px;
+    line-height: 96%;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.delivery-showcase-hero__content > span {
+    max-width: 680px;
+    font-size: 18px;
+    line-height: 140%;
+    color: #FFFFFFCC;
+    overflow-wrap: anywhere;
+}
+
+.delivery-option {
+    padding: 78px 0;
+}
+
+.delivery-option--tint {
+    background: #F3F7F8;
+}
+
+.delivery-option__heading {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 780px;
+    margin-bottom: 34px;
+}
+
+.delivery-option__heading h2 {
+    font-size: 40px;
+    line-height: 100%;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.delivery-option__heading span {
+    font-size: 16px;
+    line-height: 140%;
+    color: #12121299;
+    overflow-wrap: anywhere;
+}
+
+.delivery-route {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+    gap: 16px;
+    min-width: 0;
+}
+
+.delivery-route__main {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.delivery-route__step,
+.delivery-route__aside,
+.delivery-terms__item,
+.delivery-compact__intro,
+.delivery-compact__fact,
+.delivery-compact__question {
+    border-radius: 8px;
+}
+
+.delivery-route__step {
+    min-height: 230px;
+    padding: 22px;
+    background: #FFFFFF;
+    border: 1px solid #1212120A;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 24px;
+    min-width: 0;
+}
+
+.delivery-route__step span,
+.delivery-compact__fact span {
+    font-size: 14px;
+    line-height: 100%;
+    font-weight: 700;
+    color: #6CAFD8;
+}
+
+.delivery-route__step h3,
+.delivery-route__aside h3,
+.delivery-terms__group h3,
+.delivery-compact__intro h3,
+.delivery-compact__question h3 {
+    font-size: 24px;
+    line-height: 112%;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.delivery-route__step p,
+.delivery-route__aside li,
+.delivery-terms__item p,
+.delivery-compact__intro p,
+.delivery-compact__fact p,
+.delivery-compact__question p {
+    font-size: 15px;
+    line-height: 140%;
+    color: #12121299;
+    overflow-wrap: anywhere;
+}
+
+.delivery-route__aside {
+    padding: 28px;
+    background: #012E41;
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 28px;
+}
+
+.delivery-route__aside ul {
+    display: grid;
+    gap: 12px;
+}
+
+.delivery-route__aside li {
+    color: #FFFFFFCC;
+    padding-left: 20px;
+    position: relative;
+}
+
+.delivery-route__aside li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6CAFD8;
+}
+
+.delivery-route__aside a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #121212;
+    font-size: 15px;
+    line-height: 100%;
+    font-weight: 700;
+}
+
+.delivery-terms {
+    display: grid;
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+    gap: 16px;
+    align-items: stretch;
+}
+
+.delivery-terms__visual {
+    min-height: 560px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.delivery-terms__visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.delivery-terms__content {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+}
+
+.delivery-terms__group {
+    padding: 28px;
+    border-radius: 8px;
+    background: #FFFFFF;
+    border: 1px solid #1212120A;
+    display: grid;
+    gap: 18px;
+}
+
+.delivery-terms__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.delivery-terms__item {
+    min-height: 150px;
+    padding: 18px;
+    background: #FAFAFA;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.delivery-terms__item span {
+    font-size: 16px;
+    line-height: 100%;
+    font-weight: 700;
+    color: #012E41;
+}
+
+.delivery-compact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+}
+
+.delivery-compact__intro {
+    padding: 32px;
+    min-height: 230px;
+    background: #6CAFD8;
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 28px;
+}
+
+.delivery-compact__intro p {
+    max-width: 780px;
+    color: #FFFFFFD9;
+}
+
+.delivery-compact__facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.delivery-compact__fact {
+    min-height: 180px;
+    padding: 22px;
+    background: #FFFFFF;
+    border: 1px solid #1212120A;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 22px;
+}
+
+.delivery-compact__fact span {
+    font-size: 42px;
+    color: #012E41;
+}
+
+.delivery-compact__faq {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.delivery-compact__question {
+    min-height: 190px;
+    padding: 22px;
+    background: #F4F4F4;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 22px;
+}
+
+@media(max-width: 1000px) {
+    .delivery-route,
+    .delivery-terms {
+        grid-template-columns: 1fr;
+    }
+
+    .delivery-terms__visual {
+        min-height: 360px;
+    }
+}
+
+@media(max-width: 768px) {
+    .delivery-showcase .wrapper {
+        max-width: 100%;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .delivery-showcase-hero {
+        min-height: 520px;
+    }
+
+    .delivery-showcase-hero__content {
+        padding: 90px 20px 44px;
+    }
+
+    .delivery-showcase-hero__content h1 {
+        font-size: 30px;
+        max-width: 100%;
+    }
+
+    .delivery-showcase-hero__content > span,
+    .delivery-option__heading span {
+        font-size: 13px;
+        max-width: 100%;
+    }
+
+    .delivery-option {
+        padding: 42px 0;
+    }
+
+    .delivery-option__heading h2 {
+        font-size: 24px;
+    }
+
+    .delivery-route__main,
+    .delivery-terms__grid,
+    .delivery-compact__facts,
+    .delivery-compact__faq {
+        grid-template-columns: 1fr;
+    }
+
+    .delivery-route__step,
+    .delivery-route__aside,
+    .delivery-terms__group,
+    .delivery-compact__intro,
+    .delivery-compact__fact,
+    .delivery-compact__question {
+        padding: 18px;
+    }
+
+    .delivery-route__step h3,
+    .delivery-route__aside h3,
+    .delivery-terms__group h3,
+    .delivery-compact__intro h3,
+    .delivery-compact__question h3 {
+        font-size: 20px;
+    }
+
+    .delivery-route__step p,
+    .delivery-route__aside li,
+    .delivery-terms__item p,
+    .delivery-compact__intro p,
+    .delivery-compact__fact p,
+    .delivery-compact__question p {
+        font-size: 13px;
+    }
+}

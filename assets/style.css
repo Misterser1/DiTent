@@ -1,4 +1,4 @@
-*, *::before, *::after{
+﻿*, *::before, *::after{
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
 }
@@ -1059,6 +1059,38 @@ footer{
     @media(max-width: 992px){
         font-size: 19px;
         margin-bottom: 24px;
+    }
+}
+.text-page{
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 900px;
+    width: 100%;
+}
+.text-page h1{
+    font-size: 40px;
+    line-height: 100%;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #121212;
+    @media(max-width: 992px){
+        font-size: 19px;
+    }
+}
+.text-page__content{
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.text-page__content p{
+    font-size: 16px;
+    line-height: 140%;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: #121212CC;
+    @media(max-width: 992px){
+        font-size: 12px;
     }
 }
 .catalog-grid{

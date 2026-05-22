@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/category-upload-demo.css">
+
+    <title>DiTent - Демо загрузки изображения категории</title>
+</head>
+<body class="upload-demo-page">
+    <main class="upload-demo">
+        <section class="upload-demo__intro">
+            <p>Админка / Категории</p>
+            <h1>Варианты блока загрузки изображения</h1>
+        </section>
+
+        <section class="upload-demo__grid">
+            <article class="upload-demo__card">
+                <div class="upload-demo__head">
+                    <p>Вариант 1</p>
+                    <h2>Центрированный компактный</h2>
+                </div>
+                <div class="upload-demo__form">
+                    <span class="upload-demo__field-title">Изображение категории</span>
+                    <input class="upload-demo__input" id="upload-variant-1" type="file" accept="image/*">
+                    <label class="upload-box upload-box--center" for="upload-variant-1">
+                        <img src="assets/image/catalog-img-1.png" alt="">
+                        <b>Нажмите на блок, чтобы выбрать файл</b>
+                        <small>Для карточки категории в каталоге</small>
+                    </label>
+                </div>
+            </article>
+
+            <article class="upload-demo__card">
+                <div class="upload-demo__head">
+                    <p>Вариант 2</p>
+                    <h2>Аккуратная строка</h2>
+                </div>
+                <div class="upload-demo__form">
+                    <span class="upload-demo__field-title">Изображение категории</span>
+                    <input class="upload-demo__input" id="upload-variant-2" type="file" accept="image/*">
+                    <label class="upload-box upload-box--row" for="upload-variant-2">
+                        <img src="assets/image/catalog-img-1.png" alt="">
+                        <span>
+                            <b>Нажмите на блок, чтобы выбрать файл</b>
+                            <small>Изображение будет показано на странице каталога</small>
+                        </span>
+                    </label>
+                </div>
+            </article>
+
+            <article class="upload-demo__card">
+                <div class="upload-demo__head">
+                    <p>Вариант 3</p>
+                    <h2>Превью как карточка каталога</h2>
+                </div>
+                <div class="upload-demo__form">
+                    <span class="upload-demo__field-title">Изображение категории</span>
+                    <input class="upload-demo__input" id="upload-variant-3" type="file" accept="image/*">
+                    <label class="upload-box upload-box--catalog" for="upload-variant-3">
+                        <span class="upload-box__image">
+                            <img src="assets/image/catalog-img-1.png" alt="">
+                        </span>
+                        <span class="upload-box__content">
+                            <b>Нажмите на блок, чтобы выбрать файл</b>
+                            <small>Так изображение будет выглядеть в карточке раздела</small>
+                        </span>
+                    </label>
+                </div>
+            </article>
+
+            <article class="upload-demo__card">
+                <div class="upload-demo__head">
+                    <p>Вариант 4</p>
+                    <h2>Минималистичный</h2>
+                </div>
+                <div class="upload-demo__form">
+                    <span class="upload-demo__field-title">Изображение категории</span>
+                    <input class="upload-demo__input" id="upload-variant-4" type="file" accept="image/*">
+                    <label class="upload-box upload-box--minimal" for="upload-variant-4">
+                        <img src="assets/image/catalog-img-1.png" alt="">
+                        <span>
+                            <b>Нажмите на блок, чтобы выбрать файл</b>
+                            <small>PNG или JPG</small>
+                        </span>
+                    </label>
+                </div>
+            </article>
+
+            <article class="upload-demo__card">
+                <div class="upload-demo__head">
+                    <p>Вариант 5</p>
+                    <h2>Светлая зона выбора</h2>
+                </div>
+                <div class="upload-demo__form">
+                    <span class="upload-demo__field-title">Изображение категории</span>
+                    <input class="upload-demo__input" id="upload-variant-5" type="file" accept="image/*">
+                    <label class="upload-box upload-box--soft" for="upload-variant-5">
+                        <img src="assets/image/catalog-img-1.png" alt="">
+                        <b>Нажмите на блок, чтобы выбрать файл</b>
+                        <small>Используется в каталоге и навигации по разделам</small>
+                    </label>
+                </div>
+            </article>
+        </section>
+    </main>
+</body>
+</html>
