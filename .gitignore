@@ -4,3 +4,13 @@ tmp/
 temp/
 .tmp/
 .local-server*.log
+.django-server*.log
+.env
+db.sqlite3
+media/
+staticfiles/
+logs/
+__pycache__/
+*.py[cod]
+.codex-*.png
+.playwright-mcp/

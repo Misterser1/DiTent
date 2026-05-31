@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Юридическая информация{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/legal.css">
+{% endblock %}
+
+{% block content %}
+<main class="legal-page">
+        <div class="breadcrumbs">
+            <div class="wrapper">
+                <div class="breadcrumbs-wrapper">
+                    <a href="index.html">Главная</a>
+                    <p>/</p>
+                    <p>Юридическая информация</p>
+                </div>
+            </div>
+        </div>
+        <section class="section legal-page__section">
+            <div class="wrapper">
+                <div class="legal-page__intro">
+                    <h1>Юридическая информация</h1>
+                    <p>Реквизиты компании, порядок оформления заказа, условия оплаты и правила работы с индивидуальными изделиями.</p>
+                </div>
+
+                <div class="legal-page__head">
+                    <div>
+                        <h2>Реквизиты и условия</h2>
+                        <p>Страница объединяет основные юридические данные и понятные правила заказа защитных чехлов через каталог, конструктор или заявку по чертежу.</p>
+                    </div>
+                    <a href="contacts.html">Связаться с нами</a>
+                </div>
+
+                <div class="legal-page__grid">
+                    <aside class="legal-company">
+                        <h2>Реквизиты компании</h2>
+                        <dl>
+                            <div>
+                                <dt>Организация</dt>
+                                <dd>{{ site_settings.company_name }}</dd>
+                            </div>
+                            <div>
+                                <dt>ИНН</dt>
+                                <dd>{{ site_settings.inn }}</dd>
+                            </div>
+                            <div>
+                                <dt>КПП</dt>
+                                <dd>{{ site_settings.kpp }}</dd>
+                            </div>
+                            <div>
+                                <dt>ОГРН</dt>
+                                <dd>{{ site_settings.ogrn }}</dd>
+                            </div>
+                            <div>
+                                <dt>Дата регистрации</dt>
+                                <dd>{{ site_settings.registration_date }}</dd>
+                            </div>
+                            <div>
+                                <dt>Руководитель</dt>
+                                <dd>{{ site_settings.director }}</dd>
+                            </div>
+                            <div>
+                                <dt>Контакты</dt>
+                                <dd>{{ site_settings.phone }}<br>{{ site_settings.email }}</dd>
+                            </div>
+                            <div>
+                                <dt>Адрес</dt>
+                                <dd>{{ site_settings.address }}</dd>
+                            </div>
+                        </dl>
+                    </aside>
+
+                    <div class="legal-conditions">
+                        <article>
+                            <span>01</span>
+                            <div>
+                                <h2>Порядок оформления заказа</h2>
+                                <p>Клиент выбирает готовое изделие в каталоге, рассчитывает чехол в конструкторе или отправляет заявку по чертежу. После отправки заказа менеджер проверяет параметры, наличие материалов и возможность изготовления.</p>
+                            </div>
+                        </article>
+                        <article>
+                            <span>02</span>
+                            <div>
+                                <h2>Подтверждение стоимости</h2>
+                                <p>Итоговая сумма заказа подтверждается менеджером после проверки формы, размеров, ткани, цвета, креплений, аксессуаров и условий доставки.</p>
+                            </div>
+                        </article>
+                        <article>
+                            <span>03</span>
+                            <div>
+                                <h2>Оплата</h2>
+                                <p>Оплата выполняется после согласования заказа. Для юридических лиц возможна безналичная оплата по счету, для физических лиц - доступные способы оплаты согласуются с менеджером.</p>
+                            </div>
+                        </article>
+                        <article>
+                            <span>04</span>
+                            <div>
+                                <h2>Индивидуальные изделия</h2>
+                                <p>Чехлы, изготовленные по размерам клиента или по загруженному чертежу, являются индивидуальными изделиями. Перед оформлением клиент подтверждает параметры заказа и условия возврата.</p>
+                            </div>
+                        </article>
+                        <article>
+                            <span>05</span>
+                            <div>
+                                <h2>Возврат и обмен</h2>
+                                <p>Для готовых товаров и индивидуальных изделий могут применяться разные условия возврата. Если изделие изготовлено по индивидуальным параметрам, возможность возврата определяется действующим законодательством и согласованными условиями заказа.</p>
+                            </div>
+                        </article>
+                        <article>
+                            <span>06</span>
+                            <div>
+                                <h2>Документы</h2>
+                                <p>Политика конфиденциальности размещена на отдельной странице. Оферта, счет, акт или другие документы предоставляются при необходимости в процессе оформления заказа.</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="legal-page__note">
+                    <div>
+                        <h2>Перед запуском проекта</h2>
+                        <p>Финальные юридические формулировки стоит сверить с юристом: особенно блок про индивидуальные изделия, возврат, обработку персональных данных и публичную оферту.</p>
+                    </div>
+                    <a href="privacy.html">Политика конфиденциальности</a>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+{% endblock %}

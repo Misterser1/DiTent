@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - варианты select{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/admin.css?v=29">
+    <link rel="stylesheet" href="assets/admin-select-demo.css">
+{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block content %}
+<main class="admin-page admin-select-demo">
+    <aside class="admin-sidebar">
+        <a href="admin.html" class="admin-logo" aria-label="DiTent">Di</a>
+        <nav class="admin-nav" aria-label="Разделы админки">
+            <a href="admin.html#categories">Категории</a>
+            <a href="admin.html#products">Товары</a>
+            <a href="admin.html#fabrics">Ткани</a>
+            <a href="admin.html#colors">Цвета</a>
+            <a href="admin.html#fasteners">Крепления</a>
+            <a href="admin.html#formulas">Формулы</a>
+            <a href="admin.html#orders">Заказы</a>
+        </nav>
+        <a class="admin-back" href="admin.html">В админку</a>
+    </aside>
+
+    <section class="admin-main">
+        <div class="admin-topbar">
+            <div>
+                <p>DiTent CMS</p>
+                <h1>Варианты select</h1>
+            </div>
+            <div class="admin-topbar__meta">
+                <span>Демо</span>
+                <b>для формы категорий</b>
+            </div>
+        </div>
+
+        <section class="admin-section">
+            <div class="admin-section__head">
+                <div>
+                    <p>Вариант 1</p>
+                    <h2>Нативный select с аккуратной стрелкой</h2>
+                </div>
+            </div>
+            <div class="admin-select-demo__layout">
+                <form class="admin-form admin-select-demo__form">
+                    <label>
+                        <span>Входит в раздел</span>
+                        <select class="admin-native-select">
+                            <option>Верхний уровень каталога</option>
+                            <option>Чехлы для садовой мебели</option>
+                            <option>Чехлы для оборудования</option>
+                            <option>Специализированные чехлы</option>
+                            <option>Чехлы для столов</option>
+                            <option>Чехлы для генераторов</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Статус</span>
+                        <select class="admin-native-select">
+                            <option>Активна</option>
+                            <option>Черновик</option>
+                        </select>
+                    </label>
+                </form>
+                <div class="admin-select-demo__note">
+                    <b>Плюс:</b> почти не требует JS, быстро внедряется. <br>
+                    <b>Минус:</b> раскрытый список браузер рисует по-своему, его нельзя полностью привести к макету.
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section">
+            <div class="admin-section__head">
+                <div>
+                    <p>Вариант 2</p>
+                    <h2>Кастомный select в стиле админки</h2>
+                </div>
+            </div>
+            <div class="admin-select-demo__layout">
+                <form class="admin-form admin-select-demo__form">
+                    <label class="admin-custom-select">
+                        <span>Входит в раздел</span>
+                        <button class="admin-custom-select__button" type="button">
+                            <span>Верхний уровень каталога</span>
+                            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="M4.5 6.5L8 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <div class="admin-custom-select__menu">
+                            <button type="button" class="is-selected">Верхний уровень каталога</button>
+                            <button type="button">Чехлы для садовой мебели</button>
+                            <button type="button">Чехлы для оборудования</button>
+                            <button type="button">Специализированные чехлы</button>
+                            <button type="button">Чехлы для столов</button>
+                            <button type="button">Чехлы для генераторов</button>
+                        </div>
+                    </label>
+                    <label>
+                        <span>Позиция в каталоге</span>
+                        <input value="6" type="number">
+                    </label>
+                </form>
+                <div class="admin-select-demo__note">
+                    <b>Плюс:</b> можно сделать список ровно таким, как нужен интерфейсу. <br>
+                    <b>Минус:</b> нужно подключить JS-логику выбора и синхронизацию с hidden input.
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section">
+            <div class="admin-section__head">
+                <div>
+                    <p>Вариант 3</p>
+                    <h2>Компактный select с поисковой строкой</h2>
+                </div>
+            </div>
+            <div class="admin-select-demo__layout">
+                <form class="admin-form admin-select-demo__form">
+                    <label class="admin-search-select">
+                        <span>Входит в раздел</span>
+                        <button class="admin-custom-select__button" type="button">
+                            <span>Чехлы для садовой мебели</span>
+                            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="M4.5 6.5L8 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <div class="admin-search-select__menu">
+                            <input type="search" value="" placeholder="Найти раздел">
+                            <button type="button">Верхний уровень каталога</button>
+                            <button type="button" class="is-selected">Чехлы для садовой мебели</button>
+                            <button type="button">Чехлы для оборудования</button>
+                            <button type="button">Специализированные чехлы</button>
+                        </div>
+                    </label>
+                    <label>
+                        <span>Статус</span>
+                        <select class="admin-native-select">
+                            <option>Активна</option>
+                            <option>Черновик</option>
+                        </select>
+                    </label>
+                </form>
+                <div class="admin-select-demo__note">
+                    <b>Плюс:</b> удобно, если разделов станет много. <br>
+                    <b>Минус:</b> для текущих 5-20 значений может быть избыточно.
+                </div>
+            </div>
+        </section>
+    </section>
+</main>
+{% endblock %}

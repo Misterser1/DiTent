@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Конструктор{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css?v=constructor-backend-1">
+{% endblock %}
+
+{% block header %}{% include "partials/header_constructor.html" %}{% endblock %}
+
+{% block content %}
+<main>
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <p>Конструктор</p>
+            </div>
+        </div>
+    </div>
+    <section class="section">
+        <div class="wrapper">
+            <div class="constructor" data-constructor-api="constructor/api/calculate/">
+                <div class="product-wrapper">
+                    <div class="product-wrapper-img">
+                        <img id="mainImage" src="{{ constructor_main_image.url }}" alt="{{ constructor_main_image.title }}">
+                    </div>
+                    <div class="product-wrapper__list">
+                        {% for image in constructor_images %}
+                        <div class="product-list__item{% if image.url == constructor_main_image.url %} active{% endif %}">
+                            <img src="{{ image.url }}" alt="{{ image.title }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="product-wrapper__main">
+                    <div class="product-text">
+                        <h1 data-constructor-title>{{ shapes.0.title }}</h1>
+                        <p>Для удобства использования чехлов рекомендуем добавлять запас по ширине и глубине: 1 см на каждые 100 см номинального размера предмета.</p>
+                    </div>
+
+                    <div class="product-shape">
+                        <h2>Выберите форму чехла:</h2>
+                        <div class="product-shape__grid">
+                            {% for shape in shapes %}
+                            <label class="product-shape__item{% if forloop.first %} product-shape__item--active{% endif %}">
+                                <input type="radio" name="cover-shape" value="{{ shape.key }}" {% if forloop.first %}checked{% endif %} data-title="{{ shape.title }}">
+                                <span class="product-shape__scheme" aria-hidden="true">
+                                    <img src="{{ shape.image }}" alt="">
+                                </span>
+                                <span>{{ shape.title|cut:"Чехол "|cut:"формы" }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="product-filter">
+                        <h2>Введите значения в сантиметрах:</h2>
+                        <div class="product-filter__wrapper" data-size-fields></div>
+                    </div>
+
+                    <div class="product-cloth">
+                        <h2>Выберите ткань:</h2>
+                        <div class="product-cloth__wrapper">
+                            {% for fabric in fabrics %}
+                            <div class="product-cloth__item{% if forloop.first %} product-cloth__item--active{% endif %}" data-fabric-id="{{ fabric.id }}" data-fabric-name="{{ fabric.title }}" data-fabric-code="F{{ fabric.id }}" data-fabric-price="{{ fabric.price_per_square_meter }}" data-fabric-roll-width="{{ fabric.roll_width_cm|default:148 }}">
+                                <div class="product-cloth__item-header">
+                                    <h3>{{ fabric.title }}</h3>
+                                    <p>{{ fabric.density|default:"Плотность уточняется" }}</p>
+                                </div>
+                                <div class="product-cloth__item-description">
+                                    <h4>{{ fabric.property_type|default:"Защитная ткань" }}</h4>
+                                    <p>{{ fabric.description|default:"Материал для изготовления защитного чехла." }}</p>
+                                </div>
+                                <div class="product-cloth__item-list">
+                                    <div class="product-cloth__item-list__params">
+                                        <p>УФ-стойкость:</p>
+                                        <div class="product-cloth__item-list__params-line">
+                                            <p>{{ fabric.uv_resistance|default:0 }}/5</p>
+                                            <div class="product-cloth__item-list__params-active" style="width: {% widthratio fabric.uv_resistance|default:0 5 100 %}%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="product-cloth__item-list__params">
+                                        <p>Долговечность:</p>
+                                        <div class="product-cloth__item-list__params-line">
+                                            <p>{{ fabric.durability|default:0 }}/5</p>
+                                            <div class="product-cloth__item-list__params-active" style="width: {% widthratio fabric.durability|default:0 5 100 %}%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="product-cloth__item-list__params">
+                                        <p>Прочность:</p>
+                                        <div class="product-cloth__item-list__params-line">
+                                            <p>{{ fabric.strength|default:0 }}/5</p>
+                                            <div class="product-cloth__item-list__params-active" style="width: {% widthratio fabric.strength|default:0 5 100 %}%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="product-cloth__item-list__params">
+                                        <p>Уход:</p>
+                                        <div class="product-cloth__item-list__params-line">
+                                            <p>{{ fabric.care|default:0 }}/5</p>
+                                            <div class="product-cloth__item-list__params-active" style="width: {% widthratio fabric.care|default:0 5 100 %}%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="product-cloth__item-target">
+                                    <h4>Назначение:</h4>
+                                    <p>{{ fabric.purpose|default:"Для защитных чехлов по индивидуальным размерам." }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="product-color">
+                        <h2>Выберите цвет ткани:</h2>
+                        <div class="product-color__wrapper">
+                            {% for color in colors %}
+                            <div class="product-color__item{% if forloop.first %} product-color__item--active{% endif %}" data-color-id="{{ color.id }}" data-color-name="{{ color.title }}" data-color-code="C{{ color.id }}" data-color-price="0" data-fabric-id="{{ color.fabric_id }}">
+                                {% if color.image %}<img src="{{ color.image.url }}" alt="{{ color.title }}">{% else %}<img src="assets/image/material-img-1.png" alt="{{ color.title }}">{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="product-system">
+                        <h2>Выберите систему крепления:</h2>
+                        <div class="product-system__grid">
+                            {% for fastener in fasteners %}
+                            <label class="product-system__item" data-fastener-id="{{ fastener.id }}" data-fastener-name="{{ fastener.title }}" data-fastener-code="K{{ fastener.id }}" data-fastener-price="{{ fastener.price }}">
+                                <span class="product-system__item-img">
+                                    {% if fastener.image %}<img src="{{ fastener.image.url }}" alt="{{ fastener.title }}">{% else %}<img src="assets/image/filter-img.png" alt="{{ fastener.title }}">{% endif %}
+                                </span>
+                                <span class="product-system__item-row">
+                                    <input type="radio" name="system" {% if forloop.first %}checked{% endif %}>
+                                    <span>{{ fastener.title }}</span>
+                                </span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="product-upload">
+                        <h2>Загрузить дополнительные изображения или файлы:</h2>
+                        <div class="upload-block">
+                            <label class="upload-area" data-attachment-dropzone>
+                                <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf,.gif" multiple hidden data-attachment-input>
+                                <div class="upload-content">
+                                    <span>Загрузите фотографию или выберите файл</span>
+                                </div>
+                            </label>
+                            <div class="upload-files" data-attachment-list></div>
+                            <div class="upload-info">
+                                <span>Форматы: jpg, jpeg, png, webp, pdf, gif</span>
+                                <span>Максимальный размер файла: 20 МБ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-block">
+                        <h2>Есть ли у вас какие-либо особые пожелания?</h2>
+                        <textarea name="productText" placeholder="Введите текст" class="product-textarea"></textarea>
+                    </div>
+
+                    <div class="product-accessories">
+                        <h2>Аксессуары</h2>
+                        <div class="options-list">
+                            {% for accessory in accessories %}
+                            <label class="option-card" data-accessory-id="{{ accessory.id }}" data-accessory-name="{{ accessory.title }}" data-accessory-code="{{ accessory.code }}" data-accessory-price="{{ accessory.price }}">
+                                <input type="radio" name="bag" {% if forloop.first %}checked{% endif %}>
+                                <span class="option-title">{{ accessory.title }}</span>
+                                <span class="option-price">{{ accessory.price|floatformat:0 }} руб.</span>
+                            </label>
+                            {% empty %}
+                            <label class="option-card" data-accessory-id="" data-accessory-name="" data-accessory-code="NOACC" data-accessory-price="0">
+                                <input type="radio" name="bag" checked>
+                                <span class="option-title">Без аксессуара</span>
+                                <span class="option-price">0 руб.</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-sticky">
+                    <p class="product-sticky__price" data-product-price>Укажите размеры</p>
+                    <p class="product-sticky__article" data-product-sku>Артикул будет сформирован после расчета</p>
+                    <div class="product-sticky__counter">
+                        <p>Количество:</p>
+                        <div class="product-counter__wrapper">
+                            <div class="product-counter__btn product-counter__btn--prev">
+                                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3.75 7.5H11.25" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <p class="product-counter__value">1</p>
+                            <div class="product-counter__btn product-counter__btn--next">
+                                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3.75 7.5H11.25" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M7.5 11.25V3.75" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <span>Розничная цена</span>
+                        <button type="button" data-add-to-cart>Добавить в корзину</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{{ constructor_config|json_script:"constructor-config" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="assets/app.js"></script>
+<script src="assets/constructor.js?v=constructor-formulas-1"></script>
+{% endblock %}

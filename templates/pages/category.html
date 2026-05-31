@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - {{ root_category.title }}{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/category.css">
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <a href="catalog.html">Каталог готовых изделий</a>
+                <p>/</p>
+                <p>{{ root_category.title }}</p>
+            </div>
+        </div>
+    </div>
+
+    <section class="section category-page">
+        <div class="wrapper">
+            <div class="category-page__head">
+                <div>
+                    <h1>{{ root_category.title }}</h1>
+                </div>
+                <span>{{ root_category.description|default:"Выберите вложенную категорию, чтобы перейти к готовым изделиям." }}</span>
+            </div>
+
+            <div class="category-page__layout">
+                <aside class="category-sidebar">
+                    <h2>Категории раздела</h2>
+                    <nav>
+                        {% for category in child_categories %}
+                        <a{% if category.id == selected_category.id %} class="is-active"{% endif %} href="{{ category.public_url }}">
+                            <span>{{ category.title }}</span>
+                            <b>{{ category.active_products_count }}</b>
+                        </a>
+                        {% empty %}
+                        <a class="is-active" href="{{ root_category.public_url }}">
+                            <span>{{ root_category.title }}</span>
+                            <b>{{ products|length }}</b>
+                        </a>
+                        {% endfor %}
+                    </nav>
+                    <a class="category-sidebar__action" href="constructor.html">Создать по размерам</a>
+                </aside>
+
+                <section class="category-showcase">
+                    <div class="category-showcase__top">
+                        <div>
+                            <h2>{{ selected_category.title }}</h2>
+                        </div>
+                        <span>{{ products|length }} товаров</span>
+                    </div>
+                    <div class="category-products">
+                        {% for product in products %}
+                        <article class="category-product">
+                            <a class="category-product__img" href="{{ product.public_url }}">
+                                <img src="{{ product.public_image }}" alt="{{ product.title }}">
+                            </a>
+                            <div class="category-product__body">
+                                <h3>{{ product.title }}</h3>
+                                <p>{{ product.summary }}</p>
+                                <div>
+                                    <b>{{ product.public_price }}</b>
+                                    <a href="{{ product.public_url }}">Подробнее</a>
+                                </div>
+                            </div>
+                        </article>
+                        {% empty %}
+                        <p>В этой категории пока нет активных товаров.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+{% endblock %}

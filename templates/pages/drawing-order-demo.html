@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - варианты заказа по чертежу{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css?v=drawing-order-1">
+    <link rel="stylesheet" href="assets/drawing-order-demo.css?v=1">
+{% endblock %}
+
+{% block header %}{% include "partials/header_drawing.html" %}{% endblock %}
+
+{% block content %}
+<main class="drawing-demo-page">
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <p>Варианты страницы заказа по чертежу</p>
+            </div>
+        </div>
+    </div>
+
+    <section class="section drawing-demo">
+        <div class="wrapper">
+            <div class="drawing-demo__head">
+                <div>
+                    <span>Демо варианты</span>
+                    <h1>Заказ по чертежу</h1>
+                    <p>Три варианта одной страницы в стилистике сайта. Формы не отправляют заявки, это визуальные макеты для выбора направления.</p>
+                </div>
+                <a href="drawing-order.html">Текущая страница</a>
+            </div>
+
+            <nav class="drawing-demo__switcher" aria-label="Варианты дизайна">
+                <a href="#variant-1">Вариант 1</a>
+                <a href="#variant-2">Вариант 2</a>
+                <a href="#variant-3">Вариант 3</a>
+            </nav>
+
+            <article class="demo-variant demo-variant--balanced" id="variant-1">
+                <div class="demo-variant__title">
+                    <div>
+                        <span>Вариант 1</span>
+                        <h2>Аккуратная рабочая форма</h2>
+                    </div>
+                    <p>Ближе всего к текущему сайту: светлая, спокойная, без лишней декоративности.</p>
+                </div>
+
+                <div class="demo-shell demo-shell--balanced">
+                    <form class="demo-form" action="#">
+                        <section class="demo-upload demo-upload--wide">
+                            <div class="demo-upload__icon">
+                                <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 20.5V4.5M15 4.5L9.5 10M15 4.5L20.5 10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M5.5 19.5V22.5C5.5 24.1569 6.84315 25.5 8.5 25.5H21.5C23.1569 25.5 24.5 24.1569 24.5 22.5V19.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3>Файл чертежа</h3>
+                                <p>PDF, JPG, PNG, WEBP, HEIC до 20 МБ</p>
+                            </div>
+                            <button type="button">Выбрать файл</button>
+                        </section>
+
+                        <section class="demo-section">
+                            <div class="demo-section__head">
+                                <h3>Контакты</h3>
+                                <span>Подставляются из личного кабинета</span>
+                            </div>
+                            <div class="demo-grid">
+                                <label class="demo-field">
+                                    <span>Имя / компания</span>
+                                    <input type="text" value="Иван Петров">
+                                </label>
+                                <label class="demo-field">
+                                    <span>Телефон</span>
+                                    <input type="tel" value="+7 900 000-00-00">
+                                </label>
+                                <label class="demo-field">
+                                    <span>Email</span>
+                                    <input type="email" value="mail@example.ru">
+                                </label>
+                                <label class="demo-field">
+                                    <span>Тип клиента</span>
+                                    <div class="demo-select" data-demo-select>
+                                        <button type="button" data-demo-select-button>Физическое лицо</button>
+                                        <input type="hidden" value="individual">
+                                        <div class="demo-select__list">
+                                            <button type="button" data-demo-select-option>Физическое лицо</button>
+                                            <button type="button" data-demo-select-option>ИП</button>
+                                            <button type="button" data-demo-select-option>Юридическое лицо</button>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </section>
+
+                        <section class="demo-section">
+                            <div class="demo-section__head">
+                                <h3>Комментарий к расчету</h3>
+                                <span>Необязательно</span>
+                            </div>
+                            <div class="demo-grid">
+                                <label class="demo-field">
+                                    <span>Что нужно закрыть чехлом</span>
+                                    <input type="text" placeholder="Стол, оборудование, техника">
+                                </label>
+                                <label class="demo-field">
+                                    <span>Примерные размеры</span>
+                                    <input type="text" placeholder="300 x 100 x 75 см">
+                                </label>
+                            </div>
+                            <label class="demo-field demo-field--textarea">
+                                <span>Особые пожелания</span>
+                                <textarea placeholder="Материал, цвет, условия эксплуатации, крепления"></textarea>
+                            </label>
+                        </section>
+
+                        <div class="demo-actions">
+                            <label>
+                                <input type="checkbox" checked>
+                                <span>Согласен на обработку данных</span>
+                            </label>
+                            <button type="button">Отправить на расчет</button>
+                        </div>
+                    </form>
+
+                    <aside class="demo-aside">
+                        <h3>Как пройдет расчет</h3>
+                        <div class="demo-steps">
+                            <div><b>1</b><span>Заявка уходит менеджеру</span></div>
+                            <div><b>2</b><span>Проверяем размеры и материал</span></div>
+                            <div><b>3</b><span>Отправляем расчет и ссылку на оплату</span></div>
+                        </div>
+                    </aside>
+                </div>
+            </article>
+
+            <article class="demo-variant demo-variant--steps" id="variant-2">
+                <div class="demo-variant__title">
+                    <div>
+                        <span>Вариант 2</span>
+                        <h2>Пошаговая заявка</h2>
+                    </div>
+                    <p>Больше порядка: файл, контакты и детали визуально разделены на понятные шаги.</p>
+                </div>
+
+                <div class="demo-flow">
+                    <section class="demo-flow__step">
+                        <header><b>1</b><h3>Загрузите файл</h3></header>
+                        <div class="demo-upload demo-upload--compact">
+                            <div class="demo-upload__icon">
+                                <svg width="28" height="28" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 20.5V4.5M15 4.5L9.5 10M15 4.5L20.5 10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M5.5 19.5V22.5C5.5 24.1569 6.84315 25.5 8.5 25.5H21.5C23.1569 25.5 24.5 24.1569 24.5 22.5V19.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <h4>Чертеж или фото изделия</h4>
+                            <p>Перетащите файл или выберите его вручную</p>
+                            <button type="button">Выбрать файл</button>
+                        </div>
+                    </section>
+
+                    <section class="demo-flow__step">
+                        <header><b>2</b><h3>Контакты</h3></header>
+                        <div class="demo-segmented">
+                            <button type="button" class="active">Физ. лицо</button>
+                            <button type="button">ИП</button>
+                            <button type="button">Компания</button>
+                        </div>
+                        <label class="demo-field">
+                            <span>Имя / компания</span>
+                            <input type="text" value="Иван Петров">
+                        </label>
+                        <div class="demo-grid demo-grid--tight">
+                            <label class="demo-field">
+                                <span>Телефон</span>
+                                <input type="tel" value="+7 900 000-00-00">
+                            </label>
+                            <label class="demo-field">
+                                <span>Email</span>
+                                <input type="email" value="mail@example.ru">
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="demo-flow__step">
+                        <header><b>3</b><h3>Детали</h3></header>
+                        <label class="demo-field">
+                            <span>Изделие</span>
+                            <input type="text" placeholder="Что нужно закрыть чехлом">
+                        </label>
+                        <label class="demo-field">
+                            <span>Размеры</span>
+                            <input type="text" placeholder="300 x 100 x 75 см">
+                        </label>
+                        <label class="demo-field demo-field--textarea">
+                            <span>Пожелания</span>
+                            <textarea placeholder="Материал, цвет, крепления"></textarea>
+                        </label>
+                        <button class="demo-flow__submit" type="button">Отправить на расчет</button>
+                    </section>
+                </div>
+            </article>
+
+            <article class="demo-variant demo-variant--dense" id="variant-3">
+                <div class="demo-variant__title">
+                    <div>
+                        <span>Вариант 3</span>
+                        <h2>Плотная форма для быстрого заполнения</h2>
+                    </div>
+                    <p>Меньше высоты, больше данных в первом экране. Хорошо, если заявок будет много.</p>
+                </div>
+
+                <form class="demo-panel" action="#">
+                    <div class="demo-panel__top">
+                        <section class="demo-upload demo-upload--inline">
+                            <div class="demo-upload__icon">
+                                <svg width="26" height="26" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 20.5V4.5M15 4.5L9.5 10M15 4.5L20.5 10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M5.5 19.5V22.5C5.5 24.1569 6.84315 25.5 8.5 25.5H21.5C23.1569 25.5 24.5 24.1569 24.5 22.5V19.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3>Файл чертежа</h3>
+                                <p>PDF, JPG, PNG, WEBP, HEIC</p>
+                            </div>
+                            <button type="button">Выбрать</button>
+                        </section>
+
+                        <div class="demo-panel__notice">
+                            <b>Расчет после проверки</b>
+                            <span>Менеджер уточнит материал, размеры и способ оплаты.</span>
+                        </div>
+                    </div>
+
+                    <div class="demo-panel__grid">
+                        <label class="demo-field">
+                            <span>Имя / компания</span>
+                            <input type="text" value="Иван Петров">
+                        </label>
+                        <label class="demo-field">
+                            <span>Телефон</span>
+                            <input type="tel" value="+7 900 000-00-00">
+                        </label>
+                        <label class="demo-field">
+                            <span>Email</span>
+                            <input type="email" value="mail@example.ru">
+                        </label>
+                        <label class="demo-field">
+                            <span>Тип клиента</span>
+                            <div class="demo-select" data-demo-select>
+                                <button type="button" data-demo-select-button>Физическое лицо</button>
+                                <input type="hidden" value="individual">
+                                <div class="demo-select__list">
+                                    <button type="button" data-demo-select-option>Физическое лицо</button>
+                                    <button type="button" data-demo-select-option>ИП</button>
+                                    <button type="button" data-demo-select-option>Юридическое лицо</button>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="demo-field">
+                            <span>Изделие</span>
+                            <input type="text" placeholder="Оборудование, мебель, техника">
+                        </label>
+                        <label class="demo-field">
+                            <span>Размеры</span>
+                            <input type="text" placeholder="300 x 100 x 75 см">
+                        </label>
+                    </div>
+
+                    <label class="demo-field demo-field--textarea">
+                        <span>Комментарий</span>
+                        <textarea placeholder="Опишите условия эксплуатации, материал, цвет и крепления"></textarea>
+                    </label>
+
+                    <div class="demo-panel__bottom">
+                        <label>
+                            <input type="checkbox" checked>
+                            <span>Согласен на обработку данных</span>
+                        </label>
+                        <button type="button">Отправить на расчет</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block footer %}{% include "partials/footer_drawing.html" %}{% endblock %}
+
+{% block scripts %}
+<script src="assets/drawing-order-demo.js?v=1"></script>
+{% endblock %}

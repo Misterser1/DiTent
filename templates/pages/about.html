@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - О фабрике{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/about.css?v=2">
+{% endblock %}
+
+{% block content %}
+<main class="about-unified">
+        <div class="breadcrumbs">
+            <div class="wrapper">
+                <div class="breadcrumbs-wrapper">
+                    <a href="index.html">Главная</a>
+                    <p>/</p>
+                    <p>О фабрике</p>
+                </div>
+            </div>
+        </div>
+        <section class="section about-unified__section">
+            <div class="wrapper">
+                <div class="about-unified__intro">
+                    <h1>О фабрике DiTent</h1>
+                    <p>Изготавливаем защитные чехлы по размерам клиента: для садовой мебели, оборудования, техники и изделий нестандартной формы.</p>
+                </div>
+                <div class="about-unified__grid">
+                    <div class="about-unified__media">
+                        <img src="assets/image/review-img.png" alt="">
+                    </div>
+                    <div class="about-unified__content">
+                        <div class="about-unified__text">
+                            <h2>Производим чехлы под конкретную задачу</h2>
+                            <p>Каждое изделие собирается по параметрам заказа: форме, размерам, ткани, цвету, креплениям и условиям эксплуатации. Такой подход помогает избежать универсальных решений, которые плохо садятся на мебель или оборудование.</p>
+                            <p>Перед производством менеджер проверяет заявку, уточняет спорные параметры и только после этого передает заказ в работу.</p>
+                        </div>
+                        <div class="about-unified__steps">
+                            <div class="about-unified__step">
+                                <span>01</span>
+                                <p>Выбор формы чехла или загрузка исходных материалов.</p>
+                            </div>
+                            <div class="about-unified__step">
+                                <span>02</span>
+                                <p>Расчет размеров, ткани, цвета, креплений и аксессуаров.</p>
+                            </div>
+                            <div class="about-unified__step">
+                                <span>03</span>
+                                <p>Проверка менеджером перед запуском в производство.</p>
+                            </div>
+                            <div class="about-unified__step">
+                                <span>04</span>
+                                <p>Изготовление, упаковка и передача в доставку.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="section about-unified__section">
+            <div class="wrapper">
+                <div class="about-unified__work">
+                    <div class="about-unified__work-text">
+                        <h2>Заказ оформляется как понятная производственная заявка</h2>
+                        <p>Конструктор помогает сразу собрать параметры изделия в одном месте. Менеджер видит форму, размеры, материал, цвет, крепления и комментарий клиента, поэтому быстрее подтверждает заказ и снижает риск ошибки.</p>
+                        <div class="about-unified__actions">
+                            <a href="constructor.html">Создать чехол</a>
+                            <a href="catalog.html">Каталог готовых изделий</a>
+                        </div>
+                    </div>
+                    <div class="about-unified__facts">
+                        <div class="about-unified__fact">
+                            <span>6</span>
+                            <p>форм чехла для быстрого старта расчета</p>
+                        </div>
+                        <div class="about-unified__fact">
+                            <span>10-500</span>
+                            <p>см рабочий диапазон размеров в конструкторе</p>
+                        </div>
+                        <div class="about-unified__fact">
+                            <span>1</span>
+                            <p>заявка содержит все параметры для проверки менеджером</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+{% endblock %}

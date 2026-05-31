@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Корзина{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css?v=cart-payment-1">
+{% endblock %}
+
+{% block content %}
+<main>
+        <div class="breadcrumbs">
+            <div class="wrapper">
+                <div class="breadcrumbs-wrapper">
+                    <a href="index.html">Главная</a>
+                    <p>/</p>
+                    <p>Корзина</p>
+                </div>
+            </div>
+        </div>
+        <section class="section">
+            <div class="wrapper">
+                <div class="card">
+                    <h2>Корзина</h2>
+                    <div class="card-wrapper">
+                        <div class="card-main">
+                            <div class="card-checked" data-cart-list></div>
+                            <div class="card-item">
+                                <h3>Выберите вариант доставки</h3>
+                                <div class="card-select__wrapper">
+                                    <div class="card-select" data-location-select="country">
+                                        <div class="card-select__main">
+                                            <p class="card-select__checked" data-location-label>Выберите страну</p>
+                                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12.4508 5.59375L8.37578 9.66875C7.89453 10.15 7.10703 10.15 6.62578 9.66875L2.55078 5.59375" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="square" stroke-linejoin="bevel"/>
+                                            </svg>
+                                        </div>
+                                        <div class="card-select__list" data-location-list></div>
+                                    </div>
+                                    <div class="card-select" data-location-select="region">
+                                        <div class="card-select__main">
+                                            <p class="card-select__checked" data-location-label>Область</p>
+                                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12.4508 5.59375L8.37578 9.66875C7.89453 10.15 7.10703 10.15 6.62578 9.66875L2.55078 5.59375" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="square" stroke-linejoin="bevel"/>
+                                            </svg>
+                                        </div>
+                                        <div class="card-select__list" data-location-list></div>
+                                    </div>
+                                    <div class="card-select" data-location-select="city">
+                                        <div class="card-select__main">
+                                            <p class="card-select__checked" data-location-label>Населенный пункт</p>
+                                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12.4508 5.59375L8.37578 9.66875C7.89453 10.15 7.10703 10.15 6.62578 9.66875L2.55078 5.59375" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="square" stroke-linejoin="bevel"/>
+                                            </svg>
+                                        </div>
+                                        <div class="card-select__list">
+                                            <input class="card-select__search" type="search" placeholder="Начните вводить город" data-location-search>
+                                            <div data-location-list></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-delivery">
+                                    <input type="radio" class="card-delivery__input" name="delivery" value="cdek-point" data-delivery-title='ТК "СДЭК" доставка до пункта выдачи' data-delivery-price="2000" checked/>
+
+                                    <div class="card-delivery__content">
+                                        <h4>ТК "СДЭК" доставка до пункта выдачи</h4>
+                                        <p>Доставка рассчитана до терминала ТК в Вашем городе; адресную доставку можно будет оформить по прибытии заказа на терминал ТК; отправка оплаченных заказов в ТК "СДЭК" доставка до пункта выдачи осуществляется ежедневно, кроме воскресенья; включена стоимость доставки до терминала в г. Сочи в размере 300 руб.</p>
+                                        <div class="card-delivery__row">
+                                            <p>Срок доставки: <b>После расчета</b></p>
+                                            <div class="card-delivery__row-line"></div>
+                                            <p>Тариф: <b>по расчету СДЭК</b></p>
+                                            <div class="card-delivery__row-line"></div>
+                                            <p>Сумма доставки: <b>после расчета</b></p>
+                                        </div>
+                                        <div class="card-pickup" data-pickup-wrapper>
+                                            <div class="card-pickup__head">
+                                                <h4>Пункт выдачи СДЭК</h4>
+                                                <p data-pickup-status>Выберите населенный пункт, чтобы загрузить ПВЗ.</p>
+                                            </div>
+                                            <div class="card-pickup__list" data-pickup-list></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-delivery">
+                                    <input type="radio" class="card-delivery__input" name="delivery" value="manager" data-delivery-title="Доставка после согласования с менеджером" data-delivery-price="0" />
+
+                                    <div class="card-delivery__content">
+                                        <h4>Доставка после согласования с менеджером</h4>
+                                        <p>Менеджер уточнит город, габариты изделий, удобную транспортную компанию и рассчитает итоговую стоимость доставки перед подтверждением заказа.</p>
+                                        <div class="card-delivery__row">
+                                            <p>Срок доставки: <b>6-8 дней</b></p>
+                                            <div class="card-delivery__row-line"></div>
+                                            <p>Тариф: <b>после согласования</b></p>
+                                            <div class="card-delivery__row-line"></div>
+                                            <p>Сумма доставки: <b>после расчета</b></p>
+                                        </div>
+                                        <label class="card-delivery__address">
+                                            Адрес доставки
+                                            <input type="text" placeholder="Укажите адрес или удобный способ доставки для согласования.">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-item">
+                                <h3>Введите свои данные</h3>
+                                <div class="card-item__user">
+                                    <label class="card-item__user-label">
+                                        Физическое лицо
+                                        <input type="radio" name="user" value="person" checked>
+                                    </label>
+                                    <label class="card-item__user-label">
+                                        ИП
+                                        <input type="radio" name="user" value="entrepreneur">
+                                    </label>
+                                    <label class="card-item__user-label">
+                                        Юридическое лицо
+                                        <input type="radio" name="user" value="company">
+                                    </label>
+                                </div>
+                                <div class="card-item__inputs">
+                                    <label class="card-item__label">
+                                        Фамилия
+                                        <input type="text" placeholder="Иванов" class="card-item__input" data-client-field="lastName">
+                                    </label>
+                                    <label class="card-item__label">
+                                        Имя
+                                        <input type="text" placeholder="Иван" class="card-item__input" data-client-field="firstName">
+                                    </label>
+                                    <label class="card-item__label">
+                                        Отчество
+                                        <input type="text" placeholder="Иванович" class="card-item__input" data-client-field="middleName">
+                                    </label>
+                                    <label class="card-item__label card-item__label--big">
+                                        Номер телефона
+                                        <input type="tel" placeholder="+7" class="card-item__input" data-client-field="phone">
+                                    </label>
+                                    <label class="card-item__label card-item__label--big">
+                                        E-mail
+                                        <input type="email" placeholder="@name" class="card-item__input" data-client-field="email">
+                                    </label>
+                                    <label class="card-item__label card-item__label--textarea">
+                                        Примечание
+                                        <textarea class="card-item__textarea" placeholder="Начните писать своё примечание к заказу, если оно есть" data-client-field="comment"></textarea>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="card-item">
+                                <h3>Выбор варианта оплаты</h3>
+                                <div class="card-item__payments">
+                                    <label class="card-item__payments-method">
+                                        <input type="radio" name="payment" value="manager-confirmation" data-payment-title="После подтверждения менеджером" checked>
+                                        <h4>После подтверждения</h4>
+                                        <p>Менеджер проверит параметры заказа и отправит ссылку на оплату после согласования.</p>
+                                    </label>
+                                    <label class="card-item__payments-method">
+                                        <input type="radio" name="payment" value="sbp" data-payment-title="СБП">
+                                        <h4>СБП</h4>
+                                        <p>После проверки заказа менеджер отправит ссылку или QR-код для оплаты через СБП.</p>
+                                    </label>
+                                    <label class="card-item__payments-method">
+                                        <input type="radio" name="payment" value="invoice" data-payment-title="Счет для юрлица">
+                                        <h4>Счет</h4>
+                                        <p>Подготовим счет для ИП или юридического лица после проверки заказа.</p>
+                                    </label>
+                                    <label class="card-item__payments-method">
+                                        <input type="radio" name="payment" value="bank-card" data-payment-title="Банковская карта">
+                                        <h4>Карта</h4>
+                                        <p>После проверки заказа менеджер отправит ссылку на платежную форму Альфа-Банка для оплаты картой.</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-sticky">
+                            <div class="card-sticky__list">
+                                <div class="card-sticky__list-item">
+                                    <span>Всего товаров на сумму:</span>
+                                    <p data-cart-subtotal>0 руб.</p>
+                                </div>
+                                <div class="card-sticky__list-item">
+                                    <span>Скидка:</span>
+                                    <p data-cart-discount>0 руб.</p>
+                                </div>
+                                <div class="card-sticky__list-item">
+                                    <span>Стоимость доставки:</span>
+                                    <p data-cart-delivery>После расчета</p>
+                                </div>
+                                <div class="card-sticky__list-item">
+                                    <span>НДС:</span>
+                                    <p data-cart-vat>0 руб.</p>
+                                </div>
+                            </div>
+                            <div class="card-sticky__price">
+                                <span>Итого к оплате:</span>
+                                <p data-cart-total>0 руб.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-action">
+                        <button type="button" data-checkout-submit>
+                            Оформить заказ
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8.41797 3.45923L11.9588 7.00006L8.41797 10.5409" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2.04102 7H11.8585" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <label>
+                            <input type="checkbox" data-return-confirm>
+                            <span>Я подтверждаю, что ознакомился со Статьей 26.1 п.4</span>
+                        </label>
+                        <p>В соответствии со Статьей 26.1 п.4  Закона "О защите прав потребителей" - Потребитель не вправе отказаться от товара надлежащего качества, имеющего индивидуально-определенные свойства, если указанный товар может быть использован исключительно приобретающим его потребителем.</p>
+                        <div class="card-action__message" data-order-message></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+<script src="assets/card.js?v=cart-checkout-15"></script>
+{% endblock %}

@@ -1,0 +1,299 @@
+.privacy-demo {
+    background: #FAFAFA;
+}
+
+.privacy-demo__intro {
+    max-width: 920px;
+    margin-bottom: 34px;
+}
+
+.privacy-demo__intro h1 {
+    margin-bottom: 16px;
+    font-size: 48px;
+    line-height: 104%;
+    font-weight: 600;
+    color: #121212;
+}
+
+.privacy-demo__intro p,
+.privacy-variant__head p,
+.privacy-summary p,
+.privacy-summary dd,
+.privacy-summary dt,
+.privacy-document aside p,
+.privacy-document__content p,
+.privacy-flow p {
+    font-size: 15px;
+    line-height: 136%;
+    font-weight: 400;
+    color: #12121299;
+}
+
+.privacy-demo__intro p {
+    max-width: 760px;
+    font-size: 18px;
+}
+
+.privacy-variant {
+    margin-top: 18px;
+    padding: 22px;
+    border-radius: 18px;
+    background: #F4F4F4CC;
+}
+
+.privacy-variant__label {
+    width: max-content;
+    margin-bottom: 18px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #6CAFD8;
+    font-size: 13px;
+    line-height: 100%;
+    font-weight: 700;
+}
+
+.privacy-variant__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 18px;
+}
+
+.privacy-variant__head div {
+    max-width: 760px;
+}
+
+.privacy-variant__head h2,
+.privacy-document aside h2 {
+    margin-bottom: 12px;
+    font-size: 32px;
+    line-height: 110%;
+    font-weight: 600;
+    color: #121212;
+}
+
+.privacy-variant__head a,
+.privacy-flow__wide a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: max-content;
+    min-height: 44px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: #6CAFD8;
+    color: #FFFFFF;
+    font-size: 15px;
+    line-height: 100%;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.privacy-summary,
+.privacy-document {
+    display: grid;
+    grid-template-columns: minmax(280px, .84fr) minmax(0, 1.16fr);
+    gap: 14px;
+}
+
+.privacy-summary__main,
+.privacy-summary__cards > div,
+.privacy-document aside,
+.privacy-document__content,
+.privacy-flow > div {
+    border-radius: 12px;
+    background: #FFFFFF;
+}
+
+.privacy-summary__main {
+    padding: 20px;
+}
+
+.privacy-summary h3,
+.privacy-document__content h3,
+.privacy-flow h3 {
+    font-size: 18px;
+    line-height: 116%;
+    font-weight: 700;
+    color: #121212;
+}
+
+.privacy-summary__main > p {
+    margin: 12px 0 20px;
+}
+
+.privacy-summary dl {
+    display: grid;
+    gap: 12px;
+}
+
+.privacy-summary dl div {
+    display: grid;
+    gap: 4px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #12121214;
+}
+
+.privacy-summary dl div:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.privacy-summary dt {
+    color: #12121266;
+}
+
+.privacy-summary dd {
+    color: #121212;
+}
+
+.privacy-summary__cards,
+.privacy-flow {
+    display: grid;
+    gap: 10px;
+}
+
+.privacy-summary__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.privacy-summary__cards > div,
+.privacy-flow > div {
+    min-height: 160px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.privacy-summary span,
+.privacy-flow span {
+    color: #6CAFD8;
+    font-size: 14px;
+    line-height: 100%;
+    font-weight: 700;
+}
+
+.privacy-document aside {
+    padding: 20px;
+}
+
+.privacy-document nav {
+    display: grid;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.privacy-document nav a {
+    padding: 14px;
+    border-radius: 8px;
+    background: #FAFAFA;
+    color: #121212;
+    font-size: 15px;
+    line-height: 100%;
+    font-weight: 600;
+}
+
+.privacy-document__content {
+    padding: 20px;
+    display: grid;
+    gap: 18px;
+}
+
+.privacy-document__content section {
+    padding-bottom: 18px;
+    border-bottom: 1px solid #12121214;
+}
+
+.privacy-document__content section:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.privacy-document__content h3 {
+    margin-bottom: 10px;
+}
+
+.privacy-flow {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.privacy-flow__wide {
+    grid-column: span 4;
+    min-height: 150px;
+    background: #012E41 !important;
+}
+
+.privacy-flow__wide h3,
+.privacy-flow__wide p {
+    color: #FFFFFF;
+}
+
+@media(max-width: 1000px) {
+    .privacy-summary,
+    .privacy-document {
+        grid-template-columns: 1fr;
+    }
+
+    .privacy-flow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .privacy-flow__wide {
+        grid-column: span 2;
+    }
+}
+
+@media(max-width: 768px) {
+    .privacy-demo__intro {
+        margin-bottom: 24px;
+    }
+
+    .privacy-demo__intro h1 {
+        margin-bottom: 12px;
+        font-size: 30px;
+    }
+
+    .privacy-demo__intro p,
+    .privacy-variant__head p,
+    .privacy-summary p,
+    .privacy-summary dd,
+    .privacy-summary dt,
+    .privacy-document aside p,
+    .privacy-document__content p,
+    .privacy-flow p {
+        font-size: 12px;
+    }
+
+    .privacy-variant {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .privacy-variant__head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .privacy-variant__head h2,
+    .privacy-document aside h2 {
+        font-size: 22px;
+    }
+
+    .privacy-variant__head a,
+    .privacy-flow__wide a {
+        width: 100%;
+    }
+
+    .privacy-summary__cards,
+    .privacy-flow {
+        grid-template-columns: 1fr;
+    }
+
+    .privacy-flow__wide {
+        grid-column: auto;
+    }
+}

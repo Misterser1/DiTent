@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Демо политики конфиденциальности{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/privacy-demo.css">
+{% endblock %}
+
+{% block content %}
+<main class="privacy-demo">
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <p>Демо политики конфиденциальности</p>
+            </div>
+        </div>
+    </div>
+
+    <section class="section privacy-demo__section">
+        <div class="wrapper">
+            <div class="privacy-demo__intro">
+                <h1>Политика конфиденциальности</h1>
+                <p>Три варианта оформления страницы о персональных данных. Все варианты сохраняют спокойную стилистику сайта и рассчитаны на дальнейшую замену текста финальной юридической редакцией.</p>
+            </div>
+
+            <article class="privacy-variant privacy-variant--summary">
+                <div class="privacy-variant__label">Вариант 1</div>
+                <div class="privacy-variant__head">
+                    <div>
+                        <h2>Понятная политика в блоках</h2>
+                        <p>Самый клиентский вариант: коротко объясняет, какие данные собираются, зачем они нужны и как клиент может обратиться по вопросам обработки.</p>
+                    </div>
+                    <a href="contacts.html">Задать вопрос</a>
+                </div>
+                <div class="privacy-summary">
+                    <div class="privacy-summary__main">
+                        <h3>Что мы обрабатываем</h3>
+                        <p>Данные, которые клиент указывает при регистрации, оформлении заказа, расчете чехла, отправке заявки по чертежу или обращении через контактные формы.</p>
+                        <dl>
+                            <div><dt>Контакты</dt><dd>Имя, телефон, email, данные для связи с менеджером.</dd></div>
+                            <div><dt>Заказы</dt><dd>Параметры изделия, доставка, комментарии, файлы и изображения.</dd></div>
+                            <div><dt>Аккаунт</dt><dd>Данные профиля, история заказов и статусы обработки.</dd></div>
+                        </dl>
+                    </div>
+                    <div class="privacy-summary__cards">
+                        <div><span>01</span><h3>Цель</h3><p>Обработка заявок, расчет стоимости, изготовление и доставка изделий.</p></div>
+                        <div><span>02</span><h3>Хранение</h3><p>Данные хранятся столько, сколько нужно для выполнения заказа и требований закона.</p></div>
+                        <div><span>03</span><h3>Передача</h3><p>Данные могут передаваться службам доставки и платежным сервисам только для выполнения заказа.</p></div>
+                        <div><span>04</span><h3>Права клиента</h3><p>Клиент может запросить уточнение, удаление или ограничение обработки данных.</p></div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="privacy-variant privacy-variant--document">
+                <div class="privacy-variant__label">Вариант 2</div>
+                <div class="privacy-document">
+                    <aside>
+                        <h2>Официальный документ</h2>
+                        <p>Вариант для длинного юридического текста: слева навигация, справа разделы политики.</p>
+                        <nav>
+                            <a href="#privacy-demo-general">Общие положения</a>
+                            <a href="#privacy-demo-data">Состав данных</a>
+                            <a href="#privacy-demo-purpose">Цели обработки</a>
+                            <a href="#privacy-demo-rights">Права пользователя</a>
+                        </nav>
+                    </aside>
+                    <div class="privacy-document__content">
+                        <section id="privacy-demo-general">
+                            <h3>1. Общие положения</h3>
+                            <p>{{ site_settings.company_name }} обрабатывает персональные данные пользователей сайта для приема заявок, оформления заказов, связи с клиентом и исполнения обязательств.</p>
+                        </section>
+                        <section id="privacy-demo-data">
+                            <h3>2. Состав персональных данных</h3>
+                            <p>Могут обрабатываться имя, телефон, email, адрес доставки, параметры заказа, файлы чертежей, изображения и технические данные работы сайта.</p>
+                        </section>
+                        <section id="privacy-demo-purpose">
+                            <h3>3. Цели обработки</h3>
+                            <p>Данные используются для регистрации, расчета стоимости, согласования заказа, производства изделия, доставки, поддержки и ведения истории заказов в личном кабинете.</p>
+                        </section>
+                        <section id="privacy-demo-rights">
+                            <h3>4. Права пользователя</h3>
+                            <p>Пользователь может обратиться по адресу {{ site_settings.email }}, чтобы уточнить сведения об обработке данных, исправить их или запросить удаление в рамках применимого законодательства.</p>
+                        </section>
+                    </div>
+                </div>
+            </article>
+
+            <article class="privacy-variant privacy-variant--flow">
+                <div class="privacy-variant__label">Вариант 3</div>
+                <div class="privacy-variant__head">
+                    <div>
+                        <h2>Путь данных клиента</h2>
+                        <p>Визуально показывает, где появляются персональные данные: регистрация, конструктор, корзина, заказ и личный кабинет.</p>
+                    </div>
+                </div>
+                <div class="privacy-flow">
+                    <div>
+                        <span>01</span>
+                        <h3>Регистрация</h3>
+                        <p>Клиент создает аккаунт, чтобы оформить заказ и отслеживать статусы.</p>
+                    </div>
+                    <div>
+                        <span>02</span>
+                        <h3>Расчет</h3>
+                        <p>В конструкторе сохраняются параметры изделия, ткань, цвет, крепления и файлы.</p>
+                    </div>
+                    <div>
+                        <span>03</span>
+                        <h3>Оформление</h3>
+                        <p>К заказу добавляются контактные данные, доставка и подтверждение условий возврата.</p>
+                    </div>
+                    <div>
+                        <span>04</span>
+                        <h3>Исполнение</h3>
+                        <p>Менеджер проверяет заказ, согласует детали, передает изделие в производство и доставку.</p>
+                    </div>
+                    <div class="privacy-flow__wide">
+                        <h3>Контроль и обращение</h3>
+                        <p>По вопросам обработки персональных данных можно написать на {{ site_settings.email }} или обратиться через страницу контактов.</p>
+                        <a href="contacts.html">Контакты</a>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+{% endblock %}

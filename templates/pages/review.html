@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Галерея и отзывы{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css?v=review-original-1">
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <p>Галерея и отзывы</p>
+            </div>
+        </div>
+    </div>
+    <section class="section">
+        <div class="wrapper">
+            <div class="review">
+                <h2>Галерея и отзывы</h2>
+                <div class="review-content">
+                    {% if review_rows %}
+                        {% for row in review_rows %}
+                            <div class="review-item">
+                                {% if row.image_side == 'left' %}
+                                    <div class="review-item__img">
+                                        <img src="{% if row.image %}{{ row.image }}{% else %}assets/image/review-img.png{% endif %}" alt="{{ row.image_alt }}">
+                                        <div class="review-item__img-text">
+                                            <span>{{ row.location|default:"г. Москва" }}</span>
+                                            <p>{{ row.caption|default:"Индивидуальные защитные чехлы для сада" }}</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                <div class="review-text">
+                                    {% for review in row.items %}
+                                        <div class="review-text__item">
+                                            <div class="review-text__item-main">
+                                                <h3>{{ review.title }}</h3>
+                                                <p>{{ review.rating }}/5</p>
+                                                <p>{{ review.text }}</p>
+                                            </div>
+                                            <div class="review-text__item-author">
+                                                <div class="review-text__item-author__img">
+                                                    <span>{{ review.author_name|default:"?"|first|upper }}</span>
+                                                </div>
+                                                <div class="review-text__item-author__text">
+                                                    <p>{{ review.author_name }}</p>
+                                                    <span>{{ review.created_at|date:"d.m.Y" }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if row.image_side == 'right' %}
+                                    <div class="review-item__img">
+                                        <img src="{% if row.image %}{{ row.image }}{% else %}assets/image/review-img.png{% endif %}" alt="{{ row.image_alt }}">
+                                        <div class="review-item__img-text">
+                                            <span>{{ row.location|default:"г. Москва" }}</span>
+                                            <p>{{ row.caption|default:"Индивидуальные защитные чехлы для сада" }}</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="review-item">
+                            <div class="review-item__img">
+                                <img src="assets/image/review-img.png" alt="">
+                                <div class="review-item__img-text">
+                                    <span>DiTent</span>
+                                    <p>Индивидуальные защитные чехлы для сада</p>
+                                </div>
+                            </div>
+                            <div class="review-text">
+                                <div class="review-text__item">
+                                    <div class="review-text__item-main">
+                                        <h3>Отзывы пока не добавлены</h3>
+                                        <p>Материалы будут показаны после публикации отзывов в админке.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+{% endblock %}

@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - {{ product.title }}{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css?v=42">
+{% endblock %}
+
+{% block header %}{% include "partials/header_constructor.html" %}{% endblock %}
+
+{% block content %}
+<main>
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <a href="catalog.html">Каталог готовых изделий</a>
+                <p>/</p>
+                <a href="category.html?slug={{ product.category.slug }}">{{ product.category.title }}</a>
+                <p>/</p>
+                <p>{{ product.title }}</p>
+            </div>
+        </div>
+    </div>
+    <section class="section">
+        <div class="wrapper">
+            <div class="constructor">
+                <div class="product-wrapper">
+                    <div class="product-wrapper-img">
+                        <img id="mainImage" src="{{ product.public_image }}" alt="{{ product.title }}">
+                    </div>
+                    <div class="product-wrapper__list">
+                        {% for image in product.gallery_images %}
+                        <div class="product-list__item{% if forloop.first %} active{% endif %}">
+                            <img src="{{ image }}" alt="{{ product.title }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="product-wrapper__main">
+                    <div
+                        class="product-info"
+                        data-catalog-product
+                        data-product-title="{{ product.title|escape }}"
+                        data-product-sku="{{ product.sku|escape }}"
+                        data-product-price="{{ product.cart_price }}"
+                        data-product-stock="{{ product.stock }}"
+                        data-product-image="{{ product.public_image }}"
+                        data-product-shape="Готовое изделие из каталога"
+                        data-product-dimensions="{{ product.cart_dimensions }}"
+                        data-product-fabric="{% if product.fabric %}{{ product.fabric.title|escape }}{% endif %}"
+                        data-product-color="{% if product.color %}{{ product.color.title|escape }}{% endif %}"
+                        data-product-fastener="{% if product.fastener %}{{ product.fastener.title|escape }}{% endif %}"
+                    >
+                        <h1>{{ product.title }}</h1>
+                        <div class="product-info__list">
+                            <div class="product-info__list-item">
+                                <div class="product-info__item-icon" aria-hidden="true">
+                                    <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g opacity="0.6">
+                                            <path d="M8.625 14.375L1.91667 21.0833M1.91667 15.4702V21.0833H7.52976" stroke="#012E41" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M14.375 8.62499L21.0833 1.91666M21.0833 7.52975V1.91666H15.4702" stroke="#012E41" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </g>
+                                    </svg>
+                                </div>
+                                <div class="product-info__item-text">
+                                    <p>Размеры:</p>
+                                    <span>{{ product.dimensions_text }}</span>
+                                </div>
+                            </div>
+                            <div class="product-info__list-item">
+                                <div class="product-info__item-icon" aria-hidden="true">
+                                    <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g opacity="0.6">
+                                            <path d="M1.91602 5.74999C1.91602 3.6329 3.63226 1.91666 5.74935 1.91666C7.86644 1.91666 9.58268 3.6329 9.58268 5.74999V17.25C9.58268 19.3671 7.86644 21.0833 5.74935 21.0833C3.63226 21.0833 1.91602 19.3671 1.91602 17.25V5.74999Z" stroke="#012E41" stroke-width="1.2"/>
+                                            <path d="M9.58268 7.89924L12.7583 4.72365C14.2553 3.22664 16.6824 3.22664 18.1794 4.72365C19.6764 6.22066 19.6764 8.64779 18.1794 10.1448L8.91797 19.4063" stroke="#012E41" stroke-width="1.2"/>
+                                            <path d="M5.75 21.0833L17.25 21.0833C19.3671 21.0833 21.0833 19.3671 21.0833 17.25C21.0833 15.1329 19.3671 13.4167 17.25 13.4167L14.8542 13.4167" stroke="#012E41" stroke-width="1.2"/>
+                                            <path d="M6.70768 17.25C6.70768 17.7793 6.27862 18.2083 5.74935 18.2083C5.22008 18.2083 4.79102 17.7793 4.79102 17.25C4.79102 16.7207 5.22008 16.2917 5.74935 16.2917C6.27862 16.2917 6.70768 16.7207 6.70768 17.25Z" stroke="#012E41" stroke-width="1.2"/>
+                                        </g>
+                                    </svg>
+                                </div>
+                                <div class="product-info__item-text">
+                                    <p>Материал:</p>
+                                    <span>{% if product.fabric %}{{ product.fabric.title }}{% else %}Уточняется менеджером{% endif %}</span>
+                                </div>
+                            </div>
+                            <div class="product-info__list-item">
+                                <div class="product-info__item-icon" aria-hidden="true">
+                                    <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g opacity="0.6">
+                                            <path d="M1.91602 11.525C1.91602 16.4568 5.62201 20.5208 10.3942 21.0702C11.0984 21.1512 11.7809 20.8511 12.2821 20.3485C12.9084 19.7207 12.9084 18.7027 12.2821 18.0749C11.7809 17.5723 11.3723 16.8227 11.7503 16.2215C13.2613 13.8184 21.0827 19.3373 21.0827 11.525C21.0827 6.21846 16.7921 1.91666 11.4993 1.91666C6.20662 1.91666 1.91602 6.21846 1.91602 11.525Z" stroke="#012E41" stroke-width="1.2"/>
+                                            <circle cx="16.7715" cy="11.0208" r="0.8375" stroke="#012E41" stroke-width="1.2"/>
+                                            <circle cx="6.22852" cy="11.0208" r="0.8375" stroke="#012E41" stroke-width="1.2"/>
+                                            <path d="M9.18555 5.87024C9.64809 5.87024 10.0234 6.24559 10.0234 6.70813C10.0234 7.17067 9.64809 7.54602 9.18555 7.54602C8.72301 7.54602 8.34766 7.17067 8.34766 6.70813C8.34766 6.24559 8.72301 5.87024 9.18555 5.87024Z" stroke="#012E41" stroke-width="1.2"/>
+                                            <path d="M13.8965 5.87045C14.359 5.87045 14.7344 6.24581 14.7344 6.70834C14.7344 7.17088 14.359 7.54623 13.8965 7.54623C13.4339 7.54623 13.0586 7.17088 13.0586 6.70834C13.0586 6.2458 13.4339 5.87045 13.8965 5.87045Z" stroke="#012E41" stroke-width="1.2"/>
+                                        </g>
+                                    </svg>
+                                </div>
+                                <div class="product-info__item-text">
+                                    <p>Цвет:</p>
+                                    <span>{% if product.color %}{{ product.color.title }}{% else %}Уточняется менеджером{% endif %}</span>
+                                </div>
+                            </div>
+                            <div class="product-info__list-item">
+                                <div class="product-info__item-icon" aria-hidden="true">
+                                    <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g opacity="0.6">
+                                            <path d="M7.51628 3.64368C9.46047 2.49233 10.4326 1.91666 11.5 1.91666C12.5674 1.91666 13.5395 2.49233 15.4837 3.64368L16.1413 4.03309C18.0855 5.18444 19.0576 5.76012 19.5913 6.70832C20.125 7.65653 20.125 8.80788 20.125 11.1106V11.8894C20.125 14.1921 20.125 15.3435 19.5913 16.2917C19.0576 17.2399 18.0855 17.8155 16.1413 18.9669L15.4837 19.3563C13.5395 20.5076 12.5674 21.0833 11.5 21.0833C10.4326 21.0833 9.46047 20.5076 7.51628 19.3563L6.85872 18.9669C4.91453 17.8155 3.94243 17.2399 3.40872 16.2917C2.875 15.3435 2.875 14.1921 2.875 11.8894V11.1106C2.875 8.80788 2.875 7.65653 3.40872 6.70832C3.94243 5.76012 4.91453 5.18444 6.85872 4.03309L7.51628 3.64368Z" stroke="#012E41" stroke-width="1.2"/>
+                                            <circle cx="11.5" cy="11.5" r="2.875" stroke="#012E41" stroke-width="1.2"/>
+                                        </g>
+                                    </svg>
+                                </div>
+                                <div class="product-info__item-text">
+                                    <p>Система крепления:</p>
+                                    <span>{% if product.fastener %}{{ product.fastener.title }}{% else %}Уточняется менеджером{% endif %}</span>
+                                </div>
+                            </div>
+                            <div class="product-info__list-item">
+                                <div class="product-info__item-icon" aria-hidden="true">
+                                    <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g opacity="0.6">
+                                            <path d="M21.0827 21.0833L1.91602 21.0833" stroke="#012E41" stroke-width="1.2" stroke-linecap="round"/>
+                                            <path d="M1.91602 10.5417L9.70335 4.31183C10.7534 3.47182 12.2453 3.47182 13.2953 4.31183L21.0827 10.5417" stroke="#012E41" stroke-width="1.2" stroke-linecap="round"/>
+                                            <path d="M14.8535 5.27083V3.35417C14.8535 3.08953 15.068 2.875 15.3327 2.875H17.7285C17.9932 2.875 18.2077 3.08953 18.2077 3.35417V8.14583" stroke="#012E41" stroke-width="1.2" stroke-linecap="round"/>
+                                            <path d="M3.83398 21.0834V9.10419" stroke="#012E41" stroke-width="1.2" stroke-linecap="round"/>
+                                            <path d="M19.166 21.0834V9.10419" stroke="#012E41" stroke-width="1.2" stroke-linecap="round"/>
+                                            <path d="M14.375 21.0834V16.2917C14.375 14.9364 14.375 14.2588 13.954 13.8377C13.5329 13.4167 12.8553 13.4167 11.5 13.4167C10.1447 13.4167 9.46707 13.4167 9.04603 13.8377C8.625 14.2588 8.625 14.9364 8.625 16.2917V21.0834" stroke="#012E41" stroke-width="1.2"/>
+                                            <path d="M13.4173 9.10417C13.4173 10.1627 12.5592 11.0208 11.5007 11.0208C10.4421 11.0208 9.58398 10.1627 9.58398 9.10417C9.58398 8.04562 10.4421 7.1875 11.5007 7.1875C12.5592 7.1875 13.4173 8.04562 13.4173 9.10417Z" stroke="#012E41" stroke-width="1.2"/>
+                                        </g>
+                                    </svg>
+                                </div>
+                                <div class="product-info__item-text">
+                                    <p>Назначение:</p>
+                                    <span>{{ product.purpose|default:"Готовое защитное изделие из каталога." }}</span>
+                                </div>
+                            </div>
+                            {% if product.description %}
+                            <div class="product-info__list-item">
+                                <div class="product-info__item-icon" aria-hidden="true">
+                                    <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g opacity="0.6">
+                                            <path d="M6.70898 2.875H13.4173L18.209 7.66667V20.125H6.70898V2.875Z" stroke="#012E41" stroke-width="1.2" stroke-linejoin="round"/>
+                                            <path d="M13.416 2.875V7.66667H18.2077" stroke="#012E41" stroke-width="1.2" stroke-linejoin="round"/>
+                                            <path d="M9.58398 12.4583H15.334M9.58398 15.3333H14.3757" stroke="#012E41" stroke-width="1.2" stroke-linecap="round"/>
+                                        </g>
+                                    </svg>
+                                </div>
+                                <div class="product-info__item-text">
+                                    <p>Описание:</p>
+                                    <span>{{ product.description }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="product-sticky">
+                    <p class="product-sticky__price" data-catalog-price>{{ product.public_price }}</p>
+                    <p class="product-sticky__article">Артикул: {{ product.sku }}</p>
+                    <div class="product-sticky__counter">
+                        <p>Количество:</p>
+                        <div class="product-counter__wrapper">
+                            <div class="product-counter__btn product-counter__btn--prev">
+                                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3.75 7.5H11.25" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <p class="product-counter__value">1</p>
+                            <div class="product-counter__btn product-counter__btn--next">
+                                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3.75 7.5H11.25" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M7.5 11.25V3.75" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <span>После добавления товар появится в корзине</span>
+                        <button type="button" data-add-catalog-to-cart>Добавить в корзину</button>
+                        <p class="product-sticky__message" data-catalog-cart-message></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="wrapper">
+            <div class="useful">
+                <div class="section-header">
+                    <h2>Может пригодиться</h2>
+                </div>
+                <div class="useful-wrapper">
+                    {% for item in related_products %}
+                    <div class="useful-item">
+                        <div class="useful-item__img">
+                            <img src="{{ item.public_image }}" alt="{{ item.title }}">
+                        </div>
+                        <div class="useful-item__text">
+                            <p>{{ item.title }}</p>
+                            <span>{{ item.public_price }}</span>
+                            <a href="{{ item.public_url }}">
+                                Подробнее
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8.41797 3.45911L11.9588 6.99994L8.41797 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2.04102 7H11.8585" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="useful-item">
+                        <div class="useful-item__img">
+                            <img src="{{ product.public_image }}" alt="{{ product.title }}">
+                        </div>
+                        <div class="useful-item__text">
+                            <p>{{ product.title }}</p>
+                            <span>{{ product.public_price }}</span>
+                            <a href="{{ product.public_url }}">Подробнее</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="useful-nav">
+                    <div class="useful-btn useful-btn--prev">
+                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.8484 7.4246H0.706276M7.77734 14.4957L0.706276 7.4246L7.77734 0.353531" stroke="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="useful-btn useful-btn--next">
+                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M-0.000755191 7.42464H14.1414M7.07031 0.353577L14.1414 7.42464L7.07031 14.4957" stroke="currentColor"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="assets/app.js"></script>
+<script src="assets/form.js?v=catalog-stock-1"></script>
+{% endblock %}

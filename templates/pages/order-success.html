@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Заказ оформлен{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css?v=order-success-1">
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <p>Заказ оформлен</p>
+            </div>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="wrapper">
+            <div class="order-success">
+                <div class="order-success__mark" aria-hidden="true">
+                    <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7.5 17.5L14.2 24L27 10.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="order-success__content">
+                    <p>Оформление заказа</p>
+                    <h1>Заказ принят</h1>
+                    {% if order %}
+                        <div class="order-success__summary">
+                            <div>
+                                <span>Номер заказа</span>
+                                <b>{{ order.number }}</b>
+                            </div>
+                            <div>
+                                <span>Статус</span>
+                                <b>{{ order_status_title }}</b>
+                            </div>
+                            <div>
+                                <span>Сумма</span>
+                                <b>{{ order.total|floatformat:0 }} руб.</b>
+                            </div>
+                            <div>
+                                <span>Оплата</span>
+                                <b>{{ payment_status_title }}</b>
+                            </div>
+                        </div>
+                        {% if can_pay_online %}
+                            <p class="order-success__text">Для тестовой оплаты Альфа-Банка можно перейти на платежную страницу банка.</p>
+                        {% endif %}
+                        <p class="order-success__text">Менеджер проверит параметры, подтвердит возможность изготовления и свяжется с вами. Заказ уже доступен в личном кабинете.</p>
+                    {% else %}
+                        <p class="order-success__text">Заказ создан и ожидает подтверждения менеджером. Подробности доступны в личном кабинете после входа.</p>
+                    {% endif %}
+                    <div class="order-success__actions">
+                        {% if can_pay_online %}
+                            <a class="order-success__primary" href="{{ order.payment_form_url }}">Перейти к оплате</a>
+                        {% endif %}
+                        <a class="order-success__primary" href="cabinet.html">Перейти в кабинет</a>
+                        <a class="order-success__secondary" href="catalog.html">Вернуться в каталог</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

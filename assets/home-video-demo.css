@@ -1,0 +1,149 @@
+.video-demo {
+    background: #fafafa;
+    padding-top: 96px;
+}
+
+.video-demo__hero {
+    padding: 72px 0 36px;
+}
+
+.video-demo__hero p {
+    font-size: 15px;
+    line-height: 140%;
+    color: #6cafd8;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.video-demo__hero h1 {
+    max-width: 900px;
+    font-size: 56px;
+    line-height: 108%;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: #121212;
+    margin-bottom: 20px;
+}
+
+.video-demo__hero span {
+    display: block;
+    max-width: 760px;
+    font-size: 18px;
+    line-height: 150%;
+    color: #555;
+}
+
+.video-demo__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    padding-bottom: 90px;
+}
+
+.video-card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.video-card--wide {
+    grid-column: 1 / -1;
+}
+
+.video-card__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.video-card__head span {
+    display: block;
+    font-size: 13px;
+    line-height: 130%;
+    color: #8b8b8b;
+    margin-bottom: 7px;
+}
+
+.video-card__head h2 {
+    font-size: 26px;
+    line-height: 112%;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: #121212;
+}
+
+.video-card__head a {
+    flex: 0 0 auto;
+    border-radius: 8px;
+    background: #121212;
+    color: #fff;
+    font-size: 14px;
+    line-height: 100%;
+    font-weight: 600;
+    padding: 13px 15px;
+    transition: opacity .2s ease;
+}
+
+.video-card__head a:hover {
+    opacity: .72;
+}
+
+.video-card video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    background: #111;
+    object-fit: cover;
+}
+
+.video-card p {
+    margin-top: 15px;
+    font-size: 15px;
+    line-height: 145%;
+    color: #666;
+}
+
+@media (max-width: 1180px) {
+    .video-demo__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .video-demo {
+        padding-top: 74px;
+    }
+
+    .video-demo__hero {
+        padding: 42px 0 24px;
+    }
+
+    .video-demo__hero h1 {
+        font-size: 34px;
+    }
+
+    .video-demo__hero span {
+        font-size: 16px;
+    }
+
+    .video-card {
+        padding: 14px;
+    }
+
+    .video-card__head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .video-card__head h2 {
+        font-size: 22px;
+    }
+
+    .video-card__head a {
+        text-align: center;
+    }
+}

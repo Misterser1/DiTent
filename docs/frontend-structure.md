@@ -1,33 +1,35 @@
-# Frontend Structure
+# Frontend structure
 
-Проект пока остается статической HTML-версткой. Header и footer физически продублированы в каждой странице, но должны считаться общими блоками для будущего переноса в backend-шаблоны.
+Фронт больше не лежит рабочими HTML-файлами в корне репозитория. Страницы перенесены в Django-шаблоны, но визуальная верстка, CSS и JS сохранены без переписывания.
 
-## Canonical Routes
+## Templates
 
-- `index.html` - главная
-- `about.html` - о фабрике
-- `catalog.html` - каталог готовых изделий
-- `delivery.html` - доставка и оплата
-- `review.html` - галерея и отзывы
-- `contacts.html` - контакты
-- `constructor.html` - конструктор чехла
-- `form.html` - карточка/форма заказа готового изделия из каталога
-- `card.html` - корзина
-- `cabinet.html` - личный кабинет
-- `legal.html` - юридическая информация
-- `privacy.html` - политика конфиденциальности
+- `templates/base.html` - общий HTML-каркас: `head`, блоки стилей, header, content, footer, скрипты.
+- `templates/partials/header.html` - основной публичный header.
+- `templates/partials/footer.html` - основной публичный footer.
+- `templates/partials/header_home.html` и `footer_home.html` - вариант для главной страницы.
+- `templates/partials/header_constructor.html` - вариант для конструктора и карточки товара.
+- `templates/partials/header_drawing.html` и `footer_drawing.html` - вариант для заказа по чертежу.
+- `templates/pages/*.html` - страницы сайта.
 
-## Shared Blocks
+## Canonical routes
 
-Header:
-- логотип ведет на `index.html`
-- основное меню ведет на страницы из `Canonical Routes`
-- иконка корзины ведет на `card.html`
-- иконка профиля ведет на `cabinet.html`
-- CTA `Создать чехол` ведет на `constructor.html`
+- `/` и `/index.html` - главная
+- `/about.html` - о фабрике
+- `/catalog.html` - каталог готовых изделий
+- `/category.html` - страница раздела/категории
+- `/delivery.html` - доставка и оплата
+- `/review.html` - галерея и отзывы
+- `/contacts.html` - контакты
+- `/constructor.html` - конструктор чехла
+- `/drawing-order.html` - заказ по чертежу
+- `/form.html` - карточка готового товара
+- `/card.html` - корзина
+- `/cabinet.html` - личный кабинет
+- `/admin.html` - кастомная админка
+- `/legal.html` - юридическая информация
+- `/privacy.html` - политика конфиденциальности
 
-Footer:
-- логотип ведет на `index.html`
-- контакты используют `tel:`, `mailto:` и `contacts.html`
-- социальные ссылки сейчас заполнены техническими placeholder-URL
-- юридические ссылки ведут на `legal.html` и `privacy.html`
+## Static files
+
+CSS, JS и изображения остаются в `assets/` и подключаются по прежним URL `/assets/...`.

@@ -1,0 +1,242 @@
+.privacy-page {
+    background: #FAFAFA;
+}
+
+.privacy-page__intro {
+    max-width: 900px;
+    margin-bottom: 34px;
+}
+
+.privacy-page__intro h1 {
+    margin-bottom: 16px;
+    font-size: 48px;
+    line-height: 104%;
+    font-weight: 600;
+    color: #121212;
+}
+
+.privacy-page__intro p,
+.privacy-page__head p,
+.privacy-data p,
+.privacy-data dt,
+.privacy-data dd,
+.privacy-cards p,
+.privacy-page__note p {
+    font-size: 15px;
+    line-height: 136%;
+    font-weight: 400;
+    color: #12121299;
+}
+
+.privacy-page__intro p {
+    max-width: 720px;
+    font-size: 18px;
+}
+
+.privacy-page__head,
+.privacy-page__note {
+    padding: 22px;
+    border-radius: 18px;
+    background: #F4F4F4CC;
+}
+
+.privacy-page__head {
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+}
+
+.privacy-page__head div,
+.privacy-page__note div {
+    max-width: 760px;
+}
+
+.privacy-page__head h2,
+.privacy-data h2,
+.privacy-cards h2,
+.privacy-page__note h2 {
+    color: #121212;
+    font-weight: 600;
+}
+
+.privacy-page__head h2,
+.privacy-page__note h2 {
+    margin-bottom: 12px;
+    font-size: 32px;
+    line-height: 110%;
+}
+
+.privacy-page__head a,
+.privacy-page__note a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: #6CAFD8;
+    color: #FFFFFF;
+    font-size: 15px;
+    line-height: 100%;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: .3s ease-in-out;
+}
+
+.privacy-page__head a:hover,
+.privacy-page__note a:hover {
+    filter: brightness(90%);
+}
+
+.privacy-page__grid {
+    display: grid;
+    grid-template-columns: minmax(280px, .84fr) minmax(0, 1.16fr);
+    gap: 18px;
+}
+
+.privacy-data,
+.privacy-cards article {
+    border-radius: 18px;
+    background: #F4F4F4CC;
+}
+
+.privacy-data {
+    padding: 22px;
+}
+
+.privacy-data h2 {
+    margin-bottom: 14px;
+    font-size: 24px;
+    line-height: 116%;
+}
+
+.privacy-data > p {
+    margin-bottom: 20px;
+}
+
+.privacy-data dl {
+    display: grid;
+    gap: 12px;
+}
+
+.privacy-data dl div {
+    display: grid;
+    gap: 4px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #12121214;
+}
+
+.privacy-data dl div:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.privacy-data dt {
+    color: #12121266;
+}
+
+.privacy-data dd {
+    color: #121212;
+}
+
+.privacy-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.privacy-cards article {
+    min-height: 184px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.privacy-cards span {
+    color: #6CAFD8;
+    font-size: 14px;
+    line-height: 100%;
+    font-weight: 700;
+}
+
+.privacy-cards h2 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    line-height: 116%;
+}
+
+.privacy-page__note {
+    margin-top: 18px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.privacy-page__note a {
+    background: #FFFFFF;
+    color: #121212;
+}
+
+@media(max-width: 1000px) {
+    .privacy-page__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(max-width: 768px) {
+    .privacy-page__intro {
+        margin-bottom: 24px;
+    }
+
+    .privacy-page__intro h1 {
+        margin-bottom: 12px;
+        font-size: 30px;
+    }
+
+    .privacy-page__intro p,
+    .privacy-page__head p,
+    .privacy-data p,
+    .privacy-data dt,
+    .privacy-data dd,
+    .privacy-cards p,
+    .privacy-page__note p {
+        font-size: 12px;
+    }
+
+    .privacy-page__head,
+    .privacy-page__note,
+    .privacy-data,
+    .privacy-cards article {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .privacy-page__head,
+    .privacy-page__note {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .privacy-page__head h2,
+    .privacy-page__note h2 {
+        font-size: 22px;
+    }
+
+    .privacy-data h2 {
+        font-size: 20px;
+    }
+
+    .privacy-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .privacy-page__head a,
+    .privacy-page__note a {
+        width: 100%;
+    }
+}

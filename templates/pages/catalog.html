@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Каталог{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css">
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <p>Каталог готовых изделий</p>
+            </div>
+        </div>
+    </div>
+    <section class="section">
+        <div class="wrapper">
+            <div class="catalog">
+                <h2>Каталог готовых изделий</h2>
+                <div class="catalog-grid">
+                    {% for category in categories %}
+                    <div class="catalog-item">
+                        <div class="catalog-item__img">
+                            <img src="{{ category.public_image }}" alt="{{ category.title }}">
+                        </div>
+                        <div class="catalog-item__text">
+                            <p>{{ category.title }}</p>
+                            <a href="{{ category.public_url }}">
+                                Перейти в каталог
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8.41748 3.45917L11.9583 7L8.41748 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2.0415 7H11.859" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>Активные разделы каталога пока не добавлены.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+{% endblock %}

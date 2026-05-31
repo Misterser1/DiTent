@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Демо юридической страницы{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/legal-demo.css">
+{% endblock %}
+
+{% block content %}
+<main class="legal-demo">
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <p>Демо юридической страницы</p>
+            </div>
+        </div>
+    </div>
+
+    <section class="section legal-demo__section">
+        <div class="wrapper">
+            <div class="legal-demo__intro">
+                <h1>Юридическая информация</h1>
+                <p>Ниже три варианта оформления. Все варианты держатся в текущей стилистике сайта: светлый фон, спокойные блоки, крупный основной заголовок и аккуратная структура для реквизитов и условий.</p>
+            </div>
+
+            <article class="legal-variant legal-variant--split">
+                <div class="legal-variant__label">Вариант 1</div>
+                <div class="legal-variant__head">
+                    <div>
+                        <h2>Реквизиты и условия на одной странице</h2>
+                        <p>Подходит, если юридическая страница должна быть компактной: слева реквизиты компании, справа основные документы и правила заказа.</p>
+                    </div>
+                    <a href="contacts.html">Связаться с нами</a>
+                </div>
+                <div class="legal-split">
+                    <div class="legal-company">
+                        <h3>Реквизиты компании</h3>
+                        <dl>
+                            <div><dt>Организация</dt><dd>{{ site_settings.company_name }}</dd></div>
+                            <div><dt>ИНН</dt><dd>{{ site_settings.inn }}</dd></div>
+                            <div><dt>КПП</dt><dd>{{ site_settings.kpp }}</dd></div>
+                            <div><dt>ОГРН</dt><dd>{{ site_settings.ogrn }}</dd></div>
+                            <div><dt>Руководитель</dt><dd>{{ site_settings.director }}</dd></div>
+                            <div><dt>Адрес</dt><dd>{{ site_settings.address }}</dd></div>
+                        </dl>
+                    </div>
+                    <div class="legal-docs">
+                        <div>
+                            <span>01</span>
+                            <h3>Продажа индивидуальных изделий</h3>
+                            <p>Чехлы, изготовленные по размерам клиента, относятся к индивидуальным изделиям. Итоговые параметры заказа подтверждаются менеджером перед производством.</p>
+                        </div>
+                        <div>
+                            <span>02</span>
+                            <h3>Оплата после подтверждения</h3>
+                            <p>Стоимость заказа согласуется после проверки формы, размеров, ткани, креплений и возможности изготовления.</p>
+                        </div>
+                        <div>
+                            <span>03</span>
+                            <h3>Возврат и обмен</h3>
+                            <p>Условия возврата фиксируются до оформления заказа. Для готовых изделий и индивидуальных чехлов могут действовать разные правила.</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="legal-variant legal-variant--document">
+                <div class="legal-variant__label">Вариант 2</div>
+                <div class="legal-document">
+                    <aside>
+                        <h2>Документная структура</h2>
+                        <p>Больше похожа на официальный раздел, но без тяжелой канцелярской подачи. Удобно, если текста будет много.</p>
+                        <nav>
+                            <a href="#legal-demo-company">Реквизиты</a>
+                            <a href="#legal-demo-offer">Порядок заказа</a>
+                            <a href="#legal-demo-return">Возврат</a>
+                            <a href="#legal-demo-data">Документы</a>
+                        </nav>
+                    </aside>
+                    <div class="legal-document__content">
+                        <section id="legal-demo-company">
+                            <h3>1. Реквизиты</h3>
+                            <p>{{ site_settings.company_name }}, ИНН {{ site_settings.inn }}, КПП {{ site_settings.kpp }}, ОГРН {{ site_settings.ogrn }}. Контактный email: {{ site_settings.email }}.</p>
+                        </section>
+                        <section id="legal-demo-offer">
+                            <h3>2. Порядок оформления заказа</h3>
+                            <p>Клиент выбирает готовое изделие или рассчитывает индивидуальный чехол в конструкторе. После отправки заявки менеджер проверяет параметры и подтверждает итоговую стоимость.</p>
+                        </section>
+                        <section id="legal-demo-return">
+                            <h3>3. Индивидуальные изделия и возврат</h3>
+                            <p>Перед оформлением заказа клиент подтверждает условия возврата. Это особенно важно для изделий, изготовленных по индивидуальным размерам.</p>
+                        </section>
+                        <section id="legal-demo-data">
+                            <h3>4. Документы</h3>
+                            <p>На этой странице можно разместить оферту, политику конфиденциальности, согласие на обработку персональных данных и реквизиты для оплаты.</p>
+                        </section>
+                    </div>
+                </div>
+            </article>
+
+            <article class="legal-variant legal-variant--cards">
+                <div class="legal-variant__label">Вариант 3</div>
+                <div class="legal-variant__head">
+                    <div>
+                        <h2>Карточки для быстрого чтения</h2>
+                        <p>Самый легкий визуально вариант: хорошо подходит, если юридический раздел должен быть понятным обычному клиенту.</p>
+                    </div>
+                </div>
+                <div class="legal-card-grid">
+                    <div class="legal-card legal-card--large">
+                        <h3>Компания</h3>
+                        <p>{{ site_settings.company_name }}</p>
+                        <span>ИНН {{ site_settings.inn }} · ОГРН {{ site_settings.ogrn }}</span>
+                    </div>
+                    <div class="legal-card">
+                        <h3>Заказ</h3>
+                        <p>Индивидуальный чехол запускается в работу после проверки менеджером.</p>
+                    </div>
+                    <div class="legal-card">
+                        <h3>Оплата</h3>
+                        <p>Оплата доступна после подтверждения параметров и итоговой суммы.</p>
+                    </div>
+                    <div class="legal-card">
+                        <h3>Доставка</h3>
+                        <p>Способ и стоимость доставки согласуются перед отправкой изделия.</p>
+                    </div>
+                    <div class="legal-card">
+                        <h3>Возврат</h3>
+                        <p>Условия возврата подтверждаются до оформления заказа.</p>
+                    </div>
+                    <div class="legal-card legal-card--accent">
+                        <h3>Документы</h3>
+                        <p>Оферта, политика конфиденциальности и реквизиты могут быть вынесены отдельными файлами или блоками.</p>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+{% endblock %}

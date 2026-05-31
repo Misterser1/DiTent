@@ -1,138 +1,409 @@
-const adminEntities = {
-    categories: {
-        newButton: 'Новая категория',
-        newTitle: 'Новая категория',
-        editTitle: 'Редактирование категории',
-        createButton: 'Создать категорию',
-    },
-    products: {
-        newButton: 'Новый товар',
-        newTitle: 'Новый товар',
-        editTitle: 'Редактирование товара',
-        createButton: 'Создать товар',
-    },
-    fabrics: {
-        newButton: 'Новая ткань',
-        newTitle: 'Новая ткань',
-        editTitle: 'Редактирование ткани',
-        createButton: 'Создать ткань',
-    },
-    colors: {
-        newButton: 'Новый цвет',
-        newTitle: 'Новый цвет',
-        editTitle: 'Редактирование цвета',
-        createButton: 'Создать цвет',
-    },
-    fasteners: {
-        newButton: 'Новое крепление',
-        newTitle: 'Новое крепление',
-        editTitle: 'Редактирование крепления',
-        createButton: 'Создать крепление',
-    },
-    formulas: {
-        newButton: 'Новая формула',
-        newTitle: 'Новая формула',
-        editTitle: 'Редактирование формулы',
-        createButton: 'Создать формулу',
-    },
+﻿const BLANK_IMAGE_SRC = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
+if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+}
+
+const entityLabels = {
+    categories: ['Новая категория', 'Редактирование категории', 'Создать категорию'],
+    products: ['Новый товар', 'Редактирование товара', 'Создать товар'],
+    fabrics: ['Новая ткань', 'Редактирование ткани', 'Создать ткань'],
+    colors: ['Новый цвет', 'Редактирование цвета', 'Создать цвет'],
+    fasteners: ['Новое крепление', 'Редактирование крепления', 'Создать крепление'],
+    formulas: ['Новая формула', 'Редактирование формулы', 'Создать формулу'],
+    orders: ['Карточка заказа', 'Карточка заказа', 'Обновить заказ'],
+    'drawing-orders': ['Заявка по чертежу', 'Заявка по чертежу', 'Обновить заявку'],
+    'constructor-images': ['Новое изображение конструктора', 'Редактирование изображения конструктора', 'Создать изображение'],
+    reviews: ['Новый отзыв', 'Редактирование отзыва', 'Создать отзыв'],
+    'site-settings': ['Настройки сайта', 'Настройки сайта', 'Сохранить настройки'],
 };
 
-function getSectionParts(section) {
-    const form = section.querySelector('.admin-form');
-    const title = form?.querySelector('h3');
-    const actionButton = form?.querySelector('.admin-form__actions button:last-child');
-    const cancelButton = form?.querySelector('.admin-form__actions button:first-child');
-
-    return { form, title, actionButton, cancelButton };
+function apiBase() {
+    return document.querySelector('.admin-page')?.dataset.adminApiBase || '/custom-admin/api/';
 }
 
-function getFormFields(form) {
-    return [...form.querySelectorAll('input, textarea, select')];
+function csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
 }
 
-function captureFormState(form) {
-    return getFormFields(form).map((field) => ({
-        field,
-        selectedIndex: field.tagName === 'SELECT' ? field.selectedIndex : null,
-        value: field.type === 'file' ? '' : field.value,
-    }));
+function sectionEntity(section) {
+    return section.dataset.entity || section.id;
 }
 
-function restoreFormState(form) {
-    const state = form._adminSavedState;
+function formFields(form) {
+    return [...form.querySelectorAll('input[name], textarea[name], select[name]')];
+}
 
-    if (!state) {
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function optionLabel(option) {
+    return option?.textContent.trim() || 'Не выбрано';
+}
+
+function syncCustomSelect(select) {
+    const custom = select?._customSelect;
+    const buttonText = custom?.querySelector('.admin-custom-select__value');
+    const selectedText = optionLabel(select?.selectedOptions[0]);
+
+    if (!select || !custom || !buttonText) {
         return;
     }
 
-    state.forEach(({ field, selectedIndex, value }) => {
-        if (field.tagName === 'SELECT') {
-            field.selectedIndex = selectedIndex ?? 0;
-            return;
+    buttonText.textContent = selectedText;
+    custom.querySelector('.admin-custom-select__button')?.setAttribute('title', selectedText);
+    custom.querySelectorAll('[data-select-option]').forEach((button) => {
+        button.classList.toggle('is-selected', button.dataset.value === select.value);
+    });
+}
+
+function positionCustomSelectMenu(custom) {
+    const menu = custom?._menu;
+    const toggle = custom?.querySelector('.admin-custom-select__button');
+
+    if (!menu || !toggle || !custom.classList.contains('is-open')) {
+        return;
+    }
+
+    const rect = toggle.getBoundingClientRect();
+    const viewportGap = 12;
+    const menuWidth = Math.max(rect.width, 180);
+    const availableBelow = window.innerHeight - rect.bottom - viewportGap;
+    const availableAbove = rect.top - viewportGap;
+    const openUp = availableBelow < 180 && availableAbove > availableBelow;
+    const maxHeight = Math.max(160, Math.min(320, openUp ? availableAbove - 6 : availableBelow - 6));
+    const left = Math.min(Math.max(viewportGap, rect.left), window.innerWidth - menuWidth - viewportGap);
+    const top = openUp ? rect.top - 6 : rect.bottom + 6;
+
+    menu.style.width = `${menuWidth}px`;
+    menu.style.left = `${left}px`;
+    menu.style.top = openUp ? 'auto' : `${top}px`;
+    menu.style.bottom = openUp ? `${window.innerHeight - top}px` : 'auto';
+    menu.style.maxHeight = `${maxHeight}px`;
+}
+
+function closeCustomSelects(except = null) {
+    document.querySelectorAll('.admin-custom-select.is-open').forEach((custom) => {
+        if (custom !== except) {
+            custom.classList.remove('is-open');
+            custom.querySelector('.admin-custom-select__button')?.setAttribute('aria-expanded', 'false');
+            custom._menu?.classList.remove('is-open');
         }
-
-        field.value = field.type === 'file' ? '' : value;
     });
-
-    updateCategoryImagePreview(form, form._adminSavedImage);
 }
 
-function rememberFormState(form) {
-    form._adminSavedState = captureFormState(form);
-    form._adminSavedImage = form.querySelector('[data-category-upload] img')?.src || '';
+function setAdminScrollTop(value) {
+    const main = document.querySelector('.admin-main');
+
+    if (main) {
+        main.scrollTop = value;
+    }
+
+    window.scrollTo(0, value);
 }
 
-function setSelectByText(select, value) {
-    const normalized = value.trim().toLowerCase();
-    const option = [...select.options].find((item) => {
-        const text = item.textContent.trim().toLowerCase();
-        return text === normalized || text.includes(normalized) || normalized.includes(text);
-    });
-
-    if (option) {
-        select.value = option.value;
+function clearAdminHash() {
+    if (window.location.hash) {
+        window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
     }
 }
 
-function toNumber(value) {
-    return value.replace(/[^\d.,-]/g, '').replace(',', '.');
+function restoreAdminScroll() {
+    const shouldRestore = sessionStorage.getItem('ditentAdminRestoreScroll') === '1';
+    const value = shouldRestore ? Number(sessionStorage.getItem('ditentAdminScrollTop') || 0) : 0;
+
+    sessionStorage.removeItem('ditentAdminRestoreScroll');
+    sessionStorage.removeItem('ditentAdminScrollTop');
+
+    const applyScroll = () => {
+        clearAdminHash();
+        setAdminScrollTop(value);
+    };
+
+    applyScroll();
+    requestAnimationFrame(applyScroll);
+    window.addEventListener('load', () => {
+        applyScroll();
+        setTimeout(applyScroll, 0);
+        setTimeout(applyScroll, 80);
+    }, { once: true });
+}
+
+function rememberAdminScroll() {
+    const main = document.querySelector('.admin-main');
+    const value = main ? main.scrollTop : window.scrollY;
+
+    sessionStorage.setItem('ditentAdminScrollTop', String(value));
+    sessionStorage.setItem('ditentAdminRestoreScroll', '1');
+}
+
+function updateCategoryPosition(form, force = false) {
+    const parent = form?.elements.namedItem('parent');
+    const position = form?.elements.namedItem('position');
+    const nextPosition = parent?.selectedOptions[0]?.dataset.nextPosition;
+
+    if (!parent || !position || !nextPosition) {
+        return;
+    }
+
+    if (force || form.dataset.mode === 'create') {
+        position.value = nextPosition;
+    }
+}
+
+function initAdminNavigation() {
+    document.querySelectorAll('.admin-nav a[href^="#"]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+            const target = document.querySelector(link.getAttribute('href'));
+
+            if (!target) {
+                return;
+            }
+
+            event.preventDefault();
+            clearAdminHash();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+}
+
+function initCustomSelects(scope = document) {
+    scope.querySelectorAll('.admin-form select, .admin-table-filter select').forEach((select) => {
+        if (select._customSelect || select.multiple) {
+            return;
+        }
+
+        select.classList.add('admin-select-native');
+
+        const custom = document.createElement('div');
+        custom.className = 'admin-custom-select';
+        custom.innerHTML = `
+            <button class="admin-custom-select__button" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="admin-custom-select__value"></span>
+                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M4.5 6.5L8 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="admin-custom-select__menu" role="listbox"></div>
+        `;
+
+        const menu = custom.querySelector('.admin-custom-select__menu');
+        document.body.append(menu);
+        custom._menu = menu;
+        [...select.options].forEach((option) => {
+            const label = optionLabel(option);
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.value = option.value;
+            button.dataset.selectOption = '';
+            button.textContent = label;
+            button.title = label;
+            button.setAttribute('role', 'option');
+            button.disabled = option.disabled;
+            menu.append(button);
+        });
+
+        const toggle = custom.querySelector('.admin-custom-select__button');
+        toggle.addEventListener('click', () => {
+            const isOpen = custom.classList.contains('is-open');
+            closeCustomSelects(custom);
+            custom.classList.toggle('is-open', !isOpen);
+            menu.classList.toggle('is-open', !isOpen);
+            toggle.setAttribute('aria-expanded', String(!isOpen));
+            positionCustomSelectMenu(custom);
+        });
+
+        menu.addEventListener('click', (event) => {
+            const optionButton = event.target.closest('[data-select-option]');
+
+            if (!optionButton || optionButton.disabled) {
+                return;
+            }
+
+            select.value = optionButton.dataset.value;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            closeCustomSelects();
+        });
+
+        select.addEventListener('change', () => syncCustomSelect(select));
+        select.after(custom);
+        select._customSelect = custom;
+        syncCustomSelect(select);
+    });
+}
+
+function syncCustomSelects(scope = document) {
+    scope.querySelectorAll('.admin-form select, .admin-table-filter select').forEach(syncCustomSelect);
+}
+
+function normalizeFilterText(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function initTableFilter({ filterSelector, searchSelector, groupSelector, paginationSelector, rowSelector, haystack, matchesGroup }) {
+    const filter = document.querySelector(filterSelector);
+    const search = filter?.querySelector(searchSelector);
+    const group = filter?.querySelector(groupSelector);
+    const pagination = document.querySelector(paginationSelector);
+    const rows = [...document.querySelectorAll(rowSelector)];
+    const perPage = 5;
+    let currentPage = 1;
+
+    if (!filter || !search || !group || rows.length === 0) {
+        return;
+    }
+
+    const renderPagination = (totalPages, totalRows) => {
+        if (!pagination) {
+            return;
+        }
+
+        pagination.innerHTML = '';
+        pagination.hidden = totalRows === 0;
+
+        if (totalRows === 0) {
+            return;
+        }
+
+        const createButton = (label, page, options = {}) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = label;
+            button.disabled = Boolean(options.disabled);
+            button.classList.toggle('is-active', Boolean(options.active));
+            button.addEventListener('click', () => {
+                if (button.disabled || currentPage === page) {
+                    return;
+                }
+
+                currentPage = page;
+                applyFilter();
+            });
+            return button;
+        };
+
+        pagination.append(createButton('‹', Math.max(1, currentPage - 1), { disabled: currentPage === 1 }));
+
+        for (let page = 1; page <= totalPages; page += 1) {
+            pagination.append(createButton(String(page), page, { active: page === currentPage }));
+        }
+
+        pagination.append(createButton('›', Math.min(totalPages, currentPage + 1), { disabled: currentPage === totalPages }));
+    };
+
+    const applyFilter = () => {
+        const query = normalizeFilterText(search.value);
+        const groupId = group.value;
+        const matchedRows = [];
+
+        rows.forEach((row) => {
+            const searchableText = haystack(row);
+            const matchesQuery = !query || searchableText.includes(query);
+            const groupMatched = !groupId || matchesGroup(row, groupId);
+
+            const isMatched = matchesQuery && groupMatched;
+            row.hidden = true;
+
+            if (isMatched) {
+                matchedRows.push(row);
+            }
+        });
+
+        const totalPages = Math.max(1, Math.ceil(matchedRows.length / perPage));
+        currentPage = Math.min(currentPage, totalPages);
+
+        matchedRows.forEach((row, index) => {
+            const rowPage = Math.floor(index / perPage) + 1;
+            row.hidden = rowPage !== currentPage;
+        });
+
+        renderPagination(totalPages, matchedRows.length);
+    };
+
+    search.addEventListener('input', () => {
+        currentPage = 1;
+        applyFilter();
+    });
+    group.addEventListener('change', () => {
+        currentPage = 1;
+        applyFilter();
+    });
+    applyFilter();
+}
+
+function initCategoryFilters() {
+    initTableFilter({
+        filterSelector: '[data-category-filter]',
+        searchSelector: '[data-category-search]',
+        groupSelector: '[data-category-group]',
+        paginationSelector: '[data-category-pagination]',
+        rowSelector: '[data-category-row]',
+        haystack: row => [
+            row.dataset.categoryTitle,
+            row.dataset.categorySlug,
+            row.dataset.categoryParent,
+        ].map(normalizeFilterText).join(' '),
+        matchesGroup: (row, groupId) => row.dataset.categoryGroup === groupId,
+    });
+}
+
+function initProductFilters() {
+    initTableFilter({
+        filterSelector: '[data-product-filter]',
+        searchSelector: '[data-table-search]',
+        groupSelector: '[data-table-group]',
+        paginationSelector: '[data-product-pagination]',
+        rowSelector: '[data-product-row]',
+        haystack: row => [
+            row.dataset.productTitle,
+            row.dataset.productSku,
+            row.dataset.productCategory,
+        ].map(normalizeFilterText).join(' '),
+        matchesGroup: (row, groupId) => row.dataset.productCategoryId === groupId,
+    });
+}
+
+function initSimpleAdminTableFilter(name) {
+    initTableFilter({
+        filterSelector: `[data-${name}-filter]`,
+        searchSelector: '[data-table-search]',
+        groupSelector: '[data-table-group]',
+        paginationSelector: `[data-${name}-pagination]`,
+        rowSelector: `[data-${name}-row]`,
+        haystack: row => normalizeFilterText(row.dataset.search),
+        matchesGroup: (row, groupId) => row.dataset.group === groupId,
+    });
+}
+
+function initSecondaryTableFilters() {
+    [
+        'fabric',
+        'color',
+        'fastener',
+        'formula',
+        'order',
+        'drawing-order',
+        'constructor-image',
+        'review',
+    ].forEach(initSimpleAdminTableFilter);
+}
+
+function entityUrl(entity, id = '') {
+    return `${apiBase()}${entity}/${id ? `${id}/` : ''}`;
 }
 
 function createSlug(value) {
     const map = {
-        а: 'a',
-        б: 'b',
-        в: 'v',
-        г: 'g',
-        д: 'd',
-        е: 'e',
-        ё: 'e',
-        ж: 'zh',
-        з: 'z',
-        и: 'i',
-        й: 'y',
-        к: 'k',
-        л: 'l',
-        м: 'm',
-        н: 'n',
-        о: 'o',
-        п: 'p',
-        р: 'r',
-        с: 's',
-        т: 't',
-        у: 'u',
-        ф: 'f',
-        х: 'h',
-        ц: 'c',
-        ч: 'ch',
-        ш: 'sh',
-        щ: 'sch',
-        ъ: '',
-        ы: 'y',
-        ь: '',
-        э: 'e',
-        ю: 'yu',
-        я: 'ya',
+        а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z',
+        и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+        с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'c', ч: 'ch', ш: 'sh',
+        щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
     };
 
     return value
@@ -144,626 +415,888 @@ function createSlug(value) {
         .replace(/^-+|-+$/g, '');
 }
 
-function updateCategoryOrder(section) {
-    section.querySelectorAll('tbody tr').forEach((row, index) => {
-        const order = index + 1;
-        const orderCell = row.querySelector('.admin-order');
-
-        if (orderCell) {
-            orderCell.textContent = order;
-        }
-    });
-
-    const { form } = getSectionParts(section);
-    const selectedRow = section._adminSelectedRow;
-
-    if (form && selectedRow && selectedRow.isConnected && form.dataset.mode === 'edit') {
-        const fields = getFormFields(form);
-        fields[3].value = getCategoryPosition(selectedRow);
-        rememberFormState(form);
-    }
+function getForm(section) {
+    return section.querySelector('[data-admin-form]');
 }
 
-function getCategoryPosition(row) {
-    return row?.querySelector('.admin-order')?.textContent.trim() || '';
-}
-
-function updateCategoryImagePreview(form, imagePath) {
-    const previewImage = form?.querySelector('[data-category-upload] .admin-upload__dropzone img');
-    const dropzone = form?.querySelector('[data-category-upload] .admin-upload__dropzone');
-
-    if (previewImage && imagePath) {
-        previewImage.src = imagePath;
-        dropzone?.classList.remove('is-empty');
-        return;
-    }
-
-    previewImage?.removeAttribute('src');
-    dropzone?.classList.add('is-empty');
-}
-
-function updateUploadPreview(upload, imagePath) {
-    const previewImage = upload?.querySelector('.admin-upload__dropzone img');
-    const dropzone = upload?.querySelector('.admin-upload__dropzone');
-
-    if (previewImage && imagePath) {
-        previewImage.src = imagePath;
-        dropzone?.classList.remove('is-empty');
-        return;
-    }
-
-    previewImage?.removeAttribute('src');
-    dropzone?.classList.add('is-empty');
-}
-
-function isImageFile(file) {
-    return Boolean(file && (file.type.startsWith('image/') || /\.(avif|gif|jpe?g|png|webp|svg)$/i.test(file.name)));
-}
-
-function createPreviewUrl(file) {
-    try {
-        return URL.createObjectURL(file);
-    } catch {
-        return '';
-    }
-}
-
-function syncFileInput(input, files) {
-    if (!input || !window.DataTransfer) {
-        return;
-    }
-
-    try {
-        const dataTransfer = new DataTransfer();
-        files.forEach((file) => dataTransfer.items.add(file));
-        input.files = dataTransfer.files;
-    } catch {
-        // Some browsers restrict programmatic file assignment. Preview still works without it.
-    }
-}
-
-function previewImageFile(upload, file, input) {
-    if (!isImageFile(file)) {
-        return false;
-    }
-
-    syncFileInput(input, [file]);
-
-    const previewUrl = createPreviewUrl(file);
-    if (!previewUrl) {
-        return false;
-    }
-
-    updateUploadPreview(upload, previewUrl);
-    return true;
-}
-
-function previewCategoryImageFile(form, file, input) {
-    return previewImageFile(form?.querySelector('[data-category-upload]'), file, input);
-}
-
-function getGalleryImages(value) {
-    return (value || '')
-        .split(/\r?\n/)
-        .map((item) => item.trim())
-        .filter(Boolean);
-}
-
-function updateGalleryPreview(upload, images) {
-    const dropzone = upload?.querySelector('.admin-upload__dropzone');
-    const count = upload?.querySelector('[data-gallery-count]');
-    const previewButton = upload?.querySelector('[data-gallery-preview]');
-    const lastPreview = upload?.querySelector('[data-gallery-last-preview]');
-    const imageList = Array.isArray(images) ? images : getGalleryImages(images);
-
-    if (!upload || !dropzone) {
-        return;
-    }
-
-    upload._adminGalleryImages = imageList;
-    if (count) {
-        count.textContent = imageList.length === 0
-            ? 'Изображения не выбраны'
-            : `В галерее ${imageList.length} ${getPlural(imageList.length, ['изображение', 'изображения', 'изображений'])}`;
-    }
-    if (previewButton) {
-        previewButton.hidden = imageList.length === 0;
-    }
-    if (lastPreview) {
-        const lastImage = imageList[imageList.length - 1] || '';
-
-        if (lastImage) {
-            lastPreview.src = lastImage;
-        } else {
-            lastPreview.removeAttribute('src');
-        }
-    }
-    dropzone.classList.toggle('is-empty', imageList.length === 0);
-}
-
-function getPlural(number, forms) {
-    const mod10 = number % 10;
-    const mod100 = number % 100;
-
-    if (mod10 === 1 && mod100 !== 11) {
-        return forms[0];
-    }
-
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
-        return forms[1];
-    }
-
-    return forms[2];
-}
-
-function previewGalleryFiles(upload, fileList, input) {
-    const files = Array.from(fileList || []).filter(isImageFile);
-
-    if (files.length === 0) {
-        return false;
-    }
-
-    syncFileInput(input, files);
-
-    const previewUrls = files.map(createPreviewUrl).filter(Boolean);
-    if (previewUrls.length === 0) {
-        return false;
-    }
-
-    updateGalleryPreview(upload, previewUrls);
-    return true;
-}
-
-function initImageUpload(upload) {
-    const input = upload?.querySelector('input[type="file"]');
-    const dropzone = upload?.querySelector('.admin-upload__dropzone');
-
-    if (!upload || !input || !dropzone) {
-        return;
-    }
-
-    dropzone.addEventListener('click', (event) => {
-        event.stopPropagation();
-        input.click();
-    });
-
-    dropzone.addEventListener('keydown', (event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') {
-            return;
-        }
-
-        event.preventDefault();
-        input.click();
-    });
-
-    input.addEventListener('change', () => {
-        previewImageFile(upload, input.files?.[0]);
-    });
-
-    const handleDragEvent = (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (event.dataTransfer) {
-            event.dataTransfer.dropEffect = 'copy';
-        }
-    };
-
-    ['dragenter', 'dragover'].forEach((eventName) => {
-        upload.addEventListener(eventName, (event) => {
-            handleDragEvent(event);
-            dropzone.classList.add('is-dragover');
-        });
-    });
-
-    upload.addEventListener('dragleave', (event) => {
-        handleDragEvent(event);
-
-        if (!upload.contains(event.relatedTarget)) {
-            dropzone.classList.remove('is-dragover');
-        }
-    });
-
-    upload.addEventListener('drop', (event) => {
-        handleDragEvent(event);
-        dropzone.classList.remove('is-dragover');
-        previewImageFile(upload, event.dataTransfer?.files?.[0], input);
-    });
-}
-
-function initGalleryUpload(upload) {
-    const input = upload?.querySelector('input[type="file"]');
-    const dropzone = upload?.querySelector('.admin-upload__dropzone');
-    const previewButton = upload?.querySelector('[data-gallery-preview]');
-
-    if (!upload || !input || !dropzone) {
-        return;
-    }
-
-    dropzone.addEventListener('click', (event) => {
-        event.stopPropagation();
-        input.click();
-    });
-
-    dropzone.addEventListener('keydown', (event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') {
-            return;
-        }
-
-        event.preventDefault();
-        input.click();
-    });
-
-    input.addEventListener('change', () => {
-        previewGalleryFiles(upload, input.files);
-    });
-
-    previewButton?.addEventListener('click', (event) => {
-        event.stopPropagation();
-        openGalleryModal(upload._adminGalleryImages || []);
-    });
-
-    const handleDragEvent = (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (event.dataTransfer) {
-            event.dataTransfer.dropEffect = 'copy';
-        }
-    };
-
-    ['dragenter', 'dragover'].forEach((eventName) => {
-        upload.addEventListener(eventName, (event) => {
-            handleDragEvent(event);
-            dropzone.classList.add('is-dragover');
-        });
-    });
-
-    upload.addEventListener('dragleave', (event) => {
-        handleDragEvent(event);
-
-        if (!upload.contains(event.relatedTarget)) {
-            dropzone.classList.remove('is-dragover');
-        }
-    });
-
-    upload.addEventListener('drop', (event) => {
-        handleDragEvent(event);
-        dropzone.classList.remove('is-dragover');
-        previewGalleryFiles(upload, event.dataTransfer?.files, input);
-    });
-}
-
-function openGalleryModal(images) {
-    const modal = document.querySelector('[data-category-preview-modal]');
-    const modalImage = modal?.querySelector('.admin-preview-modal__dialog > img');
-    const modalGallery = modal?.querySelector('[data-preview-gallery]');
-    const modalTitle = modal?.querySelector('#category-preview-title');
-
-    if (!modal || !modalImage || !modalGallery || images.length === 0) {
-        return;
-    }
-
-    modalTitle.textContent = 'Галерея изображений';
-    modalImage.removeAttribute('src');
-    modalImage.hidden = true;
-    modalGallery.innerHTML = '';
-
-    images.forEach((src) => {
-        const image = document.createElement('img');
-        image.src = src;
-        image.alt = '';
-        modalGallery.append(image);
-    });
-
-    modalGallery.hidden = false;
-    modal.hidden = false;
-}
-
-function applyRowToForm(section, row) {
-    const { form } = getSectionParts(section);
-    const fields = getFormFields(form);
-    const cells = [...row.querySelectorAll('td')].map((cell) => cell.innerText.trim());
-
-    if (!form || cells.length === 0) {
-        return;
-    }
-
-    if (section.id === 'categories') {
-        fields[0].value = cells[1] || '';
-        fields[1].value = cells[2] || '';
-        setSelectByText(fields[2], row.dataset.parent || cells[3] || '');
-        fields[3].value = getCategoryPosition(row);
-        setSelectByText(fields[4], row.dataset.status || cells[5] || '');
-        updateCategoryImagePreview(form, row.dataset.image);
-        section._adminSelectedRow = row;
-    }
-
-    if (section.id === 'products') {
-        const title = row.querySelector('.admin-category-cell span')?.textContent.trim() || cells[0] || '';
-        const setProductValue = (name, value) => {
-            const field = form.elements.namedItem(name);
-
-            if (!field) {
-                return;
-            }
-
-            if (field.tagName === 'SELECT') {
-                setSelectByText(field, value || '');
-                return;
-            }
-
-            field.value = value || '';
-        };
-
-        setProductValue('product-title', title);
-        setProductValue('product-category', cells[1] || '');
-        setProductValue('product-sku', row.dataset.sku || '');
-        setProductValue('product-price', toNumber(cells[3] || ''));
-        setProductValue('product-stock', cells[4] || '');
-        setProductValue('product-status', cells[5] || '');
-        setProductValue('product-width', row.dataset.width || '');
-        setProductValue('product-depth', row.dataset.depth || '');
-        setProductValue('product-height', row.dataset.height || '');
-        setProductValue('product-fabric', row.dataset.fabric || '');
-        setProductValue('product-color', row.dataset.color || '');
-        setProductValue('product-fastener', row.dataset.fastener || '');
-        setProductValue('product-purpose', row.dataset.purpose || '');
-        setProductValue('product-description', row.dataset.description || (title ? `Готовое изделие: ${title}.` : ''));
-        updateUploadPreview(form.querySelector('[data-product-upload]'), row.dataset.image);
-        updateGalleryPreview(form.querySelector('[data-product-gallery-upload]'), row.dataset.gallery);
-    }
-
-    if (section.id === 'fabrics') {
-        const fabricName = row.querySelector('td:first-child b')?.textContent.trim() || cells[0] || '';
-        const fabricMeta = row.querySelector('td:first-child span')?.textContent.trim() || '';
-        const [density = '', width = ''] = fabricMeta.split('·').map((item) => item.trim());
-
-        fields[0].value = fabricName;
-        fields[1].value = density;
-        fields[2].value = toNumber(cells[1] || '');
-        fields[3].value = toNumber(width || '');
-        fields[4].value = row.dataset.property || cells[2] || '';
-        setSelectByText(fields[5], row.dataset.uv || '');
-        setSelectByText(fields[6], row.dataset.durability || '');
-        setSelectByText(fields[7], row.dataset.strength || '');
-        setSelectByText(fields[8], row.dataset.care || '');
-        setSelectByText(fields[9], cells[4] || '');
-        fields[10].value = row.dataset.purpose || '';
-        fields[11].value = row.dataset.description || (fabricName ? `Материал для расчета стоимости: ${fabricName}.` : '');
-    }
-
-    if (section.id === 'colors') {
-        fields[0].value = row.querySelector('.admin-category-cell span')?.textContent.trim() || (cells[0] || '').replace(/\n/g, ' ').trim();
-        fields[1].value = cells[1] || '';
-        setSelectByText(fields[2], cells[2] || '');
-        fields[3].value = row.dataset.surcharge || toNumber(cells[3] || '');
-        setSelectByText(fields[4], cells[4] || '');
-        updateUploadPreview(form.querySelector('[data-color-upload]'), row.dataset.image);
-    }
-
-    if (section.id === 'fasteners') {
-        fields[0].value = cells[0] || '';
-        setSelectByText(fields[1], cells[1] || '');
-        fields[2].value = toNumber(cells[2] || '');
-        fields[4].value = cells[0] ? `Крепление: ${cells[0]}.` : '';
-    }
-
-    if (section.id === 'formulas') {
-        setSelectByText(fields[0], cells[0] || '');
-        fields[1].value = cells[1] || '';
-        fields[2].value = toNumber(cells[2] || '');
-        setSelectByText(fields[5], cells[4] || '');
-        fields[6].value = cells[1] ? `Формула ${cells[1]}` : '';
-        fields[7].value = cells[0] ? `Формула расчета для формы: ${cells[0]}.` : '';
-    }
-}
-
-function setFormMode(section, mode) {
-    const entity = adminEntities[section.id];
-    const { form, title, actionButton, cancelButton } = getSectionParts(section);
-
-    if (!entity || !form || !title || !actionButton) {
-        return;
-    }
-
-    form.dataset.mode = mode;
-    title.textContent = mode === 'create' ? entity.newTitle : entity.editTitle;
-    actionButton.textContent = mode === 'create' ? entity.createButton : 'Сохранить изменения';
-    cancelButton.hidden = false;
-    cancelButton.textContent = mode === 'create' ? 'Отменить создание' : 'Сбросить изменения';
-
-    if (mode === 'edit') {
-        restoreFormState(form);
-        return;
-    }
-
-    getFormFields(form).forEach((field) => {
-        if (mode === 'create') {
-            if (field.tagName === 'SELECT') {
-                field.selectedIndex = 0;
-                return;
-            }
-
-            field.value = '';
-        }
-    });
-
-    if (section.id === 'categories') {
-        const fields = getFormFields(form);
-        fields[3].value = section.querySelectorAll('tbody tr').length + 1;
-        updateCategoryImagePreview(form, '');
-        section._adminSelectedRow = null;
-    }
-
-    if (section.id === 'products') {
-        updateUploadPreview(form.querySelector('[data-product-upload]'), '');
-        updateGalleryPreview(form.querySelector('[data-product-gallery-upload]'), []);
-    }
-
-    if (section.id === 'colors') {
-        updateUploadPreview(form.querySelector('[data-color-upload]'), '');
-    }
-}
-
-function initCategoryForm(section) {
-    const { form } = getSectionParts(section);
+function setMode(section, mode, id = '') {
+    const form = getForm(section);
+    const entity = sectionEntity(section);
+    const [newTitle, editTitle, createButton] = entityLabels[entity] || ['Новая запись', 'Редактирование записи', 'Создать'];
+    const title = form?.querySelector('h3');
+    const submit = form?.querySelector('[type="submit"]');
 
     if (!form) {
         return;
     }
 
-    const [nameField, slugField] = getFormFields(form);
-    nameField?.addEventListener('input', () => {
-        slugField.value = createSlug(nameField.value);
-    });
-
-    initImageUpload(form.querySelector('[data-category-upload]'));
+    form.dataset.mode = mode;
+    form.dataset.id = id;
+    if (title) {
+        title.textContent = mode === 'edit' ? editTitle : newTitle;
+    }
+    if (submit) {
+        submit.textContent = mode === 'edit' ? 'Сохранить изменения' : createButton;
+    }
 }
 
-function initCategoryDrag(section) {
-    const tbody = section.querySelector('tbody');
-    let draggedRow = null;
+function resetUpload(upload) {
+    const image = upload?.querySelector('img');
+    const input = upload?.querySelector('input[type="file"]');
 
-    if (!tbody) {
+    if (input) {
+        input.value = '';
+    }
+    if (image) {
+        image.src = image.dataset.defaultSrc || image.getAttribute('src') || BLANK_IMAGE_SRC;
+    }
+    upload?.querySelector('.admin-upload__dropzone')?.classList.add('is-empty');
+}
+
+function resetForm(section) {
+    const form = getForm(section);
+
+    if (!form) {
         return;
     }
 
-    tbody.querySelectorAll('tr').forEach((row) => {
-        row.addEventListener('dragstart', () => {
-            draggedRow = row;
-            row.classList.add('admin-row--dragging');
-        });
-
-        row.addEventListener('dragend', () => {
-            row.classList.remove('admin-row--dragging');
-            draggedRow = null;
-            updateCategoryOrder(section);
-        });
+    form.reset();
+    formFields(form).forEach((field) => {
+        if (field.type === 'checkbox') {
+            field.checked = false;
+            return;
+        }
+        if (field.type !== 'hidden' && field.type !== 'file' && field.tagName !== 'SELECT') {
+            field.value = '';
+        }
     });
+    form.querySelectorAll('.admin-upload').forEach(resetUpload);
+    updateGalleryPreview(form.querySelector('[data-gallery-upload]'), []);
+    renderOrderItems(form.querySelector('[data-order-items]'), '');
+    renderDrawingFiles(form.querySelector('[data-drawing-files]'), []);
+    syncCustomSelects(form);
+    setMode(section, 'create');
+    if (sectionEntity(section) === 'categories') {
+        updateCategoryPosition(form, true);
+    }
+}
 
-    tbody.addEventListener('dragover', (event) => {
-        event.preventDefault();
+function fillForm(section, item) {
+    const form = getForm(section);
 
-        const targetRow = event.target.closest('tr');
+    if (!form) {
+        return;
+    }
 
-        if (!draggedRow || !targetRow || draggedRow === targetRow) {
+    formFields(form).forEach((field) => {
+        if (field.type === 'file') {
+            field.value = '';
             return;
         }
 
-        const rect = targetRow.getBoundingClientRect();
-        const shouldInsertAfter = event.clientY > rect.top + rect.height / 2;
+        const value = item[field.name];
 
-        tbody.insertBefore(draggedRow, shouldInsertAfter ? targetRow.nextSibling : targetRow);
+        if (field.type === 'checkbox') {
+            field.checked = Boolean(value);
+            return;
+        }
+
+        if (value === null || value === undefined) {
+            field.value = '';
+            return;
+        }
+
+        if (typeof value === 'object') {
+            field.value = JSON.stringify(value);
+            return;
+        }
+
+        field.value = value;
     });
 
-    updateCategoryOrder(section);
+    updateImagePreview(form.querySelector('[data-preview-field="image"]'), item.image);
+    updateImagePreview(form.querySelector('[data-preview-field="main_image"]'), item.main_image);
+    updateImagePreview(form.querySelector('[data-preview-field="map_image"]'), item.map_image);
+    updateGalleryPreview(form.querySelector('[data-gallery-upload]'), item.gallery_items || item.gallery_images || []);
+    renderOrderItems(form.querySelector('[data-order-items]'), item.items || item.items_summary || '');
+    renderDrawingFiles(form.querySelector('[data-drawing-files]'), item.files || []);
+    syncCustomSelects(form);
 }
 
-function initCategoryPreview(section) {
-    const modal = document.querySelector('[data-category-preview-modal]');
-    const modalImage = modal?.querySelector('.admin-preview-modal__dialog > img');
-    const modalTitle = modal?.querySelector('#category-preview-title');
-    const closeButtons = modal?.querySelectorAll('[data-preview-close]');
+function updateImagePreview(image, src) {
+    const dropzone = image?.closest('.admin-upload__dropzone');
 
-    if (!modal || !modalImage || !modalTitle) {
+    if (!image || !dropzone) {
         return;
     }
 
-    const closeModal = () => {
-        modal.hidden = true;
-        modalImage.src = '';
-        modalImage.hidden = false;
-        const modalGallery = modal.querySelector('[data-preview-gallery]');
-        if (modalGallery) {
-            modalGallery.hidden = true;
-            modalGallery.innerHTML = '';
+    if (src) {
+        image.src = src;
+        dropzone.classList.remove('is-empty');
+        return;
+    }
+
+    image.src = image.dataset.defaultSrc || BLANK_IMAGE_SRC;
+    dropzone.classList.add('is-empty');
+}
+
+function renderOrderItems(container, value) {
+    if (!container) {
+        return;
+    }
+
+    if (Array.isArray(value)) {
+        container.innerHTML = value.length
+            ? value.map((item) => {
+                const details = Array.isArray(item.details) ? item.details : [];
+                const detailsHtml = details.length
+                    ? `<dl>${details.map((detail) => `<div><dt>${escapeHtml(detail.label)}</dt><dd>${escapeHtml(detail.value)}</dd></div>`).join('')}</dl>`
+                    : '<span>Параметры не указаны.</span>';
+                const sku = item.sku ? `<small>Артикул: ${escapeHtml(item.sku)}</small>` : '';
+
+                return `
+                    <div class="admin-order-item">
+                        <b>${escapeHtml(item.title)}</b>
+                        ${sku}
+                        ${detailsHtml}
+                        <strong>${escapeHtml(item.quantity)} шт. · ${escapeHtml(item.total_price)} ₽</strong>
+                    </div>
+                `;
+            }).join('')
+            : '<div><span>Состав заказа появится после выбора строки.</span></div>';
+        return;
+    }
+
+    const items = String(value || '')
+        .split('||')
+        .map((item) => item.split('|').map((part) => part.trim()))
+        .filter(([title]) => title);
+
+    container.innerHTML = items.length
+        ? items.map(([title, description = '', price = '']) => `<div class="admin-order-item"><b>${escapeHtml(title)}</b><span>${escapeHtml(description)}</span><strong>${escapeHtml(price)}</strong></div>`).join('')
+        : '<div><span>Состав заказа появится после выбора строки.</span></div>';
+}
+
+function renderDrawingFiles(container, files) {
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = files.length
+        ? files.map((file) => `<div><b>${file.name}</b><a href="${file.url}" target="_blank" rel="noopener">Открыть файл</a></div>`).join('')
+        : '<div><span>Файлы появятся после выбора заявки.</span></div>';
+}
+
+const adminTourSteps = [
+    {
+        selector: '.admin-topbar',
+        title: 'Главный экран',
+        text: 'Здесь находится панель управления сайтом. Слева навигация по разделам, ниже короткая сводка по каталогу и новым заявкам.',
+    },
+    {
+        selector: '.admin-nav',
+        title: 'Навигация',
+        text: 'Через меню можно быстро перейти к товарам, тканям, заказам, заявкам по чертежам, отзывам и настройкам сайта.',
+    },
+    {
+        selector: '.admin-summary',
+        title: 'Сводка',
+        text: 'Эти карточки помогают быстро понять объем данных: категории, товары, материалы и новые заявки, которые требуют внимания.',
+    },
+    {
+        selector: '#categories',
+        title: 'Категории',
+        text: 'В этом разделе создаются и редактируются разделы каталога. Категории могут быть верхнего уровня или вложенными.',
+    },
+    {
+        selector: '#products',
+        title: 'Товары',
+        text: 'Здесь заполняются готовые изделия: название, артикул, цена, размеры, остаток, изображения и статус публикации.',
+    },
+    {
+        selector: '#fabrics',
+        title: 'Ткани',
+        text: 'Ткани используются в конструкторе и карточках товаров. Важно поддерживать актуальные цены и характеристики материалов.',
+    },
+    {
+        selector: '#colors',
+        title: 'Цвета',
+        text: 'Цвета привязаны к тканям. Клиент видит их при выборе материала, поэтому лучше загружать понятные образцы.',
+    },
+    {
+        selector: '#fasteners',
+        title: 'Крепления',
+        text: 'Крепления и фурнитура добавляются в конструктор. Здесь можно менять цену, совместимость и активность варианта.',
+    },
+    {
+        selector: '#formulas',
+        title: 'Формулы',
+        text: 'Формулы отвечают за расчет стоимости нестандартных форм. Менять их нужно аккуратно, потому что они влияют на калькулятор.',
+    },
+    {
+        selector: '#orders',
+        title: 'Заказы',
+        text: 'Основной рабочий раздел менеджера. Здесь проверяются заказы, меняются статусы, подтверждается оплата и ведется доставка.',
+    },
+    {
+        selector: '#orders [data-sync-cdek]',
+        title: 'Трекинг СДЭК',
+        text: 'После создания отправления в личном кабинете СДЭК менеджер указывает трек-номер и нажимает эту кнопку, чтобы подтянуть статус доставки.',
+    },
+    {
+        selector: '#drawing-orders',
+        title: 'Заявки по чертежу',
+        text: 'Сюда попадают заявки с файлами клиента. Менеджер проверяет чертеж, уточняет детали и переводит заявку в нужный статус.',
+    },
+    {
+        selector: '#constructor-images',
+        title: 'Изображения конструктора',
+        text: 'Этот раздел управляет визуальными подсказками конструктора: формами, схемами и изображениями для клиента.',
+    },
+    {
+        selector: '#reviews',
+        title: 'Отзывы',
+        text: 'Отзывы и галерея выводятся на сайте. Здесь можно добавлять реальные кейсы, подписи, город и статус публикации.',
+    },
+    {
+        selector: '#site-settings',
+        title: 'Настройки сайта',
+        text: 'Здесь хранятся контакты, реквизиты, ссылки на соцсети, карта и email менеджеров для уведомлений.',
+    },
+];
+
+let adminTourState = {
+    index: 0,
+    target: null,
+    root: null,
+};
+
+function createAdminTour() {
+    const root = document.createElement('div');
+    root.className = 'admin-tour';
+    root.hidden = true;
+    root.innerHTML = `
+        <div class="admin-tour__overlay" data-tour-close></div>
+        <div class="admin-tour__spotlight" aria-hidden="true"></div>
+        <section class="admin-tour__card" role="dialog" aria-modal="true" aria-live="polite" aria-labelledby="admin-tour-title">
+            <button class="admin-tour__close" type="button" aria-label="Закрыть обучение" data-tour-close>&times;</button>
+            <span class="admin-tour__kicker" data-tour-counter></span>
+            <h3 id="admin-tour-title" data-tour-title></h3>
+            <p data-tour-text></p>
+            <div class="admin-tour__actions">
+                <button type="button" data-tour-prev>Назад</button>
+                <button type="button" data-tour-next>Далее</button>
+            </div>
+        </section>
+    `;
+    document.body.append(root);
+    return root;
+}
+
+function adminTourElements() {
+    const root = adminTourState.root || createAdminTour();
+    adminTourState.root = root;
+    return {
+        root,
+        spotlight: root.querySelector('.admin-tour__spotlight'),
+        card: root.querySelector('.admin-tour__card'),
+        counter: root.querySelector('[data-tour-counter]'),
+        title: root.querySelector('[data-tour-title]'),
+        text: root.querySelector('[data-tour-text]'),
+        prev: root.querySelector('[data-tour-prev]'),
+        next: root.querySelector('[data-tour-next]'),
+    };
+}
+
+function visibleAdminTourSteps() {
+    return adminTourSteps.filter((step) => document.querySelector(step.selector));
+}
+
+function closeAdminTour() {
+    const { root } = adminTourElements();
+    adminTourState.target?.classList.remove('admin-tour-highlight');
+    adminTourState.target = null;
+    root.hidden = true;
+}
+
+function positionAdminTour() {
+    const { root, spotlight, card } = adminTourElements();
+    const target = adminTourState.target;
+
+    if (root.hidden || !target) {
+        return;
+    }
+
+    const rect = target.getBoundingClientRect();
+    const gap = 14;
+    const padding = 10;
+    const left = Math.max(padding, rect.left - padding);
+    const top = Math.max(padding, rect.top - padding);
+    const width = Math.min(window.innerWidth - left - padding, rect.width + padding * 2);
+    const height = Math.min(window.innerHeight - top - padding, rect.height + padding * 2);
+
+    spotlight.style.left = `${left}px`;
+    spotlight.style.top = `${top}px`;
+    spotlight.style.width = `${Math.max(40, width)}px`;
+    spotlight.style.height = `${Math.max(40, height)}px`;
+
+    const cardRect = card.getBoundingClientRect();
+    const canRight = rect.right + gap + cardRect.width <= window.innerWidth - gap;
+    const canLeft = rect.left - gap - cardRect.width >= gap;
+    let cardLeft = canRight ? rect.right + gap : canLeft ? rect.left - gap - cardRect.width : gap;
+    let cardTop = rect.top;
+
+    if (!canRight && !canLeft) {
+        cardLeft = Math.min(Math.max(gap, rect.left), window.innerWidth - cardRect.width - gap);
+        cardTop = rect.bottom + gap;
+        if (cardTop + cardRect.height > window.innerHeight - gap) {
+            cardTop = Math.max(gap, rect.top - cardRect.height - gap);
         }
+    }
+
+    cardTop = Math.min(Math.max(gap, cardTop), window.innerHeight - cardRect.height - gap);
+    card.style.left = `${cardLeft}px`;
+    card.style.top = `${cardTop}px`;
+}
+
+function showAdminTourStep(index) {
+    const steps = visibleAdminTourSteps();
+    const { root, counter, title, text, prev, next } = adminTourElements();
+
+    if (!steps.length) {
+        return;
+    }
+
+    adminTourState.index = Math.min(Math.max(index, 0), steps.length - 1);
+    const step = steps[adminTourState.index];
+    const target = document.querySelector(step.selector);
+
+    adminTourState.target?.classList.remove('admin-tour-highlight');
+    adminTourState.target = target;
+    target.classList.add('admin-tour-highlight');
+    root.hidden = false;
+
+    counter.textContent = `${adminTourState.index + 1} из ${steps.length}`;
+    title.textContent = step.title;
+    text.textContent = step.text;
+    prev.disabled = adminTourState.index === 0;
+    next.textContent = adminTourState.index === steps.length - 1 ? 'Завершить' : 'Далее';
+
+    target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    requestAnimationFrame(positionAdminTour);
+    setTimeout(positionAdminTour, 260);
+}
+
+function nextAdminTourStep() {
+    const steps = visibleAdminTourSteps();
+    if (adminTourState.index >= steps.length - 1) {
+        closeAdminTour();
+        return;
+    }
+    showAdminTourStep(adminTourState.index + 1);
+}
+
+function initAdminTour() {
+    const start = document.querySelector('[data-admin-tour-start]');
+    if (!start) {
+        return;
+    }
+
+    const { root, prev, next } = adminTourElements();
+    start.addEventListener('click', () => showAdminTourStep(0));
+    root.querySelectorAll('[data-tour-close]').forEach((button) => button.addEventListener('click', closeAdminTour));
+    prev.addEventListener('click', () => showAdminTourStep(adminTourState.index - 1));
+    next.addEventListener('click', nextAdminTourStep);
+
+    document.addEventListener('keydown', (event) => {
+        if (root.hidden) {
+            return;
+        }
+
+        if (event.key === 'Escape') {
+            closeAdminTour();
+        } else if (event.key === 'ArrowRight') {
+            nextAdminTourStep();
+        } else if (event.key === 'ArrowLeft') {
+            showAdminTourStep(adminTourState.index - 1);
+        }
+    });
+
+    window.addEventListener('resize', positionAdminTour);
+    document.querySelector('.admin-main')?.addEventListener('scroll', positionAdminTour, { passive: true });
+    window.addEventListener('scroll', positionAdminTour, { passive: true });
+}
+
+function normalizeGalleryItems(images) {
+    return (Array.isArray(images) ? images : [])
+        .filter(Boolean)
+        .map((item) => {
+            if (typeof item === 'string') {
+                return { id: '', url: item, file: null, name: '' };
+            }
+
+            return {
+                id: item.id ? String(item.id) : '',
+                url: item.url || item.src || '',
+                file: item.file || null,
+                name: item.name || item.file?.name || '',
+            };
+        })
+        .filter((item) => item.url || item.file);
+}
+
+function galleryItems(upload) {
+    if (!upload) {
+        return [];
+    }
+
+    upload._galleryItems = normalizeGalleryItems(upload._galleryItems || []);
+    upload._images = upload._galleryItems.map((item) => item.url).filter(Boolean);
+    return upload._galleryItems;
+}
+
+function updateGalleryPreview(upload, images) {
+    const list = normalizeGalleryItems(images);
+    const image = upload?.querySelector('[data-gallery-last-preview]');
+    const dropzone = upload?.querySelector('.admin-upload__dropzone');
+    const count = upload?.querySelector('[data-gallery-count]');
+    const button = upload?.querySelector('[data-gallery-preview]');
+
+    if (!upload || !image || !dropzone) {
+        return;
+    }
+
+    upload._galleryItems = list;
+    upload._images = list.map((item) => item.url).filter(Boolean);
+    image.src = list[list.length - 1]?.url || image.dataset.defaultSrc || BLANK_IMAGE_SRC;
+    dropzone.classList.toggle('is-empty', list.length === 0);
+    if (count) {
+        count.textContent = list.length ? `В галерее ${list.length} изображ.` : 'Изображения не выбраны';
+    }
+    if (button) {
+        button.hidden = list.length === 0;
+    }
+}
+
+async function loadItem(section, id) {
+    const entity = sectionEntity(section);
+    const response = await fetch(entityUrl(entity, id), { headers: { Accept: 'application/json' } });
+    const payload = await response.json();
+
+    if (!response.ok) {
+        throw new Error(payload.error || 'Не удалось загрузить запись.');
+    }
+
+    return payload.item;
+}
+
+function cleanFormData(form) {
+    const data = new FormData(form);
+
+    form.querySelectorAll('input[type="file"]').forEach((input) => {
+        if (!input.files || input.files.length === 0) {
+            data.delete(input.name);
+        }
+    });
+
+    form.querySelectorAll('[data-gallery-upload]').forEach((upload) => {
+        const input = upload.querySelector('input[type="file"]');
+        const inputName = input?.name || 'gallery_images';
+        const items = galleryItems(upload);
+
+        data.delete(inputName);
+        data.delete('gallery_keep_ids');
+        data.append('gallery_keep_ids', '');
+        items.forEach((item) => {
+            if (item.file) {
+                data.append(inputName, item.file, item.file.name);
+            } else if (item.id) {
+                data.append('gallery_keep_ids', item.id);
+            }
+        });
+    });
+
+    formFields(form).forEach((field) => {
+        if (field.disabled || field.name === '') {
+            data.delete(field.name);
+        }
+    });
+
+    return data;
+}
+
+async function saveForm(section) {
+    const form = getForm(section);
+    const entity = sectionEntity(section);
+    const isEdit = form.dataset.mode === 'edit';
+    const url = isEdit ? entityUrl(entity, form.dataset.id) : entityUrl(entity);
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken(), Accept: 'application/json' },
+        body: cleanFormData(form),
+    });
+    const responseText = await response.text();
+    let payload = {};
+
+    try {
+        payload = responseText ? JSON.parse(responseText) : {};
+    } catch (error) {
+        payload = { error: responseText.trim() };
+    }
+
+    if (!response.ok || payload.ok === false) {
+        const message = payload.errors
+            ? Object.entries(payload.errors).map(([key, value]) => {
+                const errorText = Array.isArray(value) ? value.join(', ') : String(value);
+                return `${key}: ${errorText}`;
+            }).join('\n')
+            : payload.error;
+        const fallback = response.status ? `Не удалось сохранить запись. Код ответа: ${response.status}.` : 'Не удалось сохранить запись.';
+        throw new Error(message || fallback);
+    }
+}
+
+async function syncCdekTracking(section) {
+    const form = getForm(section);
+    const id = form?.dataset.id;
+
+    if (sectionEntity(section) !== 'orders' || form?.dataset.mode !== 'edit' || !id) {
+        throw new Error('Сначала выберите заказ.');
+    }
+
+    const response = await fetch(`${entityUrl('orders', id)}cdek-tracking/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken(), Accept: 'application/json' },
+    });
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok || payload.ok === false) {
+        throw new Error(payload.error || 'Не удалось обновить статус СДЭК.');
+    }
+
+    if (payload.item) {
+        fillForm(section, payload.item);
+        form.dataset.currentItem = JSON.stringify(payload.item);
+    }
+
+    return payload.item;
+}
+
+async function deleteRow(section, id) {
+    const entity = sectionEntity(section);
+    const response = await fetch(entityUrl(entity, id), {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': csrfToken(), Accept: 'application/json' },
+    });
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok || payload.ok === false) {
+        throw new Error(payload.error || 'Не удалось удалить запись.');
+    }
+}
+
+function initUploads(scope = document) {
+    scope.querySelectorAll('[data-image-upload], [data-gallery-upload]').forEach((upload) => {
+        const input = upload.querySelector('input[type="file"]');
+        const dropzone = upload.querySelector('.admin-upload__dropzone');
+        const image = upload.querySelector('img');
+
+        if (image && !image.dataset.defaultSrc) {
+            image.dataset.defaultSrc = image.getAttribute('src') || BLANK_IMAGE_SRC;
+        }
+        if (!input || !dropzone) {
+            return;
+        }
+
+        const applyFiles = (files) => {
+            const fileList = [...files].filter((file) => file.type.startsWith('image/'));
+            if (fileList.length === 0) {
+                return;
+            }
+
+            if (upload.hasAttribute('data-gallery-upload')) {
+                const nextItems = galleryItems(upload).concat(
+                    fileList.map((file) => ({
+                        id: '',
+                        file,
+                        url: URL.createObjectURL(file),
+                        name: file.name,
+                    }))
+                );
+                updateGalleryPreview(upload, nextItems);
+                input.value = '';
+            } else {
+                updateImagePreview(image, URL.createObjectURL(fileList[0]));
+            }
+        };
+
+        dropzone.addEventListener('click', () => input.click());
+        dropzone.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                input.click();
+            }
+        });
+        input.addEventListener('change', () => applyFiles(input.files || []));
+
+        ['dragenter', 'dragover'].forEach((eventName) => {
+            upload.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                dropzone.classList.add('is-dragover');
+            });
+        });
+        upload.addEventListener('dragleave', (event) => {
+            event.preventDefault();
+            if (!upload.contains(event.relatedTarget)) {
+                dropzone.classList.remove('is-dragover');
+            }
+        });
+        upload.addEventListener('drop', (event) => {
+            event.preventDefault();
+            dropzone.classList.remove('is-dragover');
+            applyFiles(event.dataTransfer?.files || []);
+        });
+    });
+}
+
+function initPreviewModal() {
+    const modal = document.querySelector('[data-preview-modal]');
+    const image = modal?.querySelector('.admin-preview-modal__dialog > img');
+    const gallery = modal?.querySelector('[data-preview-gallery]');
+    const title = modal?.querySelector('#admin-preview-title');
+
+    if (!modal || !image || !gallery || !title) {
+        return;
+    }
+
+    const close = () => {
+        modal.hidden = true;
+        gallery.hidden = true;
+        gallery.innerHTML = '';
+        image.hidden = false;
+        image.src = BLANK_IMAGE_SRC;
     };
 
-    section.querySelectorAll('.admin-category-preview').forEach((button) => {
+    document.querySelectorAll('.admin-category-preview').forEach((button) => {
         button.addEventListener('click', () => {
-            const row = button.closest('tr');
-            const categoryName = row?.querySelector('.admin-category-cell span')?.textContent.trim() || 'Изображение категории';
-            const imagePath = row?.dataset.image || button.querySelector('img')?.src || '';
-            const modalGallery = modal.querySelector('[data-preview-gallery]');
-
-            modalTitle.textContent = categoryName;
-            modalImage.src = imagePath;
-            modalImage.hidden = false;
-            if (modalGallery) {
-                modalGallery.hidden = true;
-                modalGallery.innerHTML = '';
-            }
+            title.textContent = button.closest('tr')?.querySelector('td')?.innerText.trim() || 'Превью';
+            image.src = button.dataset.previewUrl || button.querySelector('img')?.src || BLANK_IMAGE_SRC;
+            image.hidden = false;
+            gallery.hidden = true;
+            gallery.innerHTML = '';
             modal.hidden = false;
         });
     });
 
-    closeButtons?.forEach((button) => {
-        button.addEventListener('click', closeModal);
+    const renderGalleryModal = (upload) => {
+        const items = galleryItems(upload);
+        title.textContent = 'Галерея изображений';
+        image.hidden = true;
+        gallery.innerHTML = '';
+        gallery.hidden = false;
+
+        items.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'admin-preview-gallery__item';
+
+            const picture = document.createElement('img');
+            picture.src = item.url || BLANK_IMAGE_SRC;
+            picture.alt = item.name || '';
+
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.textContent = '×';
+            remove.setAttribute('aria-label', 'Удалить изображение');
+            remove.addEventListener('click', () => {
+                const nextItems = galleryItems(upload).filter((_, itemIndex) => itemIndex !== index);
+                updateGalleryPreview(upload, nextItems);
+
+                if (nextItems.length === 0) {
+                    close();
+                    return;
+                }
+
+                renderGalleryModal(upload);
+            });
+
+            card.append(picture, remove);
+            gallery.append(card);
+        });
+    };
+
+    document.querySelectorAll('[data-gallery-preview]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const upload = button.closest('[data-gallery-upload]');
+            if (galleryItems(upload).length === 0) {
+                return;
+            }
+            renderGalleryModal(upload);
+            modal.hidden = false;
+        });
     });
 
+    modal.querySelectorAll('[data-preview-close]').forEach((button) => {
+        button.addEventListener('click', close);
+    });
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && !modal.hidden) {
-            closeModal();
+            close();
         }
     });
 }
 
-document.querySelectorAll('.admin-section').forEach((section) => {
-    const entity = adminEntities[section.id];
+function initAutoFields(section) {
+    const form = getForm(section);
+    const title = form?.elements.namedItem('title');
+    const slug = form?.querySelector('[data-slug-field]');
+    const code = form?.querySelector('[data-code-field]');
 
-    if (!entity) {
+    title?.addEventListener('input', () => {
+        if (slug && form.dataset.mode !== 'edit') {
+            slug.value = createSlug(title.value);
+        }
+        if (code && form.dataset.mode !== 'edit') {
+            code.value = createSlug(title.value).replace(/-/g, '_');
+        }
+    });
+}
+
+function initSection(section) {
+    const entity = sectionEntity(section);
+    const form = getForm(section);
+    const newButton = section.querySelector('[data-new-record]');
+
+    if (!form || !entity) {
         return;
     }
 
-    if (section.id === 'categories') {
-        initCategoryForm(section);
-        initCategoryDrag(section);
-        initCategoryPreview(section);
+    setMode(section, section.dataset.readonlyCreate ? 'edit' : 'create');
+    initAutoFields(section);
+
+    if (entity === 'categories') {
+        form.elements.namedItem('parent')?.addEventListener('change', () => updateCategoryPosition(form, true));
+        updateCategoryPosition(form);
     }
 
-    if (section.id === 'products') {
-        initImageUpload(section.querySelector('[data-product-upload]'));
-        const galleryUpload = section.querySelector('[data-product-gallery-upload]');
-        initGalleryUpload(galleryUpload);
-        updateGalleryPreview(galleryUpload, section.querySelector('tbody tr')?.dataset.gallery || '');
-        initCategoryPreview(section);
-    }
-
-    if (section.id === 'colors') {
-        initImageUpload(section.querySelector('[data-color-upload]'));
-        initCategoryPreview(section);
-    }
-
-    const newButton = section.querySelector('.admin-section__head button');
-    const { form, cancelButton } = getSectionParts(section);
-
-    if (newButton && form) {
-        rememberFormState(form);
-        if (section.id === 'categories') {
-            section._adminSelectedRow = section.querySelector('tbody tr');
+    const editRow = async (row, shouldScroll = true) => {
+        const id = row?.dataset.adminId;
+        if (!id) {
+            return;
         }
-        setFormMode(section, 'edit');
 
-        newButton.textContent = entity.newButton;
-        newButton.addEventListener('click', () => {
-            setFormMode(section, 'create');
+        const item = await loadItem(section, id);
+        section.querySelectorAll('tr').forEach((tableRow) => tableRow.classList.toggle('is-selected', tableRow === row));
+        fillForm(section, item);
+        form.dataset.currentItem = JSON.stringify(item);
+        setMode(section, 'edit', id);
+        if (shouldScroll) {
             form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    };
+
+    newButton?.addEventListener('click', () => {
+        resetForm(section);
+        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    form.querySelector('[data-reset-form]')?.addEventListener('click', () => {
+        if (form.dataset.mode === 'edit' && form.dataset.currentItem) {
+            fillForm(section, JSON.parse(form.dataset.currentItem));
+        } else {
+            resetForm(section);
+        }
+    });
+
+    form.querySelector('[data-sync-cdek]')?.addEventListener('click', async () => {
+        try {
+            await saveForm(section);
+            await syncCdekTracking(section);
+            rememberAdminScroll();
+            window.location.reload();
+        } catch (error) {
+            window.alert(error.message);
+        }
+    });
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (section.dataset.readonlyCreate && form.dataset.mode !== 'edit') {
+            window.alert('Сначала выберите запись в таблице.');
+            return;
+        }
+        try {
+            await saveForm(section);
+            rememberAdminScroll();
+            window.location.reload();
+        } catch (error) {
+            window.alert(error.message);
+        }
+    });
+
+    section.querySelectorAll('[data-edit-row]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const row = button.closest('tr');
+            try {
+                await editRow(row);
+            } catch (error) {
+                window.alert(error.message);
+            }
         });
+    });
+
+    section.querySelectorAll('[data-delete-row]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const row = button.closest('tr');
+            const id = row?.dataset.adminId;
+            const title = row?.querySelector('td')?.innerText.trim() || 'запись';
+
+            if (!id || !window.confirm(`Удалить ${title}?`)) {
+                return;
+            }
+            try {
+                await deleteRow(section, id);
+                rememberAdminScroll();
+                window.location.reload();
+            } catch (error) {
+                window.alert(error.message);
+            }
+        });
+    });
+
+    const firstRow = section.querySelector('tbody tr[data-admin-id]');
+    if (section.dataset.readonlyCreate && firstRow) {
+        editRow(firstRow, false).catch((error) => window.alert(error.message));
     }
+}
 
-    cancelButton?.addEventListener('click', () => {
-        setFormMode(section, 'edit');
-        form?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
+initUploads();
+initPreviewModal();
+initCustomSelects();
+initCategoryFilters();
+initProductFilters();
+initSecondaryTableFilters();
+initAdminNavigation();
+initAdminTour();
+document.querySelectorAll('.admin-section[data-entity]').forEach(initSection);
+restoreAdminScroll();
 
-    section.querySelectorAll('.admin-table__action').forEach((button) => {
-        button.addEventListener('click', () => {
-            setFormMode(section, 'edit');
-            applyRowToForm(section, button.closest('tr'));
-            rememberFormState(form);
-            form?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        });
-    });
+document.addEventListener('click', (event) => {
+    if (!event.target.closest('.admin-custom-select') && !event.target.closest('.admin-custom-select__menu')) {
+        closeCustomSelects();
+    }
 });
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        closeCustomSelects();
+        closeAdminTour();
+    }
+});
+
+window.addEventListener('resize', () => {
+    document.querySelectorAll('.admin-custom-select.is-open').forEach(positionCustomSelectMenu);
+});
+
+document.querySelector('.admin-main')?.addEventListener('scroll', () => {
+    document.querySelectorAll('.admin-custom-select.is-open').forEach(positionCustomSelectMenu);
+}, { passive: true });

@@ -1,0 +1,535 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Админка{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/admin.css?v=53">
+{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block content %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<main class="admin-page" data-admin-api-base="{{ admin_api_base }}">
+    <aside class="admin-sidebar">
+        <a href="index.html" class="admin-logo" aria-label="DiTent">
+            <svg width="26" height="52" viewBox="0 0 26 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M22.603 0.0788496C22.3845 0.120445 22.1154 0.176226 22.0051 0.20276L21.8045 0.251097L21.8627 1.58442C21.8948 2.31772 21.9326 2.93132 21.9469 2.94813C21.9611 2.96486 22.1832 2.93377 22.4405 2.87904C23.0234 2.75504 24.6951 2.75075 25.3323 2.87168C25.595 2.92151 25.8334 2.93911 25.862 2.91083C25.9165 2.8568 26.0376 0.316511 25.9886 0.255213C25.973 0.235685 25.6916 0.16817 25.3632 0.10512C24.6968 -0.0227303 23.2116 -0.0369164 22.603 0.0788496ZM0.652838 3.46496C0.679679 3.59745 0.746251 7.05528 0.800905 11.1491C0.947647 22.1525 0.736981 31.878 0.11743 42.7018L0.0606572 43.693L6.63027 43.6578C13.0065 43.6236 13.2257 43.6169 14.0827 43.4296C15.1037 43.2065 16.2047 42.7138 16.7679 42.2278C17.9532 41.2049 18.5653 39.1548 18.4174 36.702C18.2684 34.2309 17.4339 30.3275 16.2493 26.5612C13.2867 17.1416 7.91687 7.94893 3.44342 4.63865C2.71068 4.09642 1.05201 3.22415 0.753668 3.22415C0.637475 3.22415 0.61496 3.278 0.652838 3.46496ZM23.2652 3.89554C23.0709 3.91437 22.6975 3.97207 22.4352 4.02374L21.9585 4.1177L22.0145 5.31284C22.2735 10.8384 22.3114 34.3424 22.0719 40.7747C22.0139 42.331 21.9806 43.6182 21.9978 43.6352C22.015 43.6521 22.4389 43.7133 22.9399 43.771C23.6406 43.8517 24.0778 43.8523 24.8356 43.7736C25.3774 43.7174 25.8314 43.6606 25.8446 43.6476C25.8578 43.6346 25.83 42.3067 25.7829 40.697C25.5566 32.958 25.5943 9.00133 25.839 5.03385L25.8956 4.11753L25.4192 4.02654C24.8381 3.91559 23.7443 3.84904 23.2652 3.89554ZM4.64147 10.3391C7.14272 13.0786 10.3408 19.1281 12.3146 24.8537C13.7528 29.0256 14.8337 33.8213 14.8312 36.0187C14.8278 38.9088 13.7755 40.0299 10.551 40.5785C9.6362 40.7342 5.73242 40.927 5.1835 40.8436C4.61048 40.7566 4.19568 40.3875 4.00797 39.7978C3.72878 38.9205 3.5982 25.7074 3.77673 16.4033C3.83862 13.1763 3.91252 10.3884 3.94095 10.2078C3.96991 10.0233 4.04267 9.87938 4.10712 9.87938C4.17016 9.87938 4.41058 10.0863 4.64147 10.3391ZM0 47.8405V48.2345H1.05951H2.11903V50.1173V52H2.69293H3.26684V50.1173V48.2345H4.28221H5.29757V47.8405V47.4464H2.64879H0V47.8405ZM6.79855 49.7232V52H9.18246H11.5664V51.5622V51.1243H9.75636H7.94636V50.5551V49.9859H8.96173H9.9771V49.5919V49.1978H8.96173H7.94636V48.7162V48.2345H9.71222H11.4781V47.8405V47.4464H9.13831H6.79855V49.7232ZM13.5971 49.7232V52H14.0806H14.5642L14.5883 50.4997L14.6125 48.9993L16.3783 50.4966C18.1206 51.974 18.1498 51.994 18.5636 51.997L18.983 52V49.7232V47.4464H18.4995H18.0159L17.9918 48.9451L17.9676 50.4437L16.1847 48.9451C14.4455 47.4831 14.392 47.4464 13.9995 47.4464H13.5971V49.7232ZM20.3957 47.8405V48.2345H21.4552H22.5147V50.1173V52H23.0886H23.6625V50.1173V48.2345H24.6779H25.6932V47.8405V47.4464H23.0444H20.3957V47.8405Z" fill="#121212"/>
+            </svg>
+        </a>
+        <nav class="admin-nav" aria-label="Разделы админки">
+            <a href="#categories">Категории</a>
+            <a href="#products">Товары</a>
+            <a href="#fabrics">Ткани</a>
+            <a href="#colors">Цвета</a>
+            <a href="#fasteners">Крепления</a>
+            <a href="#formulas">Формулы</a>
+            <a href="#orders">Заказы</a>
+            <a href="#drawing-orders">Чертежи</a>
+            <a href="#constructor-images">Конструктор</a>
+            <a href="#reviews">Отзывы</a>
+            <a href="#site-settings">Настройки</a>
+        </nav>
+        <a href="index.html" class="admin-back">На сайт</a>
+    </aside>
+
+    <section class="admin-main">
+        <div class="admin-topbar">
+            <div>
+                <p>DiTent CMS</p>
+                <h1>Административная панель</h1>
+            </div>
+            <div class="admin-topbar__actions">
+                <button class="admin-tour-button" type="button" data-admin-tour-start>Обучение</button>
+                <div class="admin-topbar__meta">
+                    <span>Администратор</span>
+                    <b>Данные из базы проекта</b>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-summary">
+            <div class="admin-summary__item"><span>Категории</span><b>{{ summary.categories }}</b></div>
+            <div class="admin-summary__item"><span>Товары</span><b>{{ summary.products }}</b></div>
+            <div class="admin-summary__item"><span>Материалы</span><b>{{ summary.materials }}</b></div>
+            <div class="admin-summary__item"><span>Новые заявки</span><b>{{ summary.new_orders }}</b></div>
+        </div>
+
+        <section class="admin-section" id="categories" data-entity="categories">
+            <div class="admin-section__head">
+                <div><p>Каталог</p><h2>Категории</h2></div>
+                <button type="button" data-new-record>Новая категория</button>
+            </div>
+            <div class="admin-grid">
+                <form class="admin-form" data-admin-form>
+                    <h3>Новая категория</h3>
+                    <label><span>Название</span><input name="title" type="text" required></label>
+                    <label><span>URL</span><input name="slug" type="text" readonly data-slug-field></label>
+                    <label>
+                        <span>Входит в раздел</span>
+                        <select name="parent">
+                            <option value="" data-next-position="{{ next_root_category_position }}" title="Верхний уровень каталога">Верхний уровень каталога</option>
+                            {% for category in root_categories %}<option value="{{ category.id }}" data-next-position="{{ category.next_child_position }}" title="{{ category.title }}">{{ category.title }}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <label><span>Позиция в каталоге</span><input name="position" type="number" min="0" value="{{ next_root_category_position }}"></label>
+                    <label>
+                        <span>Статус</span>
+                        <select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+                    </label>
+                    <div class="admin-upload admin-upload--image admin-form__wide" data-image-upload>
+                        <span>Изображение категории</span>
+                        <input class="admin-upload__input" name="image" type="file" accept="image/*">
+                        <div class="admin-upload__dropzone admin-upload__dropzone--row is-empty" role="button" tabindex="0">
+                            <img src="assets/image/catalog-img-1.png" alt="" data-preview-field="image">
+                            <em>Нет изображения</em>
+                            <span><b>Нажмите на блок, чтобы выбрать файл</b><small>Или перетащите изображение сюда</small></span>
+                        </div>
+                    </div>
+                    <div class="admin-form__actions">
+                        <button type="button" data-reset-form>Сбросить</button>
+                        <button type="submit">Создать категорию</button>
+                    </div>
+                </form>
+                <div class="admin-table admin-table--categories">
+                    <div class="admin-table-filter" data-category-filter>
+                        <label>
+                            <span>Поиск</span>
+                            <input type="search" placeholder="Название, URL или раздел" data-category-search>
+                        </label>
+                        <label>
+                            <span>Группа</span>
+                            <select data-category-group>
+                                <option value="">Все группы</option>
+                                {% for category in categories %}{% if not category.parent %}<option value="{{ category.id }}">{{ category.title }}</option>{% endif %}{% endfor %}
+                            </select>
+                        </label>
+                    </div>
+                    <table>
+                        <thead><tr><th>Порядок</th><th>Категория</th><th>URL</th><th>Входит в раздел</th><th>Товаров</th><th>Статус</th><th>Действие</th></tr></thead>
+                        <tbody>
+                            {% for category in categories %}
+                            <tr data-admin-id="{{ category.id }}" data-category-row data-category-title="{{ category.title|lower }}" data-category-slug="{{ category.slug|lower }}" data-category-parent="{% if category.parent %}{{ category.parent.title|lower }}{% endif %}" data-category-group="{% if category.parent %}{{ category.parent.id }}{% else %}{{ category.id }}{% endif %}">
+                                <td><span class="admin-order">{{ category.display_position_label }}</span></td>
+                                <td><div class="admin-category-cell"><button class="admin-category-preview" type="button" data-preview-url="{{ category.admin_image }}"><img src="{{ category.admin_image }}" alt=""></button><span title="{{ category.title }}">{{ category.title }}</span></div></td>
+                                <td title="{{ category.slug }}">{{ category.slug }}</td>
+                                <td title="{% if category.parent %}{{ category.parent.title }}{% endif %}">{% if category.parent %}{{ category.parent.title }}{% else %}-{% endif %}</td>
+                                <td>{{ category.products_count }}</td>
+                                <td><span class="admin-status{% if category.status == 'active' %} admin-status--success{% endif %}">{{ category.get_status_display }}</span></td>
+                                <td><div class="admin-table__actions"><button type="button" class="admin-table__action" data-edit-row>Изменить</button><button type="button" class="admin-table__delete" data-delete-row>Удалить</button></div></td>
+                            </tr>
+                            {% empty %}<tr><td colspan="7">Категории пока не добавлены</td></tr>{% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="admin-table-pagination" data-category-pagination></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" id="products" data-entity="products">
+            <div class="admin-section__head">
+                <div><p>Каталог</p><h2>Товары</h2></div>
+                <button type="button" data-new-record>Новый товар</button>
+            </div>
+            <div class="admin-grid">
+                <form class="admin-form" data-admin-form>
+                    <h3>Новый товар</h3>
+                    <label><span>Название товара</span><input name="title" type="text" required></label>
+                    <label><span>Категория</span><select name="category" required>{% for category in product_categories %}<option value="{{ category.id }}">{{ category.title }}</option>{% endfor %}</select></label>
+                    <label><span>Артикул</span><input name="sku" type="text" required></label>
+                    <label><span>Цена, руб.</span><input name="price" type="number" min="0" step="0.01" required></label>
+                    <label><span>Остаток</span><input name="stock" type="number" min="0" value="0"></label>
+                    <label><span>Статус</span><select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label><span>Ширина, см</span><input name="width_cm" type="number" min="10" max="500"></label>
+                    <label><span>Глубина, см</span><input name="depth_cm" type="number" min="10" max="500"></label>
+                    <label><span>Высота, см</span><input name="height_cm" type="number" min="10" max="500"></label>
+                    <label><span>Ткань</span><select name="fabric"><option value="">Не выбрана</option>{% for fabric in fabrics %}<option value="{{ fabric.id }}">{{ fabric.title }}</option>{% endfor %}</select></label>
+                    <label><span>Цвет</span><select name="color"><option value="">Не выбран</option>{% for color in colors %}<option value="{{ color.id }}">{{ color.title }} / {{ color.fabric.title }}</option>{% endfor %}</select></label>
+                    <label><span>Крепление</span><select name="fastener"><option value="">Не выбрано</option>{% for fastener in fasteners %}<option value="{{ fastener.id }}">{{ fastener.title }}</option>{% endfor %}</select></label>
+                    <label class="admin-form__wide"><span>Назначение</span><textarea name="purpose"></textarea></label>
+                    <label class="admin-form__wide"><span>Описание</span><textarea name="description"></textarea></label>
+                    <div class="admin-upload admin-upload--image admin-form__wide" data-image-upload>
+                        <span>Главное изображение товара</span>
+                        <input class="admin-upload__input" name="main_image" type="file" accept="image/*">
+                        <div class="admin-upload__dropzone admin-upload__dropzone--row is-empty" role="button" tabindex="0">
+                            <img src="assets/image/card-img-1.png" alt="" data-preview-field="main_image">
+                            <em>Нет изображения</em>
+                            <span><b>Нажмите на блок, чтобы выбрать файл</b><small>Или перетащите изображение сюда</small></span>
+                        </div>
+                    </div>
+                    <div class="admin-upload admin-upload--image admin-form__wide" data-gallery-upload>
+                        <span>Галерея изображений</span>
+                        <input class="admin-upload__input" name="gallery_images" type="file" accept="image/*" multiple>
+                        <div class="admin-upload__dropzone admin-upload__dropzone--gallery is-empty" role="button" tabindex="0">
+                            <img src="assets/image/card-img-1.png" alt="" data-gallery-last-preview>
+                            <em>Нет изображений</em>
+                            <span><b>Нажмите на блок, чтобы выбрать изображения</b><small>Можно выбрать несколько файлов или перетащить их сюда</small></span>
+                        </div>
+                        <div class="admin-gallery-summary"><span data-gallery-count>Изображения не выбраны</span><button type="button" data-gallery-preview hidden>Посмотреть</button></div>
+                    </div>
+                    <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="submit">Создать товар</button></div>
+                </form>
+                <div class="admin-table admin-table--products">
+                    <div class="admin-table-filter" data-product-filter>
+                        <label>
+                            <span>Поиск</span>
+                            <input type="search" placeholder="Название, артикул или категория" data-table-search>
+                        </label>
+                        <label>
+                            <span>Категория</span>
+                            <select data-table-group>
+                                <option value="">Все категории</option>
+                                {% for category in product_categories %}<option value="{{ category.id }}">{{ category.title }}</option>{% endfor %}
+                            </select>
+                        </label>
+                    </div>
+                    <table>
+                        <thead><tr><th>Товар</th><th>Категория</th><th>Артикул</th><th>Цена</th><th>Остаток</th><th>Статус</th><th>Действие</th></tr></thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr data-admin-id="{{ product.id }}" data-product-row data-product-title="{{ product.title|lower }}" data-product-sku="{{ product.sku|lower }}" data-product-category="{{ product.category.title|lower }}" data-product-category-id="{{ product.category.id }}">
+                                <td><div class="admin-category-cell"><button class="admin-category-preview" type="button" data-preview-url="{% if product.main_image %}{{ product.main_image.url }}{% else %}assets/image/card-img-1.png{% endif %}"><img src="{% if product.main_image %}{{ product.main_image.url }}{% else %}assets/image/card-img-1.png{% endif %}" alt=""></button><span>{{ product.title }}</span></div></td>
+                                <td>{{ product.category.title }}</td><td>{{ product.sku }}</td><td>{{ product.price }} ₽</td><td>{{ product.stock }}</td>
+                                <td><span class="admin-status{% if product.status == 'active' %} admin-status--success{% endif %}">{{ product.get_status_display }}</span></td>
+                                <td><div class="admin-table__actions"><button type="button" class="admin-table__action" data-edit-row>Изменить</button><button type="button" class="admin-table__delete" data-delete-row>Удалить</button></div></td>
+                            </tr>
+                            {% empty %}<tr><td colspan="7">Товары пока не добавлены</td></tr>{% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="admin-table-pagination" data-product-pagination></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" id="fabrics" data-entity="fabrics">
+            <div class="admin-section__head"><div><p>Калькулятор</p><h2>Ткани</h2></div><button type="button" data-new-record>Новая ткань</button></div>
+            <div class="admin-grid">
+                <form class="admin-form" data-admin-form>
+                    <h3>Новая ткань</h3>
+                    <label><span>Название</span><input name="title" type="text" required></label>
+                    <label><span>Плотность</span><input name="density" type="text"></label>
+                    <label><span>Цена за м², руб.</span><input name="price_per_square_meter" type="number" min="0" step="0.01" required></label>
+                    <label><span>Ширина полотна, см</span><input name="roll_width_cm" type="number" min="0"></label>
+                    <label><span>Тип свойства</span><input name="property_type" type="text"></label>
+                    <label><span>УФ-стойкость</span><input name="uv_resistance" type="number" min="1" max="5"></label>
+                    <label><span>Долговечность</span><input name="durability" type="number" min="1" max="5"></label>
+                    <label><span>Прочность</span><input name="strength" type="number" min="1" max="5"></label>
+                    <label><span>Уход</span><input name="care" type="number" min="1" max="5"></label>
+                    <label><span>Статус</span><select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label class="admin-form__wide"><span>Назначение</span><textarea name="purpose"></textarea></label>
+                    <label class="admin-form__wide"><span>Описание</span><textarea name="description"></textarea></label>
+                    <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="submit">Создать ткань</button></div>
+                </form>
+                <div class="admin-table admin-table--fabrics">
+                    <div class="admin-table-filter" data-fabric-filter>
+                        <label><span>Поиск</span><input type="search" placeholder="Название, плотность или свойство" data-table-search></label>
+                        <label><span>Статус</span><select data-table-group><option value="">Все статусы</option>{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    </div>
+                    <table><thead><tr><th>Ткань</th><th>Цена</th><th>Свойство</th><th>Характеристики</th><th>Статус</th><th>Действие</th></tr></thead><tbody>
+                        {% for fabric in fabrics %}
+                        <tr data-admin-id="{{ fabric.id }}" data-fabric-row data-search="{{ fabric.title|lower }} {{ fabric.density|lower }} {{ fabric.property_type|lower }}" data-group="{{ fabric.status }}">
+                            <td><b>{{ fabric.title }}</b><span>{{ fabric.density }}{% if fabric.roll_width_cm %} · {{ fabric.roll_width_cm }} см{% endif %}</span></td>
+                            <td>{{ fabric.price_per_square_meter }} ₽/м²</td><td>{{ fabric.property_type|default:"-" }}</td>
+                            <td><div class="admin-fabric-badges"><span class="admin-status">УФ {{ fabric.uv_resistance|default:"-" }}/5</span><span class="admin-status">Долг. {{ fabric.durability|default:"-" }}/5</span><span class="admin-status">Прочн. {{ fabric.strength|default:"-" }}/5</span><span class="admin-status">Уход {{ fabric.care|default:"-" }}/5</span></div></td>
+                            <td><span class="admin-status{% if fabric.status == 'active' %} admin-status--success{% endif %}">{{ fabric.get_status_display }}</span></td>
+                            <td><div class="admin-table__actions"><button type="button" class="admin-table__action" data-edit-row>Изменить</button><button type="button" class="admin-table__delete" data-delete-row>Удалить</button></div></td>
+                        </tr>
+                        {% empty %}<tr><td colspan="6">Ткани пока не добавлены</td></tr>{% endfor %}
+                    </tbody></table>
+                    <div class="admin-table-pagination" data-fabric-pagination></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" id="colors" data-entity="colors">
+            <div class="admin-section__head"><div><p>Калькулятор</p><h2>Цвета</h2></div><button type="button" data-new-record>Новый цвет</button></div>
+            <div class="admin-grid">
+                <form class="admin-form" data-admin-form>
+                    <h3>Новый цвет</h3>
+                    <label><span>Название цвета</span><input name="title" type="text" required></label>
+                    <label><span>Материал</span><select name="fabric" required>{% for fabric in fabrics %}<option value="{{ fabric.id }}">{{ fabric.title }}</option>{% endfor %}</select></label>
+                    <label><span>Статус</span><select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <div class="admin-upload admin-upload--image admin-form__wide" data-image-upload>
+                        <span>Изображение цвета</span><input class="admin-upload__input" name="image" type="file" accept="image/*">
+                        <div class="admin-upload__dropzone admin-upload__dropzone--row is-empty" role="button" tabindex="0"><img src="assets/image/material-img-1.png" alt="" data-preview-field="image"><em>Нет изображения</em><span><b>Нажмите на блок, чтобы выбрать файл</b><small>Или перетащите изображение сюда</small></span></div>
+                    </div>
+                    <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="submit">Создать цвет</button></div>
+                </form>
+                <div class="admin-table admin-table--colors">
+                    <div class="admin-table-filter" data-color-filter>
+                        <label><span>Поиск</span><input type="search" placeholder="Название цвета или материал" data-table-search></label>
+                        <label><span>Материал</span><select data-table-group><option value="">Все материалы</option>{% for fabric in fabrics %}<option value="{{ fabric.id }}">{{ fabric.title }}</option>{% endfor %}</select></label>
+                    </div>
+                    <table><thead><tr><th>Цвет</th><th>Материал</th><th>Статус</th><th>Действие</th></tr></thead><tbody>
+                        {% for color in colors %}
+                        <tr data-admin-id="{{ color.id }}" data-color-row data-search="{{ color.title|lower }} {{ color.fabric.title|lower }}" data-group="{{ color.fabric.id }}">
+                            <td><div class="admin-category-cell"><button class="admin-category-preview admin-category-preview--swatch" type="button" data-preview-url="{% if color.image %}{{ color.image.url }}{% else %}assets/image/material-img-1.png{% endif %}"><img src="{% if color.image %}{{ color.image.url }}{% else %}assets/image/material-img-1.png{% endif %}" alt=""></button><span>{{ color.title }}</span></div></td>
+                            <td>{{ color.fabric.title }}</td><td><span class="admin-status{% if color.status == 'active' %} admin-status--success{% endif %}">{{ color.get_status_display }}</span></td>
+                            <td><div class="admin-table__actions"><button type="button" class="admin-table__action" data-edit-row>Изменить</button><button type="button" class="admin-table__delete" data-delete-row>Удалить</button></div></td>
+                        </tr>
+                        {% empty %}<tr><td colspan="4">Цвета пока не добавлены</td></tr>{% endfor %}
+                    </tbody></table>
+                    <div class="admin-table-pagination" data-color-pagination></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" id="fasteners" data-entity="fasteners">
+            <div class="admin-section__head"><div><p>Калькулятор</p><h2>Крепления</h2></div><button type="button" data-new-record>Новое крепление</button></div>
+            <div class="admin-grid">
+                <form class="admin-form" data-admin-form>
+                    <h3>Новое крепление</h3>
+                    <label><span>Название</span><input name="title" type="text" required></label>
+                    <label><span>Тип цены</span><select name="calculation_type">{% for value, label in fastener_calculation_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label><span>Цена за комплект, руб.</span><input name="price" type="number" min="0" step="0.01"></label>
+                    <label><span>Совместимость</span><input name="compatibility" type="text"></label>
+                    <label><span>Статус</span><select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <div class="admin-upload admin-upload--image admin-form__wide" data-image-upload>
+                        <span>Изображение крепления</span><input class="admin-upload__input" name="image" type="file" accept="image/*">
+                        <div class="admin-upload__dropzone admin-upload__dropzone--row is-empty" role="button" tabindex="0"><img src="assets/image/filter-img.png" alt="" data-preview-field="image"><em>Нет изображения</em><span><b>Нажмите на блок, чтобы выбрать файл</b><small>Или перетащите изображение сюда</small></span></div>
+                    </div>
+                    <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="submit">Создать крепление</button></div>
+                </form>
+                <div class="admin-table admin-table--fasteners">
+                    <div class="admin-table-filter" data-fastener-filter>
+                        <label><span>Поиск</span><input type="search" placeholder="Название, тип цены или совместимость" data-table-search></label>
+                        <label><span>Статус</span><select data-table-group><option value="">Все статусы</option>{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    </div>
+                    <table><thead><tr><th>Крепление</th><th>Тип цены</th><th>Цена</th><th>Совместимость</th><th>Статус</th><th>Действие</th></tr></thead><tbody>
+                        {% for fastener in fasteners %}
+                        <tr data-admin-id="{{ fastener.id }}" data-fastener-row data-search="{{ fastener.title|lower }} {{ fastener.get_calculation_type_display|lower }} {{ fastener.compatibility|lower }}" data-group="{{ fastener.status }}">
+                            <td><div class="admin-category-cell"><button class="admin-category-preview" type="button" data-preview-url="{% if fastener.image %}{{ fastener.image.url }}{% else %}assets/image/filter-img.png{% endif %}"><img src="{% if fastener.image %}{{ fastener.image.url }}{% else %}assets/image/filter-img.png{% endif %}" alt=""></button><span>{{ fastener.title }}</span></div></td>
+                            <td>{{ fastener.get_calculation_type_display }}</td><td>{{ fastener.price }} ₽</td><td>{{ fastener.compatibility|default:"-" }}</td><td><span class="admin-status{% if fastener.status == 'active' %} admin-status--success{% endif %}">{{ fastener.get_status_display }}</span></td>
+                            <td><div class="admin-table__actions"><button type="button" class="admin-table__action" data-edit-row>Изменить</button><button type="button" class="admin-table__delete" data-delete-row>Удалить</button></div></td>
+                        </tr>
+                        {% empty %}<tr><td colspan="6">Крепления пока не добавлены</td></tr>{% endfor %}
+                    </tbody></table>
+                    <div class="admin-table-pagination" data-fastener-pagination></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" id="formulas" data-entity="formulas">
+            <div class="admin-section__head"><div><p>Калькулятор</p><h2>Формулы</h2></div><button type="button" data-new-record>Новая формула</button></div>
+            <div class="admin-grid">
+                <form class="admin-form" data-admin-form>
+                    <h3>Новая формула</h3>
+                    <label><span>Название</span><input name="title" type="text" required></label>
+                    <label><span>Форма чехла</span><select name="shape">{% for value, label in cover_shapes %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label><span>Код формулы</span><input name="code" type="text" required data-code-field></label>
+                    <label><span>Коэффициент K</span><input name="coefficient" type="number" min="0" step="0.001" value="1"></label>
+                    <label><span>Мин. стоимость, руб.</span><input name="minimum_price" type="number" min="0" step="0.01" value="1000"></label>
+                    <label><span>Стачной шов, руб./см</span><input name="seam_price_cm" type="number" min="0" step="0.01" value="0"></label>
+                    <label><span>Отстрочный шов, руб./см</span><input name="topstitch_price_cm" type="number" min="0" step="0.01" value="0"></label>
+                    <label><span>Окантовочный шов, руб./см</span><input name="edging_price_cm" type="number" min="0" step="0.01" value="0"></label>
+                    <label><span>Мин. размер, см</span><input name="min_size_cm" type="number" min="10" max="500" value="10"></label>
+                    <label><span>Макс. размер, см</span><input name="max_size_cm" type="number" min="10" max="500" value="500"></label>
+                    <label><span>Статус</span><select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <input type="hidden" name="parameters" value="{}">
+                    <label class="admin-form__wide"><span>Выражение / параметры</span><textarea name="expression"></textarea></label>
+                    <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="submit">Создать формулу</button></div>
+                </form>
+                <div class="admin-table admin-table--formulas">
+                    <div class="admin-table-filter" data-formula-filter>
+                        <label><span>Поиск</span><input type="search" placeholder="Название, код или форма" data-table-search></label>
+                        <label><span>Форма</span><select data-table-group><option value="">Все формы</option>{% for value, label in cover_shapes %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    </div>
+                    <table><thead><tr><th>Формула</th><th>Форма</th><th>K</th><th>Швы</th><th>Мин. / диапазон</th><th>Статус</th><th>Действие</th></tr></thead><tbody>
+                        {% for formula in formulas %}
+                        <tr data-admin-id="{{ formula.id }}" data-formula-row data-search="{{ formula.title|lower }} {{ formula.code|lower }} {{ formula.get_shape_display|lower }}" data-group="{{ formula.shape }}"><td><strong>{{ formula.title }}</strong><small>{{ formula.code }}</small></td><td>{{ formula.get_shape_display }}</td><td>{{ formula.coefficient }}</td><td><span>сш {{ formula.seam_price_cm }}</span><span>ош {{ formula.topstitch_price_cm }}</span><span>ок {{ formula.edging_price_cm }}</span></td><td><strong>{{ formula.minimum_price }} ₽</strong><small>{{ formula.min_size_cm }}-{{ formula.max_size_cm }} см</small></td><td><span class="admin-status{% if formula.status == 'active' %} admin-status--success{% endif %}">{{ formula.get_status_display }}</span></td><td><div class="admin-table__actions"><button type="button" class="admin-table__action" data-edit-row>Изменить</button><button type="button" class="admin-table__delete" data-delete-row>Удалить</button></div></td></tr>
+                        {% empty %}<tr><td colspan="7">Формулы пока не добавлены</td></tr>{% endfor %}
+                    </tbody></table>
+                    <div class="admin-table-pagination" data-formula-pagination></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" id="orders" data-entity="orders" data-readonly-create="true">
+            <div class="admin-section__head"><div><p>Продажи</p><h2>Заказы</h2></div></div>
+            <div class="admin-grid admin-grid--orders">
+                <form class="admin-form admin-form--order" data-admin-form>
+                    <h3>Карточка заказа</h3>
+                    <label><span>Номер</span><input name="number" type="text" readonly></label>
+                    <label><span>Статус заказа</span><select name="status">{% for value, label in order_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label><span>Статус оплаты</span><select name="payment_status">{% for value, label in payment_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label><span>Тип клиента</span><select name="customer_type">{% for value, label in customer_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label><span>Имя / компания</span><input name="customer_name" type="text"></label>
+                    <label><span>Телефон</span><input name="phone" type="tel"></label>
+                    <label><span>Email</span><input name="email" type="email"></label>
+                    <label><span>Способ доставки</span><input name="delivery_method" type="text"></label>
+                    <label><span>Город</span><input name="delivery_city" type="text"></label>
+                    <label><span>Трек-номер</span><input name="track_number" type="text"></label>
+                    <label><span>UUID СДЭК</span><input name="cdek_order_uuid" type="text" placeholder="Можно оставить пустым"></label>
+                    <label><span>Статус СДЭК</span><input name="cdek_status_name" type="text" readonly placeholder="Обновится по трек-номеру"></label>
+                    <label><span>Код СДЭК</span><input name="cdek_status_code" type="text" readonly></label>
+                    <label><span>Проверка СДЭК</span><input name="cdek_tracking_checked_at" type="text" readonly></label>
+                    <input name="cdek_status_updated_at" type="hidden">
+                    <label><span>Способ оплаты</span><select name="payment_method"><option value="">Не выбран</option>{% for value, label in payment_methods %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label class="admin-form__wide"><span>Ссылка на оплату</span><input name="payment_form_url" type="url" readonly placeholder="Появится после перевода заказа в статус Ожидает оплаты"></label>
+                    <label><span>Товары, руб.</span><input name="items_total" type="number" step="0.01"></label>
+                    <label><span>Доставка, руб.</span><input name="delivery_total" type="number" step="0.01"></label>
+                    <label><span>Скидка, руб.</span><input name="discount_total" type="number" step="0.01"></label>
+                    <label><span>НДС, руб.</span><input name="vat_total" type="number" step="0.01"></label>
+                    <label><span>Итого, руб.</span><input name="total" type="number" step="0.01"></label>
+                    <label class="admin-form__wide"><span>Адрес доставки</span><textarea name="delivery_address"></textarea></label>
+                    <label class="admin-form__wide"><span>Комментарий клиента</span><textarea name="client_comment"></textarea></label>
+                    <label class="admin-form__wide"><span>Комментарий менеджера</span><textarea name="manager_comment"></textarea></label>
+                    <label class="admin-form__wide"><span>Состав заказа</span><div class="admin-order-items" data-order-items></div></label>
+                    <label class="admin-form__wide admin-checkbox"><input name="return_terms_accepted" type="checkbox"> <span>Условия возврата подтверждены</span></label>
+                    <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="button" data-sync-cdek>Обновить СДЭК</button><button type="submit">Обновить заказ</button></div>
+                </form>
+                <div class="admin-table admin-table--orders admin-table--sales-orders">
+                    <div class="admin-table-filter" data-order-filter>
+                        <label><span>Поиск</span><input type="search" placeholder="Номер, клиент, email или город" data-table-search></label>
+                        <label><span>Статус</span><select data-table-group><option value="">Все статусы</option>{% for value, label in order_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    </div>
+                    <table><thead><tr><th>Заказ</th><th>Клиент</th><th>Итого</th><th>Статус</th><th>Оплата</th><th>СДЭК</th><th>Дата</th><th>Действие</th></tr></thead><tbody>
+                        {% for order in orders %}
+                        <tr data-admin-id="{{ order.id }}" data-order-row data-search="{{ order.number|lower }} {{ order.customer_name|lower }} {{ order.email|lower }} {{ order.delivery_city|lower }} {{ order.track_number|lower }}" data-group="{{ order.status }}"><td>{{ order.number }}</td><td>{{ order.customer_name }}</td><td>{{ order.total }} ₽</td><td><span class="admin-status admin-status--process">{{ order.admin_status_label }}</span></td><td><span class="admin-status{% if order.payment_status == 'paid' %} admin-status--success{% endif %}">{{ order.admin_payment_status_label }}</span></td><td><span class="admin-status{% if order.cdek_status_code == 'DELIVERED' %} admin-status--success{% endif %}">{{ order.cdek_status_name|default:order.track_number|default:'-' }}</span></td><td>{{ order.created_at|date:"d.m.Y" }}</td><td><button type="button" class="admin-table__action" data-edit-row>Открыть</button></td></tr>
+                        {% empty %}<tr><td colspan="8">Заказы пока не созданы</td></tr>{% endfor %}
+                    </tbody></table>
+                    <div class="admin-table-pagination" data-order-pagination></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" id="drawing-orders" data-entity="drawing-orders" data-readonly-create="true">
+            <div class="admin-section__head"><div><p>Продажи</p><h2>Заявки по чертежу</h2></div></div>
+            <div class="admin-grid admin-grid--orders">
+                <form class="admin-form admin-form--order" data-admin-form>
+                    <h3>Заявка по чертежу</h3>
+                    <label><span>Статус</span><select name="status">{% for value, label in order_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label><span>Имя / компания</span><input name="customer_name" type="text"></label>
+                    <label><span>Телефон</span><input name="phone" type="tel"></label>
+                    <label><span>Email</span><input name="email" type="email"></label>
+                    <label class="admin-form__wide"><span>Комментарий клиента</span><textarea name="comment"></textarea></label>
+                    <label class="admin-form__wide"><span>Комментарий менеджера</span><textarea name="manager_comment"></textarea></label>
+                    <label class="admin-form__wide"><span>Файлы</span><div class="admin-order-items" data-drawing-files></div></label>
+                    <label class="admin-form__wide admin-checkbox"><input name="return_terms_accepted" type="checkbox"> <span>Согласие подтверждено</span></label>
+                    <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="submit">Обновить заявку</button></div>
+                </form>
+                <div class="admin-table admin-table--orders admin-table--drawing-orders">
+                    <div class="admin-table-filter" data-drawing-order-filter>
+                        <label><span>Поиск</span><input type="search" placeholder="Номер, клиент или email" data-table-search></label>
+                        <label><span>Статус</span><select data-table-group><option value="">Все статусы</option>{% for value, label in order_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    </div>
+                    <table><thead><tr><th>Заявка</th><th>Клиент</th><th>Email</th><th>Файлов</th><th>Статус</th><th>Дата</th><th>Действие</th></tr></thead><tbody>
+                        {% for order in drawing_orders %}
+                        <tr data-admin-id="{{ order.id }}" data-drawing-order-row data-search="dr-{{ order.id|stringformat:"06d" }} {{ order.customer_name|lower }} {{ order.email|lower }}" data-group="{{ order.status }}"><td>DR-{{ order.id|stringformat:"06d" }}</td><td>{{ order.customer_name }}</td><td>{{ order.email }}</td><td>{{ order.files.count }}</td><td><span class="admin-status admin-status--process">{{ order.get_status_display }}</span></td><td>{{ order.created_at|date:"d.m.Y" }}</td><td><button type="button" class="admin-table__action" data-edit-row>Открыть</button></td></tr>
+                        {% empty %}<tr><td colspan="7">Заявки по чертежу пока не созданы</td></tr>{% endfor %}
+                    </tbody></table>
+                    <div class="admin-table-pagination" data-drawing-order-pagination></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" id="constructor-images" data-entity="constructor-images">
+            <div class="admin-section__head"><div><p>Контент</p><h2>Изображения конструктора</h2></div><button type="button" data-new-record>Новое изображение</button></div>
+            <div class="admin-grid">
+                <form class="admin-form" data-admin-form>
+                    <h3>Новое изображение конструктора</h3>
+                    <label><span>Название</span><input name="title" type="text" required></label>
+                    <label><span>Порядок</span><input name="position" type="number" min="0" value="0"></label>
+                    <label><span>Статус</span><select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <div class="admin-upload admin-upload--image admin-form__wide" data-image-upload><span>Изображение конструктора</span><input class="admin-upload__input" name="image" type="file" accept="image/*"><div class="admin-upload__dropzone admin-upload__dropzone--row is-empty" role="button" tabindex="0"><img src="assets/image/img-2.png" alt="" data-preview-field="image"><em>Нет изображения</em><span><b>Нажмите на блок, чтобы выбрать файл</b><small>Или перетащите изображение сюда</small></span></div></div>
+                    <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="submit">Создать изображение</button></div>
+                </form>
+                <div class="admin-table">
+                    <div class="admin-table-filter" data-constructor-image-filter>
+                        <label><span>Поиск</span><input type="search" placeholder="Название изображения" data-table-search></label>
+                        <label><span>Статус</span><select data-table-group><option value="">Все статусы</option>{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    </div>
+                    <table><thead><tr><th>Изображение</th><th>Порядок</th><th>Статус</th><th>Действие</th></tr></thead><tbody>
+                        {% for item in constructor_images %}
+                        <tr data-admin-id="{{ item.id }}" data-constructor-image-row data-search="{{ item.title|lower }}" data-group="{{ item.status }}"><td><div class="admin-category-cell"><button class="admin-category-preview" type="button" data-preview-url="{{ item.image.url }}"><img src="{{ item.image.url }}" alt=""></button><span>{{ item.title }}</span></div></td><td>{{ item.position }}</td><td><span class="admin-status{% if item.status == 'active' %} admin-status--success{% endif %}">{{ item.get_status_display }}</span></td><td><div class="admin-table__actions"><button type="button" class="admin-table__action" data-edit-row>Изменить</button><button type="button" class="admin-table__delete" data-delete-row>Удалить</button></div></td></tr>
+                        {% empty %}<tr><td colspan="4">Изображения конструктора пока не добавлены</td></tr>{% endfor %}
+                    </tbody></table>
+                    <div class="admin-table-pagination" data-constructor-image-pagination></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" id="reviews" data-entity="reviews">
+            <div class="admin-section__head"><div><p>Контент</p><h2>Отзывы</h2></div><button type="button" data-new-record>Новый отзыв</button></div>
+            <div class="admin-grid">
+                <form class="admin-form" data-admin-form>
+                    <h3>Новый отзыв</h3>
+                    <label><span>Заголовок</span><input name="title" type="text" required></label>
+                    <label><span>Автор</span><input name="author_name" type="text" required></label>
+                    <label><span>Город / метка</span><input name="location" type="text"></label>
+                    <label><span>Подпись на изображении</span><input name="image_caption" type="text"></label>
+                    <label><span>Оценка</span><input name="rating" type="number" min="1" max="5" value="5"></label>
+                    <label><span>Статус</span><select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label class="admin-form__wide"><span>Текст отзыва</span><textarea name="text" required></textarea></label>
+                    <div class="admin-upload admin-upload--image admin-form__wide" data-image-upload><span>Изображение для блока галереи</span><input class="admin-upload__input" name="image" type="file" accept="image/*"><div class="admin-upload__dropzone admin-upload__dropzone--row is-empty" role="button" tabindex="0"><img src="assets/image/review-img.png" alt="" data-preview-field="image"><em>Нет изображения</em><span><b>Нажмите на блок, чтобы выбрать файл</b><small>Или перетащите изображение сюда</small></span></div></div>
+                    <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="submit">Создать отзыв</button></div>
+                </form>
+                <div class="admin-table">
+                    <div class="admin-table-filter" data-review-filter>
+                        <label><span>Поиск</span><input type="search" placeholder="Заголовок, автор или текст отзыва" data-table-search></label>
+                        <label><span>Статус</span><select data-table-group><option value="">Все статусы</option>{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    </div>
+                    <table><thead><tr><th>Отзыв</th><th>Автор</th><th>Оценка</th><th>Статус</th><th>Действие</th></tr></thead><tbody>
+                        {% for review in reviews %}
+                        <tr data-admin-id="{{ review.id }}" data-review-row data-search="{{ review.title|lower }} {{ review.author_name|lower }} {{ review.text|lower }}" data-group="{{ review.status }}"><td>{{ review.title }}</td><td>{{ review.author_name }}</td><td>{{ review.rating }}/5</td><td><span class="admin-status{% if review.status == 'active' %} admin-status--success{% endif %}">{{ review.get_status_display }}</span></td><td><div class="admin-table__actions"><button type="button" class="admin-table__action" data-edit-row>Изменить</button><button type="button" class="admin-table__delete" data-delete-row>Удалить</button></div></td></tr>
+                        {% empty %}<tr><td colspan="5">Отзывы пока не добавлены</td></tr>{% endfor %}
+                    </tbody></table>
+                    <div class="admin-table-pagination" data-review-pagination></div>
+                </div>
+            </div>
+        </section>
+        <section class="admin-section" id="site-settings" data-entity="site-settings" data-readonly-create="true">
+            <div class="admin-section__head"><div><p>Сайт</p><h2>Контакты и footer</h2></div></div>
+            <div class="admin-grid">
+                <form class="admin-form" data-admin-form>
+                    <h3>Настройки сайта</h3>
+                    <label class="admin-form__wide admin-form__manager-emails">
+                        <span>Email менеджеров для уведомлений о заказах</span>
+                        <textarea name="manager_emails" rows="4" placeholder="manager@example.com&#10;sales@example.com">{{ site_settings.manager_emails }}</textarea>
+                        <small>На эти адреса будут уходить уведомления о новых заказах, заявках по чертежу и оплатах. Можно указать несколько адресов: каждый с новой строки, через запятую или точку с запятой.</small>
+                    </label>
+                    <label><span>Организация</span><input name="company_name" type="text" required></label>
+                    <label><span>ИНН</span><input name="inn" type="text"></label>
+                    <label><span>КПП</span><input name="kpp" type="text"></label>
+                    <label><span>ОГРН</span><input name="ogrn" type="text"></label>
+                    <label><span>Дата регистрации</span><input name="registration_date" type="text"></label>
+                    <label><span>Руководитель</span><input name="director" type="text"></label>
+                    <label><span>Телефон</span><input name="phone" type="text"></label>
+                    <label><span>Телефон для ссылки</span><input name="phone_href" type="text"></label>
+                    <label><span>Email</span><input name="email" type="email"></label>
+                    <label><span>Адрес</span><input name="address" type="text"></label>
+                    <label class="admin-form__wide"><span>WhatsApp</span><input name="whatsapp_url" type="url"></label>
+                    <label class="admin-form__wide"><span>Telegram</span><input name="telegram_url" type="url"></label>
+                    <label class="admin-form__wide"><span>VK</span><input name="vk_url" type="url"></label>
+                    <div class="admin-upload admin-upload--image admin-form__wide" data-image-upload><span>Карта</span><input class="admin-upload__input" name="map_image" type="file" accept="image/*"><div class="admin-upload__dropzone admin-upload__dropzone--row is-empty" role="button" tabindex="0"><img src="{% if site_settings.map_image %}{{ site_settings.map_image.url }}{% else %}assets/image/map.png{% endif %}" alt="" data-preview-field="map_image"><em>Нет изображения</em><span><b>Нажмите на блок, чтобы выбрать файл</b><small>Или перетащите изображение сюда</small></span></div></div>
+                    <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="submit">Сохранить настройки</button></div>
+                </form>
+                <div class="admin-table">
+                    <table><thead><tr><th>Организация</th><th>Телефон</th><th>Email</th><th>Email менеджеров</th><th>Адрес</th><th>Действие</th></tr></thead><tbody>
+                        <tr data-admin-id="{{ site_settings.id }}"><td>{{ site_settings.company_name }}</td><td>{{ site_settings.phone }}</td><td>{{ site_settings.email }}</td><td>{{ site_settings.manager_emails|default:"-"|linebreaksbr }}</td><td>{{ site_settings.address }}</td><td><button type="button" class="admin-table__action" data-edit-row>Изменить</button></td></tr>
+                    </tbody></table>
+                </div>
+            </div>
+        </section>
+    </section>
+</main>
+
+<div class="admin-preview-modal" data-preview-modal hidden>
+    <button class="admin-preview-modal__backdrop" type="button" data-preview-close aria-label="Закрыть превью"></button>
+    <div class="admin-preview-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="admin-preview-title">
+        <div class="admin-preview-modal__head">
+            <h3 id="admin-preview-title">Превью</h3>
+            <button type="button" data-preview-close aria-label="Закрыть превью">x</button>
+        </div>
+        <img src="assets/image/catalog-img-1.png" alt="">
+        <div class="admin-preview-gallery" data-preview-gallery></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block scripts %}
+    <script src="assets/admin.js?v=45"></script>
+{% endblock %}

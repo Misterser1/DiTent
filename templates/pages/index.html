@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css">
+{% endblock %}
+
+{% block header %}{% include "partials/header_home.html" %}{% endblock %}
+
+{% block content %}
+<main>
+        <section class="section main">
+            <div class="main-img">
+                <video autoplay muted loop playsinline preload="metadata" poster="assets/video/posters/home-hero-craft.jpg">
+                    <source src="assets/video/home-hero-craft.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="main-content">
+                <div class="wrapper">
+                    <h1><b>Индивидуальные защитные чехлы под</b> любые задачи</h1>
+                    <p>От заявки до готового чехла - максимально быстро и удобно. Простое оформление, точное производство и быстрый результат</p>
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <div class="wrapper">
+                <div class="section-header">
+                    <p>- Чертежи чехлов -</p>
+                    <h2>Выберите форму чехла</h2>
+                </div>
+                <div class="triple-grid">
+                    <div class="triple-grid__item">
+                        <div class="triple-grid__item-number">01</div>
+                        <div class="tripe-grid__item-img">
+                            <img src="assets/image/item-img-1.png" alt="">
+                        </div>
+                        <div class="triple-grid__text">
+                            <p><b>Чехол</b> квадратной или прямоугольной формы</p>
+                            <a href="constructor.html?shape=rectangular&v=shape-select-2">
+                                Перейти к заказу
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8.41751 3.45911L11.9583 6.99994L8.41751 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2.04166 7H11.8592" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="triple-grid__item">
+                        <div class="triple-grid__item-number">02</div>
+                        <div class="tripe-grid__item-img">
+                            <img src="assets/image/item-img-2.png" alt="">
+                        </div>
+                        <div class="triple-grid__text">
+                            <p><b>Чехол</b> круглой (цилиндрической) формы</p>
+                            <a href="constructor.html?shape=round&v=shape-select-2">
+                                Перейти к заказу
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8.41751 3.45911L11.9583 6.99994L8.41751 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2.04166 7H11.8592" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="triple-grid__item">
+                        <div class="triple-grid__item-number">03</div>
+                        <div class="tripe-grid__item-img">
+                            <img src="assets/image/item-img-3.png" alt="">
+                        </div>
+                        <div class="triple-grid__text">
+                            <p><b>Чехол</b> клиновидной  формы</p>
+                            <a href="constructor.html?shape=wedge&v=shape-select-2">
+                                Перейти к заказу
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8.41751 3.45911L11.9583 6.99994L8.41751 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2.04166 7H11.8592" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="triple-grid__item">
+                        <div class="triple-grid__item-number">04</div>
+                        <div class="tripe-grid__item-img">
+                            <img src="assets/image/item-img-4.png" alt="">
+                        </div>
+                        <div class="triple-grid__text">
+                            <p><b>Чехол</b> овальной формы</p>
+                            <a href="constructor.html?shape=oval&v=shape-select-2">
+                                Перейти к заказу
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8.41751 3.45911L11.9583 6.99994L8.41751 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2.04166 7H11.8592" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="triple-grid__item">
+                        <div class="triple-grid__item-number">05</div>
+                        <div class="tripe-grid__item-img">
+                            <img src="assets/image/item-img-5.png" alt="">
+                        </div>
+                        <div class="triple-grid__text">
+                            <p><b>Чехол</b> Г-образной формы</p>
+                            <a href="constructor.html?shape=l-shape&v=shape-select-2">
+                                Перейти к заказу
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8.41751 3.45911L11.9583 6.99994L8.41751 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2.04166 7H11.8592" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="triple-grid__item">
+                        <div class="triple-grid__item-number">06</div>
+                        <div class="tripe-grid__item-img">
+                            <img src="assets/image/item-img-6.png" alt="">
+                        </div>
+                        <div class="triple-grid__text">
+                            <p><b>Чехол</b> П-образной формы</p>
+                            <a href="constructor.html?shape=u-shape&v=shape-select-2">
+                                Перейти к заказу
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8.41751 3.45911L11.9583 6.99994L8.41751 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2.04166 7H11.8592" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <a href="drawing-order.html" class="add-variable">
+                    Добавить свой вариант
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.41748 3.45911L11.9583 6.99994L8.41748 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2.04169 7H11.8592" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+            </div>
+        </section>
+        <section class="section">
+            <div class="wrapper">
+                <div class="section-header">
+                    <p>- Что о нас говорят? -</p>
+                    <h2>Галерея и отзывы</h2>
+                </div>
+                <div class="gallery-wrapper">
+                    {% if home_reviews %}
+                        {% for review in home_reviews %}
+                            <div class="gallery-item">
+                                <div class="gallery-item__img">
+                                    <img src="{% if review.image %}{{ review.image.url }}{% else %}assets/image/review-img.png{% endif %}" alt="{{ review.image_caption|default:review.title }}">
+                                    <div class="gallery-item__img-text">
+                                        <p>{{ review.location|default:"г. Москва" }}</p>
+                                        <h3>{{ review.image_caption|default:"Индивидуальные защитные чехлы для сада" }}</h3>
+                                    </div>
+                                </div>
+                                <div class="gallery-item__review">
+                                    <div class="gallery-item__review-main">
+                                        <h3>{{ review.title }}</h3>
+                                        <p>{{ review.rating }}/5</p>
+                                        <p>{{ review.text }}</p>
+                                    </div>
+                                    <div class="gallery-item__author">
+                                        <div class="gallery-item__author-img">
+                                            <span>{{ review.author_name|default:"?"|first|upper }}</span>
+                                        </div>
+                                        <div class="gallery-item__author-text">
+                                            <p>{{ review.author_name }}</p>
+                                            <span>{{ review.created_at|date:"d.m.Y" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="gallery-item">
+                        <div class="gallery-item__img">
+                            <img src="assets/image/review-img.png" alt="">
+                            <div class="gallery-item__img-text">
+                                <p>г. Москва</p>
+                                <h3><b>Индивидуальные</b> защитные чехлы для сада</h3>
+                            </div>
+                        </div>
+                        <div class="gallery-item__review">
+                            <div class="gallery-item__review-main">
+                                <h3>Все понравилось!</h3>
+                                <p><  ></p>
+                                <p>Заказывали индивидуальные защитные чехлы для оборудования — всё сделали точно по размерам. Качество материалов на высоте, выдерживают активную эксплуатацию.</p>
+                            </div>
+                            <div class="gallery-item__author">
+                                <div class="gallery-item__author-img">
+                                    <img src="assets/image/user-img.png" alt="">
+                                </div>
+                                <div class="gallery-item__author-text">
+                                    <p>Александра Т.</p>
+                                    <span>10 апреля</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="gallery-item__img">
+                            <img src="assets/image/review-img.png" alt="">
+                            <div class="gallery-item__img-text">
+                                <p>г. Москва</p>
+                                <h3><b>Индивидуальные</b> защитные чехлы для сада</h3>
+                            </div>
+                        </div>
+                        <div class="gallery-item__review">
+                            <div class="gallery-item__review-main">
+                                <h3>Все понравилось!</h3>
+                                <p><  ></p>
+                                <p>Заказывали индивидуальные защитные чехлы для оборудования — всё сделали точно по размерам. Качество материалов на высоте, выдерживают активную эксплуатацию.</p>
+                            </div>
+                            <div class="gallery-item__author">
+                                <div class="gallery-item__author-img">
+                                    <img src="assets/image/user-img.png" alt="">
+                                </div>
+                                <div class="gallery-item__author-text">
+                                    <p>Александра Т.</p>
+                                    <span>10 апреля</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="gallery-item__img">
+                            <img src="assets/image/review-img.png" alt="">
+                            <div class="gallery-item__img-text">
+                                <p>г. Москва</p>
+                                <h3><b>Индивидуальные</b> защитные чехлы для сада</h3>
+                            </div>
+                        </div>
+                        <div class="gallery-item__review">
+                            <div class="gallery-item__review-main">
+                                <h3>Все понравилось!</h3>
+                                <p><  ></p>
+                                <p>Заказывали индивидуальные защитные чехлы для оборудования — всё сделали точно по размерам. Качество материалов на высоте, выдерживают активную эксплуатацию.</p>
+                            </div>
+                            <div class="gallery-item__author">
+                                <div class="gallery-item__author-img">
+                                    <img src="assets/image/user-img.png" alt="">
+                                </div>
+                                <div class="gallery-item__author-text">
+                                    <p>Александра Т.</p>
+                                    <span>10 апреля</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="gallery-item__img">
+                            <img src="assets/image/review-img.png" alt="">
+                            <div class="gallery-item__img-text">
+                                <p>г. Москва</p>
+                                <h3><b>Индивидуальные</b> защитные чехлы для сада</h3>
+                            </div>
+                        </div>
+                        <div class="gallery-item__review">
+                            <div class="gallery-item__review-main">
+                                <h3>Все понравилось!</h3>
+                                <p><  ></p>
+                                <p>Заказывали индивидуальные защитные чехлы для оборудования — всё сделали точно по размерам. Качество материалов на высоте, выдерживают активную эксплуатацию.</p>
+                            </div>
+                            <div class="gallery-item__author">
+                                <div class="gallery-item__author-img">
+                                    <img src="assets/image/user-img.png" alt="">
+                                </div>
+                                <div class="gallery-item__author-text">
+                                    <p>Александра Т.</p>
+                                    <span>10 апреля</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="gallery-btn gallery-btn__prev">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14.8493 7.42466H0.707131M7.7782 14.4957L0.707131 7.42466L7.7782 0.353592" stroke="currentColor"/>
+                    </svg>
+                </div>
+                <div class="gallery-btn gallery-btn__next">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M-2.2769e-05 7.42458H14.1421M7.07104 0.353516L14.1421 7.42458L7.07104 14.4957" stroke="currentColor"/>
+                    </svg>
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <div class="wrapper">
+                <div class="section-header">
+                    <p>- Остались вопросы? -</p>
+                    <h2>Ответы на ваши вопросы</h2>
+                </div>
+                <div class="faq-wrapper">
+                    <div class="faq-item">
+                        <div class="faq-item__header">
+                            Какие материалы используются?
+                            <div class="faq-item__icon">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13.28 5.96655L8.9333 10.3132C8.41997 10.8266 7.57997 10.8266 7.06664 10.3132L2.71997 5.96655" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="square" stroke-linejoin="bevel"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="faq-item__dropdown">
+                            <p>Если нужна защита от влаги и пыли, подойдут водоотталкивающие и герметичные ткани. Для использования на улице или в сложных условиях лучше выбирать прочные износостойкие материалы, устойчивые к перепадам температуры и механическим повреждениям.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-item__header">
+                            Как выбрать материал для чехла?
+                            <div class="faq-item__icon">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13.28 5.96655L8.9333 10.3132C8.41997 10.8266 7.57997 10.8266 7.06664 10.3132L2.71997 5.96655" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="square" stroke-linejoin="bevel"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="faq-item__dropdown">
+                            <p>Если нужна защита от влаги и пыли, подойдут водоотталкивающие и герметичные ткани. Для использования на улице или в сложных условиях лучше выбирать прочные износостойкие материалы, устойчивые к перепадам температуры и механическим повреждениям.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-item__header">
+                            Как ухаживать за чехлами?
+                            <div class="faq-item__icon">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13.28 5.96655L8.9333 10.3132C8.41997 10.8266 7.57997 10.8266 7.06664 10.3132L2.71997 5.96655" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="square" stroke-linejoin="bevel"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="faq-item__dropdown">
+                            <p>Если нужна защита от влаги и пыли, подойдут водоотталкивающие и герметичные ткани. Для использования на улице или в сложных условиях лучше выбирать прочные износостойкие материалы, устойчивые к перепадам температуры и механическим повреждениям.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-item__header">
+                            Есть ли гарантии?
+                            <div class="faq-item__icon">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13.28 5.96655L8.9333 10.3132C8.41997 10.8266 7.57997 10.8266 7.06664 10.3132L2.71997 5.96655" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="square" stroke-linejoin="bevel"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="faq-item__dropdown">
+                            <p>Если нужна защита от влаги и пыли, подойдут водоотталкивающие и герметичные ткани. Для использования на улице или в сложных условиях лучше выбирать прочные износостойкие материалы, устойчивые к перепадам температуры и механическим повреждениям.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}
+
+{% block footer %}{% include "partials/footer_home.html" %}{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+    <script src="assets/main.js"></script>
+{% endblock %}

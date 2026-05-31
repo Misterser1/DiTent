@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Заказ по чертежу{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css?v=drawing-order-2">
+{% endblock %}
+
+{% block header %}{% include "partials/header_drawing.html" %}{% endblock %}
+
+{% block content %}
+<main class="drawing-order-page">
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <p>Заказ по чертежу</p>
+            </div>
+        </div>
+    </div>
+    <section class="section drawing-order">
+        <div class="wrapper">
+            <div class="drawing-order__head">
+                <div>
+                    <h1>Заказ по чертежу</h1>
+                    <p>Если форма нестандартная или уже есть готовый эскиз, отправьте файл менеджеру. Мы проверим размеры, уточним материал и вернемся с расчетом стоимости.</p>
+                </div>
+                <a href="constructor.html">Рассчитать в конструкторе</a>
+            </div>
+            <div class="drawing-order__layout">
+                <form class="drawing-order__form" action="/api/drawing-orders/" method="post" enctype="multipart/form-data" data-drawing-form novalidate>
+                    <div class="drawing-order__group">
+                        <div class="drawing-order__group-head">
+                            <h2>Файл чертежа</h2>
+                            <span>PDF, JPG, PNG, WEBP, HEIC до 20 МБ</span>
+                        </div>
+                        <label class="drawing-upload drawing-upload--wide" data-drawing-dropzone>
+                            <input type="file" name="drawing" accept=".jpg,.jpeg,.png,.webp,.pdf,.heic,.heif" data-drawing-file hidden required>
+                            <span class="drawing-upload__icon" aria-hidden="true">
+                                <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 20.5V4.5M15 4.5L9.5 10M15 4.5L20.5 10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M5.5 19.5V22.5C5.5 24.1569 6.84315 25.5 8.5 25.5H21.5C23.1569 25.5 24.5 24.1569 24.5 22.5V19.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <span class="drawing-upload__body">
+                                <span class="drawing-upload__title" data-drawing-file-title>Файл чертежа</span>
+                                <span class="drawing-upload__text">Перетащите сюда чертеж, эскиз или фото изделия</span>
+                            </span>
+                            <span class="drawing-upload__action">Выбрать файл</span>
+                        </label>
+                    </div>
+
+                    <div class="drawing-order__group">
+                        <div class="drawing-order__group-head">
+                            <h2>Контакты</h2>
+                            <span>Подставляются из личного кабинета</span>
+                        </div>
+                        <div class="drawing-order__fields">
+                            <label>
+                                <span>Имя / компания</span>
+                                <input type="text" name="clientName" placeholder="Например, Иван Петров" minlength="2" maxlength="180" pattern=".*[A-Za-zА-Яа-яЁё0-9].*" required>
+                            </label>
+                            <label>
+                                <span>Телефон</span>
+                                <input type="tel" name="phone" placeholder="+7 900 000-00-00" autocomplete="tel" inputmode="tel" pattern="^\+?[0-9\s().-]{10,24}$" required>
+                            </label>
+                            <label>
+                                <span>Email</span>
+                                <input type="email" name="email" placeholder="mail@example.ru" maxlength="254" required>
+                            </label>
+                            <label>
+                                <span>Тип клиента</span>
+                                <div class="drawing-select" data-client-type-select>
+                                    <button class="drawing-select__button" type="button" data-client-type-button>Физическое лицо</button>
+                                    <input type="hidden" name="clientType" value="individual" data-client-type-input>
+                                    <div class="drawing-select__list">
+                                        <button type="button" data-client-type-option value="individual">Физическое лицо</button>
+                                        <button type="button" data-client-type-option value="entrepreneur">ИП</button>
+                                        <button type="button" data-client-type-option value="company">Юридическое лицо</button>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="drawing-order__group">
+                        <div class="drawing-order__group-head">
+                            <h2>Комментарий к расчету</h2>
+                            <span>Необязательно</span>
+                        </div>
+                        <div class="drawing-order__fields">
+                            <label>
+                                <span>Что нужно закрыть чехлом</span>
+                                <input type="text" name="itemName" placeholder="Стол, диван, оборудование, техника" maxlength="180" pattern=".*[A-Za-zА-Яа-яЁё0-9].*">
+                            </label>
+                            <label>
+                                <span>Примерные размеры</span>
+                                <input type="text" name="dimensions" placeholder="Например: 300 x 100 x 75 см" maxlength="180">
+                            </label>
+                        </div>
+                        <label class="drawing-order__textarea">
+                            <span>Особые пожелания</span>
+                            <textarea name="comment" maxlength="2000" placeholder="Опишите условия эксплуатации, нужный материал, цвет, крепления или другие детали"></textarea>
+                        </label>
+                    </div>
+
+                    <label class="drawing-order__agreement">
+                        <input type="checkbox" name="agreement" required>
+                        <span>Согласен на обработку данных и понимаю, что стоимость будет рассчитана менеджером после проверки чертежа.</span>
+                    </label>
+                    <button class="drawing-order__submit" type="submit">Отправить на расчет</button>
+                    <p class="drawing-order__message" data-drawing-message></p>
+                </form>
+
+                <aside class="drawing-order__aside">
+                    <h2>Как пройдет расчет</h2>
+                    <div class="drawing-order__steps">
+                        <div>
+                            <b>1</b>
+                            <span>Вы отправляете чертеж или фото с контактами.</span>
+                        </div>
+                        <div>
+                            <b>2</b>
+                            <span>Менеджер проверяет форму, размеры и уточняет детали.</span>
+                        </div>
+                        <div>
+                            <b>3</b>
+                            <span>После подтверждения заявки заказ можно оплатить выбранным способом.</span>
+                        </div>
+                    </div>
+                    <p>Этот сценарий не рассчитывает цену мгновенно, потому что изделие может отличаться от стандартных форм конструктора.</p>
+                </aside>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block footer %}{% include "partials/footer_drawing.html" %}{% endblock %}
+
+{% block scripts %}
+<script src="assets/drawing-order.js?v=drawing-order-auth-modal-1"></script>
+{% endblock %}

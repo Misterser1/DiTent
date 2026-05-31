@@ -1,0 +1,136 @@
+<div class="auth-modal auth-modal--login" data-auth-modal hidden>
+    <button class="auth-modal__backdrop" type="button" data-auth-close aria-label="Закрыть"></button>
+    <div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+        <button class="auth-modal__close" type="button" data-auth-close aria-label="Закрыть">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.5 8.5L25.5 25.5M25.5 8.5L8.5 25.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+        <form class="auth-modal__form auth-modal__form--login" data-auth-login-form novalidate>
+            <h2 id="auth-modal-title">Вход</h2>
+
+            <label class="auth-modal__field">
+                <span>E-mail</span>
+                <input type="email" name="email" placeholder="@name" autocomplete="email">
+            </label>
+
+            <label class="auth-modal__agree">
+                <input type="checkbox" name="agreement" checked>
+                <span>Я соглашаюсь с правилами использования сервиса, а также с передачей и обработкой моих данных.</span>
+            </label>
+
+            <button class="auth-modal__submit auth-modal__submit--login" type="submit">
+                <span>Получить код</span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8.41748 3.45917L11.9583 7L8.41748 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2.04163 7H11.8591" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <div class="auth-modal__code" data-auth-code-step="login" hidden>
+                <label class="auth-modal__field">
+                    <span>Код из письма</span>
+                    <input type="text" name="code" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
+                </label>
+                <button class="auth-modal__submit auth-modal__submit--login" type="button" data-auth-code-verify="login">
+                    <span>Войти</span>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.41748 3.45917L11.9583 7L8.41748 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2.04163 7H11.8591" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <button class="auth-modal__switch-link" type="button" data-auth-mode-switch="register">Новый пользователь? Пройдите регистрацию</button>
+            <div class="auth-modal__message" data-auth-message="login"></div>
+        </form>
+
+        <form class="auth-modal__form auth-modal__form--register" data-auth-register-form hidden novalidate>
+            <h2 id="auth-modal-register-title">Регистрация</h2>
+
+            <div class="auth-modal__types">
+                <label class="auth-modal__type">
+                    <input type="radio" name="authCustomerType" value="Физическое лицо" checked>
+                    <span class="auth-modal__type-text">Физическое лицо</span>
+                    <span class="auth-modal__type-icon" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5.25 9.25L7.75 11.75L12.75 6.25" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </label>
+                <label class="auth-modal__type">
+                    <input type="radio" name="authCustomerType" value="Юридическое лицо">
+                    <span class="auth-modal__type-text">Юридическое лицо</span>
+                    <span class="auth-modal__type-icon" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5.25 9.25L7.75 11.75L12.75 6.25" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </label>
+                <label class="auth-modal__type">
+                    <input type="radio" name="authCustomerType" value="ИП">
+                    <span class="auth-modal__type-text">ИП</span>
+                    <span class="auth-modal__type-icon" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5.25 9.25L7.75 11.75L12.75 6.25" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </label>
+            </div>
+
+            <div class="auth-modal__fields">
+                <label class="auth-modal__field">
+                    <span>Фамилия</span>
+                    <input type="text" name="lastName" placeholder="Иванов" autocomplete="family-name" minlength="2" maxlength="80" pattern="[A-Za-zА-Яа-яЁё]+(?:[ '-][A-Za-zА-Яа-яЁё]+)*">
+                </label>
+                <label class="auth-modal__field">
+                    <span>Имя</span>
+                    <input type="text" name="firstName" placeholder="Иван" autocomplete="given-name" minlength="2" maxlength="80" pattern="[A-Za-zА-Яа-яЁё]+(?:[ '-][A-Za-zА-Яа-яЁё]+)*">
+                </label>
+                <label class="auth-modal__field">
+                    <span>Отчество</span>
+                    <input type="text" name="middleName" placeholder="Иванович" maxlength="80" pattern="[A-Za-zА-Яа-яЁё]+(?:[ '-][A-Za-zА-Яа-яЁё]+)*">
+                </label>
+                <label class="auth-modal__field">
+                    <span>E-mail</span>
+                    <input type="email" name="email" placeholder="@name" autocomplete="email" maxlength="254">
+                </label>
+                <label class="auth-modal__field">
+                    <span>Номер телефона</span>
+                    <input type="tel" name="phone" placeholder="+7" autocomplete="tel" inputmode="tel" pattern="^\+?[0-9\s().-]{10,24}$">
+                </label>
+            </div>
+
+            <label class="auth-modal__agree">
+                <input type="checkbox" name="agreement" checked>
+                <span>Я соглашаюсь с правилами использования сервиса, а также с передачей и обработкой моих данных.</span>
+            </label>
+
+            <button class="auth-modal__submit" type="submit">
+                <span>Зарегистрироваться</span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8.41748 3.45917L11.9583 7L8.41748 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2.04163 7H11.8591" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <div class="auth-modal__code" data-auth-code-step="register" hidden>
+                <label class="auth-modal__field">
+                    <span>Код из письма</span>
+                    <input type="text" name="code" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
+                </label>
+                <button class="auth-modal__submit" type="button" data-auth-code-verify="register">
+                    <span>Подтвердить</span>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.41748 3.45917L11.9583 7L8.41748 10.5408" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2.04163 7H11.8591" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <button class="auth-modal__switch-link" type="button" data-auth-mode-switch="login">Уже есть аккаунт?</button>
+            <div class="auth-modal__message" data-auth-message="register"></div>
+        </form>
+    </div>
+</div>

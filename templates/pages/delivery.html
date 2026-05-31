@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - Доставка и оплата{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/delivery.css?v=2">
+{% endblock %}
+
+{% block content %}
+<main class="delivery-unified">
+        <div class="breadcrumbs">
+            <div class="wrapper">
+                <div class="breadcrumbs-wrapper">
+                    <a href="index.html">Главная</a>
+                    <p>/</p>
+                    <p>Доставка и оплата</p>
+                </div>
+            </div>
+        </div>
+        <section class="section delivery-unified__section">
+            <div class="wrapper">
+                <div class="delivery-unified__intro">
+                    <h1>Доставка и оплата</h1>
+                    <p>После отправки заявки менеджер проверяет параметры изделия, подтверждает возможность изготовления и согласует итоговую стоимость. Оплата доступна после подтверждения заказа.</p>
+                </div>
+                <div class="delivery-unified__grid">
+                    <div class="delivery-unified__media">
+                        <img src="assets/image/review-img.png" alt="">
+                    </div>
+                    <div class="delivery-unified__content">
+                        <div class="delivery-unified__block">
+                            <h2>Доставка</h2>
+                            <p>Готовые изделия передаем курьером или транспортной компанией после упаковки. Стоимость доставки зависит от габаритов, веса и выбранной службы.</p>
+                            <div class="delivery-unified__items">
+                                <div class="delivery-unified__item">
+                                    <b>Москва</b>
+                                    <span>Курьерская доставка после готовности изделия.</span>
+                                </div>
+                                <div class="delivery-unified__item">
+                                    <b>Регионы</b>
+                                    <span>Отправка через согласованную транспортную компанию.</span>
+                                </div>
+                                <div class="delivery-unified__item">
+                                    <b>Расчет</b>
+                                    <span>Менеджер уточняет итоговую стоимость перед подтверждением.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="delivery-unified__block">
+                            <h2>Оплата</h2>
+                            <p>Оплата выполняется после проверки заявки. Это важно для индивидуальных чехлов: менеджер подтверждает размеры, материал и возможность изготовления.</p>
+                            <div class="delivery-unified__items">
+                                <div class="delivery-unified__item">
+                                    <b>Карта</b>
+                                    <span>Онлайн-оплата после согласования заказа.</span>
+                                </div>
+                                <div class="delivery-unified__item">
+                                    <b>СБП</b>
+                                    <span>Оплата по ссылке или QR-коду.</span>
+                                </div>
+                                <div class="delivery-unified__item">
+                                    <b>Счет</b>
+                                    <span>Безналичная оплата для ИП и юридических лиц.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="delivery-unified__note">
+                    <div>
+                        <h2>Нестандартная доставка</h2>
+                        <p>Если нужна конкретная транспортная компания, адресная доставка или у изделия сложные габариты, укажите это в комментарии к заказу. Менеджер учтет детали перед подтверждением.</p>
+                    </div>
+                    <a href="constructor.html">Рассчитать чехол</a>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+{% endblock %}

@@ -1,0 +1,236 @@
+.legal-page {
+    background: #FAFAFA;
+}
+
+.legal-page__intro {
+    max-width: 900px;
+    margin-bottom: 34px;
+}
+
+.legal-page__intro h1 {
+    margin-bottom: 16px;
+    font-size: 48px;
+    line-height: 104%;
+    font-weight: 600;
+    color: #121212;
+}
+
+.legal-page__intro p,
+.legal-page__head p,
+.legal-company dt,
+.legal-company dd,
+.legal-conditions p,
+.legal-page__note p {
+    font-size: 15px;
+    line-height: 136%;
+    font-weight: 400;
+    color: #12121299;
+}
+
+.legal-page__intro p {
+    max-width: 720px;
+    font-size: 18px;
+}
+
+.legal-page__head,
+.legal-page__note {
+    padding: 22px;
+    border-radius: 18px;
+    background: #F4F4F4CC;
+}
+
+.legal-page__head {
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+}
+
+.legal-page__head div,
+.legal-page__note div {
+    max-width: 760px;
+}
+
+.legal-page__head h2,
+.legal-company h2,
+.legal-conditions h2,
+.legal-page__note h2 {
+    color: #121212;
+    font-weight: 600;
+}
+
+.legal-page__head h2,
+.legal-page__note h2 {
+    margin-bottom: 12px;
+    font-size: 32px;
+    line-height: 110%;
+}
+
+.legal-page__head a,
+.legal-page__note a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: #6CAFD8;
+    color: #FFFFFF;
+    font-size: 15px;
+    line-height: 100%;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: .3s ease-in-out;
+}
+
+.legal-page__head a:hover,
+.legal-page__note a:hover {
+    filter: brightness(90%);
+}
+
+.legal-page__grid {
+    display: grid;
+    grid-template-columns: minmax(280px, .84fr) minmax(0, 1.16fr);
+    gap: 18px;
+}
+
+.legal-company,
+.legal-conditions article {
+    border-radius: 18px;
+    background: #F4F4F4CC;
+}
+
+.legal-company {
+    padding: 22px;
+}
+
+.legal-company h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    line-height: 116%;
+}
+
+.legal-company dl {
+    display: grid;
+    gap: 12px;
+}
+
+.legal-company dl div {
+    display: grid;
+    gap: 4px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #12121214;
+}
+
+.legal-company dl div:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.legal-company dt {
+    color: #12121266;
+}
+
+.legal-company dd {
+    color: #121212;
+}
+
+.legal-conditions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.legal-conditions article {
+    min-height: 184px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.legal-conditions span {
+    color: #6CAFD8;
+    font-size: 14px;
+    line-height: 100%;
+    font-weight: 700;
+}
+
+.legal-conditions h2 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    line-height: 116%;
+}
+
+.legal-page__note {
+    margin-top: 18px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.legal-page__note a {
+    background: #FFFFFF;
+    color: #121212;
+}
+
+@media(max-width: 1000px) {
+    .legal-page__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(max-width: 768px) {
+    .legal-page__intro {
+        margin-bottom: 24px;
+    }
+
+    .legal-page__intro h1 {
+        margin-bottom: 12px;
+        font-size: 30px;
+    }
+
+    .legal-page__intro p,
+    .legal-page__head p,
+    .legal-company dt,
+    .legal-company dd,
+    .legal-conditions p,
+    .legal-page__note p {
+        font-size: 12px;
+    }
+
+    .legal-page__head,
+    .legal-page__note,
+    .legal-company,
+    .legal-conditions article {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .legal-page__head,
+    .legal-page__note {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .legal-page__head h2,
+    .legal-page__note h2 {
+        font-size: 22px;
+    }
+
+    .legal-company h2 {
+        font-size: 20px;
+    }
+
+    .legal-conditions {
+        grid-template-columns: 1fr;
+    }
+
+    .legal-page__head a,
+    .legal-page__note a {
+        width: 100%;
+    }
+}
