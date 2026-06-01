@@ -14,6 +14,7 @@ class AlfaAcquiringError(Exception):
 
 
 CHECKSUM_EXCLUDED_PARAMS = {'checksum', 'sign_alias'}
+SUCCESS_ERROR_CODES = {None, '', '0', 0}
 
 
 def endpoint(path):
@@ -55,6 +56,10 @@ def amount_to_kopecks(amount):
     return int((Decimal(amount).quantize(Decimal('0.01')) * 100).to_integral_value())
 
 
+def alfa_response_has_error(response):
+    return response.get('errorCode') not in SUCCESS_ERROR_CODES
+
+
 def callback_signature_payload(params):
     return ''.join(
         f'{key};{params[key]};'
@@ -88,7 +93,7 @@ def register_payment(order, return_url, fail_url):
         'language': 'ru',
     })
 
-    if response.get('errorCode'):
+    if alfa_response_has_error(response):
         message = response.get('errorMessage') or response.get('error') or 'Не удалось создать платеж.'
         raise AlfaAcquiringError(message)
 
@@ -109,7 +114,7 @@ def get_payment_status(payment_order_id):
 
     response = post_form('getOrderStatusExtended.do', {'orderId': payment_order_id})
 
-    if response.get('errorCode'):
+    if alfa_response_has_error(response):
         message = response.get('errorMessage') or response.get('error') or 'Не удалось проверить статус платежа.'
         raise AlfaAcquiringError(message)
 

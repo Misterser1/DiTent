@@ -15,7 +15,7 @@ from django.core.management.base import CommandError
 from django.test import Client, RequestFactory, TestCase, override_settings
 from django.utils import timezone
 
-from .alfa_acquiring import callback_checksum
+from .alfa_acquiring import callback_checksum, get_payment_status, register_payment
 from .constructor_services import calculation_metrics, validate_dimensions
 from .models import Cart, CartItem, Category, Color, ConstructorAttachment, CoverShape, CustomerProfile, CustomerType, DrawingOrder, EmailAuthCode, EmailAuthPurpose, Fabric, Fastener, Formula, Order, OrderItem, OrderStatus, PaymentStatus, Product, PublishStatus, SiteSettings
 from .validators import validate_uploaded_file
@@ -64,6 +64,36 @@ class UploadValidationTests(TestCase):
         file = SimpleUploadedFile('drawing.png', b'\x89PNG\r\n\x1a\n\x00\x00', content_type='image/png')
 
         self.assertIs(validate_uploaded_file(file), file)
+
+
+class AlfaAcquiringTests(TestCase):
+    @patch('shop.alfa_acquiring.post_form')
+    def test_get_payment_status_accepts_alfa_success_error_code_zero(self, post_form_mock):
+        post_form_mock.return_value = {
+            'errorCode': '0',
+            'errorMessage': 'Успешно',
+            'orderStatus': 2,
+        }
+
+        response = get_payment_status('bank-order-paid')
+
+        self.assertEqual(response['orderStatus'], 2)
+        post_form_mock.assert_called_once_with('getOrderStatusExtended.do', {'orderId': 'bank-order-paid'})
+
+    @patch('shop.alfa_acquiring.post_form')
+    def test_register_payment_accepts_alfa_success_error_code_zero(self, post_form_mock):
+        post_form_mock.return_value = {
+            'errorCode': '0',
+            'errorMessage': 'Успешно',
+            'orderId': 'bank-order-new',
+            'formUrl': 'https://bank.example/pay',
+        }
+        order = SimpleNamespace(number='DT-ALFA-001', total=Decimal('1200.00'))
+
+        response = register_payment(order, 'https://site.example/return', 'https://site.example/fail')
+
+        self.assertEqual(response['payment_order_id'], 'bank-order-new')
+        self.assertEqual(response['payment_form_url'], 'https://bank.example/pay')
 
 
 class ConstructorFormulaTests(TestCase):
