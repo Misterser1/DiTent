@@ -17,7 +17,15 @@ from shop.account_views import (
     password_reset_api,
     register_api,
 )
-from shop.admin_views import admin_collection_api, admin_detail_api, admin_order_cdek_tracking_api, custom_admin_page
+from shop.admin_views import (
+    admin_collection_api,
+    admin_detail_api,
+    admin_order_cdek_tracking_api,
+    custom_admin_legacy_redirect,
+    custom_admin_login_page,
+    custom_admin_logout_page,
+    custom_admin_page,
+)
 from shop.cart_views import cart_add_item_api, cart_delete_item_api, cart_detail_api, cart_update_item_api
 from shop.catalog_views import catalog_page, category_page, product_page
 from shop.checkout_views import alfa_payment_callback_api, alfa_payment_return_page, checkout_order_api, order_success_page
@@ -36,7 +44,10 @@ urlpatterns = [
     path('category.html', category_page, name='category'),
     path('constructor.html', constructor_page, name='constructor'),
     path('form.html', product_page, name='product'),
-    path('admin.html', custom_admin_page, name='custom_admin'),
+    path('ditent-cms/', custom_admin_page, name='custom_admin'),
+    path('ditent-cms/login/', custom_admin_login_page, name='custom_admin_login'),
+    path('ditent-cms/logout/', custom_admin_logout_page, name='custom_admin_logout'),
+    path('admin.html', custom_admin_legacy_redirect, name='custom_admin_legacy'),
     path('order-success.html', order_success_page, name='order_success'),
     path('cart/api/', cart_detail_api, name='cart_detail_api'),
     path('cart/api/items/', cart_add_item_api, name='cart_add_item_api'),

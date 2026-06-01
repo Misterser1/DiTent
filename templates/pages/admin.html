@@ -43,9 +43,13 @@
             <div class="admin-topbar__actions">
                 <button class="admin-tour-button" type="button" data-admin-tour-start>Обучение</button>
                 <div class="admin-topbar__meta">
-                    <span>Администратор</span>
+                    <span>{{ request.user.get_username|default:"Администратор" }}</span>
                     <b>Данные из базы проекта</b>
                 </div>
+                <form class="admin-logout" method="post" action="{% url 'custom_admin_logout' %}">
+                    {% csrf_token %}
+                    <button type="submit">Выйти</button>
+                </form>
             </div>
         </div>
 

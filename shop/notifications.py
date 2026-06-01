@@ -94,7 +94,7 @@ def send_order_created_notifications(order_id, manager_url='', client_url=''):
         'Состав заказа:',
         order_items_text(order),
         f'Итого: {money(order.total)}',
-        f'Открыть в админке: {manager_url or "/admin.html#orders"}',
+        f'Открыть в админке: {manager_url or "/ditent-cms/#orders"}',
     ])
     safe_send(manager_subject, manager_body, manager_recipients())
 
@@ -123,7 +123,7 @@ def send_drawing_order_created_notifications(order_id, manager_url=''):
         f'E-mail: {order.email}',
         f'Комментарий:\n{order.comment or "-"}',
         f'Файлы:\n{files}',
-        f'Открыть в админке: {manager_url or "/admin.html#drawing-orders"}',
+        f'Открыть в админке: {manager_url or "/ditent-cms/#drawing-orders"}',
     ])
     safe_send(manager_subject, manager_body, manager_recipients())
 

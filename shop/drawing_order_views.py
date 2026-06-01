@@ -136,7 +136,7 @@ def drawing_order_create_api(request):
             original_name=file.name,
         )
 
-    manager_url = request.build_absolute_uri('/admin.html#drawing-orders')
+    manager_url = request.build_absolute_uri('/ditent-cms/#drawing-orders')
     transaction.on_commit(
         lambda order_id=drawing_order.pk, manager_url=manager_url: send_drawing_order_created_notifications(
             order_id,

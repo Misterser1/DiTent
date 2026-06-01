@@ -8,8 +8,6 @@ from shop.models import PublishStatus, Review
 PAGE_TEMPLATES = {
     'index.html',
     'about.html',
-    'admin.html',
-    'admin-select-demo.html',
     'cabinet.html',
     'card.html',
     'catalog.html',
@@ -17,14 +15,10 @@ PAGE_TEMPLATES = {
     'constructor.html',
     'contacts.html',
     'delivery.html',
-    'drawing-order-demo.html',
     'drawing-order.html',
     'form.html',
-    'home-video-demo.html',
     'legal.html',
-    'legal-demo.html',
     'privacy.html',
-    'privacy-demo.html',
     'review.html',
 }
 

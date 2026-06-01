@@ -362,7 +362,7 @@ def checkout_order_api(request):
             payment_url = ''
             order.save(update_fields=update_fields)
             clear_session_cart(request)
-            manager_url = request.build_absolute_uri('/admin.html#orders')
+            manager_url = request.build_absolute_uri('/ditent-cms/#orders')
             client_url = request.build_absolute_uri(f'/order-success.html?order={order.number}')
             transaction.on_commit(
                 lambda order_id=order.pk, manager_url=manager_url, client_url=client_url: send_order_created_notifications(

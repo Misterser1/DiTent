@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: ditent
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ditent-db
+          property: connectionString
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.console.EmailBackend
+      - key: DITENT_EMAIL_NOTIFICATIONS_ENABLED
+        value: "False"
+
+databases:
+  - name: ditent-db
+    plan: free

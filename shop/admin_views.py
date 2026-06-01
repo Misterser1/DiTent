@@ -1,16 +1,17 @@
 from decimal import Decimal
 
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, ProtectedError
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 
 from .alfa_acquiring import AlfaAcquiringError, register_payment
 from .catalog_views import category_fallback_image, image_or_fallback
@@ -55,18 +56,71 @@ from .notifications import send_order_payment_ready_notification
 from .validators import validate_uploaded_files
 
 
-def require_custom_admin(request):
-    if settings.DEBUG:
-        return
+CUSTOM_ADMIN_URL = '/ditent-cms/'
+CUSTOM_ADMIN_LOGIN_URL = '/ditent-cms/login/'
 
+
+def safe_admin_next_url(request, value):
+    fallback = reverse('custom_admin')
+    if value and url_has_allowed_host_and_scheme(value, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        return value
+    return fallback
+
+
+def custom_admin_legacy_redirect(request):
+    return redirect('custom_admin')
+
+
+@ensure_csrf_cookie
+@require_http_methods(['GET', 'POST'])
+def custom_admin_login_page(request):
+    next_url = safe_admin_next_url(request, request.POST.get('next') or request.GET.get('next'))
+
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect(next_url)
+
+    context = {
+        'next_url': next_url,
+        'username': '',
+        'error': '',
+    }
+
+    if request.method == 'GET':
+        return render(request, 'pages/admin-login.html', context)
+
+    username = (request.POST.get('username') or '').strip()
+    password = request.POST.get('password') or ''
+    context['username'] = username
+
+    authenticated = authenticate(request, username=username, password=password)
+    if authenticated is None and '@' in username:
+        user = get_user_model().objects.filter(email__iexact=username).first()
+        if user:
+            authenticated = authenticate(request, username=user.get_username(), password=password)
+
+    if authenticated is None or not authenticated.is_active or not authenticated.is_staff:
+        context['error'] = 'Неверный логин или пароль, либо у пользователя нет доступа к админке.'
+        return render(request, 'pages/admin-login.html', context, status=400)
+
+    login(request, authenticated)
+    return redirect(next_url)
+
+
+@require_POST
+def custom_admin_logout_page(request):
+    logout(request)
+    return redirect('custom_admin_login')
+
+
+def require_custom_admin(request):
     if not request.user.is_authenticated or not request.user.is_staff:
-        raise PermissionDenied
+        login_url = f'{reverse("custom_admin_login")}?next={request.get_full_path()}'
+        return redirect(login_url)
+
+    return None
 
 
 def require_custom_admin_api(request):
-    if settings.DEBUG:
-        return None
-
     if not request.user.is_authenticated or not request.user.is_staff:
         return JsonResponse({'ok': False, 'error': 'Недостаточно прав для доступа к админке.'}, status=403)
 
@@ -89,10 +143,15 @@ def decimal_to_string(value):
 
 
 MOCK_ORDER_NUMBER_PREFIX = 'DT-MOCK-'
+MOCK_DRAWING_EMAIL_PREFIX = 'drawing-'
 
 
 def real_orders(queryset=None):
     return (queryset or Order.objects.all()).exclude(number__startswith=MOCK_ORDER_NUMBER_PREFIX)
+
+
+def real_drawing_orders(queryset=None):
+    return (queryset or DrawingOrder.objects.all()).exclude(email__startswith=MOCK_DRAWING_EMAIL_PREFIX)
 
 
 def waits_manager_confirmation(order):
@@ -413,7 +472,9 @@ def prepare_categories(categories):
 
 @ensure_csrf_cookie
 def custom_admin_page(request):
-    require_custom_admin(request)
+    access_response = require_custom_admin(request)
+    if access_response:
+        return access_response
 
     categories, next_root_category_position = prepare_categories(
         Category.objects.select_related('parent').annotate(products_count=Count('products')).order_by('parent_id', 'position', 'title')
@@ -422,7 +483,7 @@ def custom_admin_page(request):
     product_categories = [category for category in categories if category.parent_id]
     products = Product.objects.select_related('category', 'fabric', 'color', 'fastener').prefetch_related('images').order_by('title')
     orders = set_admin_order_labels(real_orders(Order.objects).select_related('user').prefetch_related('items').order_by('-created_at'))
-    drawing_orders = DrawingOrder.objects.select_related('user').prefetch_related('files').order_by('-created_at')
+    drawing_orders = real_drawing_orders(DrawingOrder.objects).select_related('user').prefetch_related('files').order_by('-created_at')
     site_settings = SiteSettings.load()
 
     context = {
@@ -452,7 +513,7 @@ def custom_admin_page(request):
             'categories': len(categories),
             'products': products.count(),
             'materials': Fabric.objects.count(),
-            'new_orders': real_orders(Order.objects).filter(status=OrderStatus.WAITING_MANAGER).count() + DrawingOrder.objects.filter(status=OrderStatus.WAITING_MANAGER).count(),
+            'new_orders': real_orders(Order.objects).filter(status=OrderStatus.WAITING_MANAGER).count() + real_drawing_orders(DrawingOrder.objects).filter(status=OrderStatus.WAITING_MANAGER).count(),
         },
     }
 
@@ -485,7 +546,7 @@ def admin_collection_api(request, entity):
         elif entity == 'orders':
             queryset = real_orders(queryset).select_related('user').prefetch_related('items').order_by('-created_at')
         elif entity == 'drawing-orders':
-            queryset = queryset.select_related('user').prefetch_related('files').order_by('-created_at')
+            queryset = real_drawing_orders(queryset).select_related('user').prefetch_related('files').order_by('-created_at')
 
         return JsonResponse({'items': [serializer(item) for item in queryset]})
 
@@ -531,7 +592,11 @@ def admin_detail_api(request, entity, pk):
         return error_response
 
     model, form_class, serializer = entity_config
-    queryset = real_orders(model.objects.all()) if entity == 'orders' else model.objects.all()
+    queryset = model.objects.all()
+    if entity == 'orders':
+        queryset = real_orders(queryset)
+    elif entity == 'drawing-orders':
+        queryset = real_drawing_orders(queryset)
     instance = get_object_or_404(queryset, pk=pk)
 
     if request.method == 'GET':

@@ -134,6 +134,18 @@
     white-space: nowrap;
 }
 
+.admin-logout button {
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 8px;
+    background: #F4F6F7;
+    color: #121212;
+    font-size: 14px;
+    line-height: 100%;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
 .admin-form__actions {
     display: flex;
     flex-wrap: wrap;
@@ -177,6 +189,101 @@
     line-height: 100%;
     font-weight: 500;
     color: #12121280;
+}
+
+.admin-login-page {
+    min-height: 100vh;
+    padding: 24px;
+    background: #F4F6F7;
+    display: grid;
+    place-items: center;
+}
+
+.admin-login {
+    width: min(420px, 100%);
+    padding: 28px;
+    border-radius: 8px;
+    background: #FFFFFF;
+    border: 1px solid #1212120A;
+    display: grid;
+    gap: 18px;
+}
+
+.admin-login__logo {
+    display: block;
+    width: 26px;
+    height: 52px;
+    color: #121212;
+}
+
+.admin-login__logo svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.admin-login__head {
+    display: grid;
+    gap: 8px;
+}
+
+.admin-login__head p {
+    font-size: 13px;
+    line-height: 100%;
+    font-weight: 700;
+    color: #6CAFD8;
+}
+
+.admin-login__head h1 {
+    font-size: 32px;
+    line-height: 100%;
+    font-weight: 600;
+}
+
+.admin-login label {
+    display: grid;
+    gap: 8px;
+    color: #121212B3;
+    font-size: 14px;
+    line-height: 120%;
+    font-weight: 500;
+}
+
+.admin-login input {
+    min-height: 48px;
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #12121214;
+    background: #F8F8F8;
+    padding: 0 14px;
+    color: #121212;
+    font-size: 16px;
+    line-height: 120%;
+}
+
+.admin-login input:focus {
+    border-color: #6CAFD8;
+    background: #FFFFFF;
+    outline: none;
+}
+
+.admin-login__error {
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: #FFF0F0;
+    color: #B42318;
+    font-size: 14px;
+    line-height: 140%;
+}
+
+.admin-login > button {
+    min-height: 50px;
+    border-radius: 8px;
+    background: #121212;
+    color: #FFFFFF;
+    font-size: 16px;
+    line-height: 100%;
+    font-weight: 700;
 }
 
 .admin-tour[hidden] {
@@ -1898,6 +2005,8 @@
     }
 
     .admin-tour-button,
+    .admin-logout,
+    .admin-logout button,
     .admin-topbar__meta {
         width: 100%;
     }

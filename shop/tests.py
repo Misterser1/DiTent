@@ -731,14 +731,61 @@ class CheckoutSecurityTests(TestCase):
 
 
 class AdminOrderVisibilityTests(TestCase):
-    @override_settings(DEBUG=False)
-    def test_custom_admin_requires_staff_in_production(self):
-        page_response = self.client.get('/admin.html')
+    def setUp(self):
+        self.admin_user = get_user_model().objects.create_user(
+            username='custom-admin',
+            email='custom-admin@example.com',
+            password='admin-password-123',
+            is_staff=True,
+        )
+        self.client.force_login(self.admin_user)
+
+    def test_custom_admin_requires_staff_login(self):
+        self.client.logout()
+
+        page_response = self.client.get('/ditent-cms/')
         api_response = self.client.get('/custom-admin/api/orders/')
 
-        self.assertEqual(page_response.status_code, 403)
+        self.assertEqual(page_response.status_code, 302)
+        self.assertIn('/ditent-cms/login/', page_response['Location'])
         self.assertEqual(api_response.status_code, 403)
         self.assertFalse(api_response.json()['ok'])
+
+    def test_custom_admin_login_accepts_staff_credentials(self):
+        self.client.logout()
+
+        response = self.client.post('/ditent-cms/login/', data={
+            'username': self.admin_user.email,
+            'password': 'admin-password-123',
+            'next': '/ditent-cms/',
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/ditent-cms/')
+
+    def test_custom_admin_login_rejects_non_staff_user(self):
+        self.client.logout()
+        user = get_user_model().objects.create_user(
+            username='custom-admin-client',
+            email='custom-admin-client@example.com',
+            password='client-password-123',
+            is_staff=False,
+        )
+
+        response = self.client.post('/ditent-cms/login/', data={
+            'username': user.email,
+            'password': 'client-password-123',
+            'next': '/ditent-cms/',
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'нет доступа к админке', status_code=400)
+
+    def test_legacy_admin_html_redirects_to_cms_url(self):
+        response = self.client.get('/admin.html')
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/ditent-cms/')
 
     @override_settings(DEBUG=True)
     def test_admin_api_unknown_entity_returns_json_404(self):

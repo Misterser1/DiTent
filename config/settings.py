@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,10 +40,21 @@ def env_int(name, default=0):
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-local-ditent-development-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env_bool('DEBUG', True)
+IS_VERCEL = env_bool('VERCEL', False)
+IS_RENDER = bool(os.getenv('RENDER'))
+DEBUG = env_bool('DEBUG', not (IS_VERCEL or IS_RENDER))
 
 ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost')
 CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', '')
+
+if IS_VERCEL:
+    ALLOWED_HOSTS.extend(['.vercel.app'])
+    CSRF_TRUSTED_ORIGINS.extend(['https://*.vercel.app'])
+
+if IS_RENDER and os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+    render_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+    ALLOWED_HOSTS.append(render_hostname)
+    CSRF_TRUSTED_ORIGINS.append(f'https://{render_hostname}')
 
 SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', not DEBUG)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -74,6 +86,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -106,7 +119,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-if os.getenv('DB_ENGINE', 'sqlite').lower() == 'postgresql':
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
+    }
+elif os.getenv('DB_ENGINE', 'sqlite').lower() == 'postgresql':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -173,6 +192,16 @@ STATIC_URL = '/assets/'
 STATICFILES_DIRS = [BASE_DIR / 'assets']
 STATIC_ROOT = BASE_DIR / os.getenv('STATIC_ROOT', 'staticfiles')
 
+if not DEBUG:
+    STORAGES = {
+        'default': {
+            'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+        },
+    }
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / os.getenv('MEDIA_ROOT', 'media')
 
@@ -231,7 +260,7 @@ DITENT_EMAIL_NOTIFICATIONS_ENABLED = env_bool('DITENT_EMAIL_NOTIFICATIONS_ENABLE
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-LOG_DIR = BASE_DIR / os.getenv('LOG_DIR', 'logs')
+LOG_DIR = Path('/tmp/logs') if IS_VERCEL else BASE_DIR / os.getenv('LOG_DIR', 'logs')
 LOG_DIR.mkdir(exist_ok=True)
 
 LOGGING = {

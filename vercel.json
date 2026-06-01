@@ -1,0 +1,9 @@
+{
+  "buildCommand": "python manage.py migrate --noinput && python manage.py seed_production_content && python manage.py collectstatic --noinput",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/config/wsgi.py"
+    }
+  ]
+}
