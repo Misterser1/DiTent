@@ -344,6 +344,9 @@ def sync_alfa_order_payment_status(order, client_url=''):
         return ''
 
     if order.payment_status == PaymentStatus.PAID:
+        if order.status == OrderStatus.WAITING_PAYMENT:
+            order.status = OrderStatus.IN_PRODUCTION
+            order.save(update_fields=['status', 'updated_at'])
         return 'success'
 
     if order.payment_status == PaymentStatus.REFUNDED:

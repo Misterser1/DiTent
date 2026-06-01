@@ -1293,6 +1293,7 @@ class AdminOrderVisibilityTests(TestCase):
         self.assertIn(f'/order-success.html?order={order.number}&payment=success', response['Location'])
         self.assertEqual(order.payment_status, PaymentStatus.PAID)
         self.assertEqual(order.status, OrderStatus.IN_PRODUCTION)
+        self.assertEqual(order.status, OrderStatus.IN_PRODUCTION)
         self.assertEqual(order.payment_form_url, '')
 
     @patch('shop.checkout_views.get_payment_status')
