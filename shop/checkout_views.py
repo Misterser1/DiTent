@@ -316,9 +316,13 @@ def apply_alfa_order_status(order, order_status, client_url=''):
 
     if order_status in ALFA_PAID_ORDER_STATUSES:
         if order.payment_status != PaymentStatus.REFUNDED:
+            update_fields = ['payment_status', 'payment_form_url', 'updated_at']
             order.payment_status = PaymentStatus.PAID
             order.payment_form_url = ''
-            order.save(update_fields=['payment_status', 'payment_form_url', 'updated_at'])
+            if order.status == OrderStatus.WAITING_PAYMENT:
+                order.status = OrderStatus.IN_PRODUCTION
+                update_fields.append('status')
+            order.save(update_fields=update_fields)
             if not was_paid:
                 transaction.on_commit(lambda order_id=order.pk, url=client_url: send_order_paid_notifications(order_id, url))
         return 'success'
@@ -526,13 +530,7 @@ def apply_alfa_callback_status(order, operation, status):
         return False
 
     if operation == 'deposited':
-        was_paid = order.payment_status == PaymentStatus.PAID
-        if order.payment_status != PaymentStatus.PAID or order.payment_form_url:
-            order.payment_status = PaymentStatus.PAID
-            order.payment_form_url = ''
-            order.save(update_fields=['payment_status', 'payment_form_url', 'updated_at'])
-            if not was_paid:
-                transaction.on_commit(lambda order_id=order.pk: send_order_paid_notifications(order_id))
+        apply_alfa_order_status(order, 2)
         return True
 
     if operation == 'refunded':
