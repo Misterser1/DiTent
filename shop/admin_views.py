@@ -16,6 +16,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 from .alfa_acquiring import AlfaAcquiringError, register_payment
 from .catalog_views import category_fallback_image, image_or_fallback
 from .cdek_tracking import CdekTrackingError, sync_order_cdek_tracking
+from .checkout_views import sync_alfa_order_payment_status
 from .forms import (
     AccessoryForm,
     CategoryForm,
@@ -317,6 +318,7 @@ def order_items_summary(order):
 
 
 def serialize_order(order):
+    sync_alfa_order_payment_status(order)
     data = serialize_model(order)
     data['status_label'] = admin_order_status_label(order)
     data['payment_status_label'] = admin_order_payment_status_label(order)

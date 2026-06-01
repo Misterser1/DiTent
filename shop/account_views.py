@@ -19,6 +19,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from .cart_services import attach_cart_to_user, cart_payload, normalize_item, save_session_cart
+from .checkout_views import sync_alfa_order_payment_status
 from .models import CustomerProfile, CustomerType, DrawingOrder, EmailAuthCode, EmailAuthPurpose, Order, OrderItemType, OrderStatus
 
 
@@ -110,6 +111,7 @@ def item_payload(item):
 
 
 def order_payload(order):
+    sync_alfa_order_payment_status(order)
     items = [item_payload(item) for item in order.items.all()]
     return {
         'id': order.number,

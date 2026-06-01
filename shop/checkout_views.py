@@ -307,6 +307,56 @@ def create_constructor_item(order, item):
     return order_item
 
 
+ALFA_PAID_ORDER_STATUSES = {1, 2}
+ALFA_FAILED_ORDER_STATUSES = {3, 4, 5, 6}
+
+
+def apply_alfa_order_status(order, order_status, client_url=''):
+    was_paid = order.payment_status == PaymentStatus.PAID
+
+    if order_status in ALFA_PAID_ORDER_STATUSES:
+        if order.payment_status != PaymentStatus.REFUNDED:
+            order.payment_status = PaymentStatus.PAID
+            order.payment_form_url = ''
+            order.save(update_fields=['payment_status', 'payment_form_url', 'updated_at'])
+            if not was_paid:
+                transaction.on_commit(lambda order_id=order.pk, url=client_url: send_order_paid_notifications(order_id, url))
+        return 'success'
+
+    if order_status in ALFA_FAILED_ORDER_STATUSES:
+        if order.payment_status == PaymentStatus.PAID:
+            return 'success'
+        if order.payment_status == PaymentStatus.REFUNDED:
+            return 'fail'
+        order.payment_status = PaymentStatus.NOT_PAID
+        order.save(update_fields=['payment_status', 'updated_at'])
+        return 'fail'
+
+    return 'pending'
+
+
+def sync_alfa_order_payment_status(order, client_url=''):
+    if not order:
+        return ''
+
+    if order.payment_status == PaymentStatus.PAID:
+        return 'success'
+
+    if order.payment_status == PaymentStatus.REFUNDED:
+        return 'fail'
+
+    if order.payment_gateway != 'alfa' or not order.payment_order_id:
+        return ''
+
+    try:
+        payment_status = get_payment_status(order.payment_order_id)
+    except AlfaAcquiringError:
+        logger.exception('Failed to sync Alfa payment status for order %s', order.number)
+        return ''
+
+    return apply_alfa_order_status(order, int(payment_status.get('orderStatus', -1)), client_url)
+
+
 @require_POST
 def checkout_order_api(request):
     try:
@@ -441,28 +491,10 @@ def alfa_payment_return_page(request):
 
     if order and order.payment_order_id:
         try:
-            payment_status = get_payment_status(order.payment_order_id)
-            order_status = int(payment_status.get('orderStatus', -1))
-            was_paid = order.payment_status == PaymentStatus.PAID
-            if order_status in {1, 2}:
-                if order.payment_status != PaymentStatus.REFUNDED:
-                    order.payment_status = PaymentStatus.PAID
-                    order.payment_form_url = ''
-                    order.save(update_fields=['payment_status', 'payment_form_url', 'updated_at'])
-                    if not was_paid:
-                        send_order_paid_notifications(order.pk, request.build_absolute_uri(f'/order-success.html?order={order.number}'))
-                status = 'success'
-            elif order_status in {3, 4, 5, 6}:
-                if order.payment_status == PaymentStatus.PAID:
-                    status = 'success'
-                elif order.payment_status == PaymentStatus.REFUNDED:
-                    status = 'fail'
-                else:
-                    order.payment_status = PaymentStatus.NOT_PAID
-                    order.save(update_fields=['payment_status', 'updated_at'])
-                    status = 'fail'
-            else:
-                status = status or 'pending'
+            status = sync_alfa_order_payment_status(
+                order,
+                request.build_absolute_uri(f'/order-success.html?order={order.number}'),
+            ) or status or 'pending'
         except AlfaAcquiringError:
             status = status or 'pending'
 
