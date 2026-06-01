@@ -3,6 +3,7 @@ from decimal import Decimal
 from io import StringIO
 from types import SimpleNamespace
 from unittest.mock import patch
+from urllib.error import HTTPError
 
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -1653,6 +1654,39 @@ class CartStockTests(TestCase):
 
 
 class DeliveryLocationTests(TestCase):
+    @override_settings(
+        CDEK_API_BASE_URL='https://api.cdek.example',
+        CDEK_CLIENT_ID='client',
+        CDEK_CLIENT_SECRET='secret',
+    )
+    @patch('shop.location_services.cdek_request_json')
+    def test_cdek_get_refreshes_expired_oauth_token(self, cdek_request_json_mock):
+        from shop import location_services
+
+        cache.delete(location_services.CDEK_TOKEN_CACHE_KEY)
+        token_responses = iter([
+            {'access_token': 'expired-token', 'expires_in': 3600},
+            {'access_token': 'fresh-token', 'expires_in': 3600},
+        ])
+        deliverypoints_calls = []
+
+        def fake_cdek_request(request, attempts=2):
+            if request.full_url.endswith('/v2/oauth/token'):
+                return next(token_responses)
+
+            deliverypoints_calls.append(request.headers.get('Authorization'))
+            if len(deliverypoints_calls) == 1:
+                raise HTTPError(request.full_url, 401, 'Unauthorized', hdrs=None, fp=None)
+
+            return [{'code': 'PVZ1'}]
+
+        cdek_request_json_mock.side_effect = fake_cdek_request
+
+        result = location_services.cdek_get('/v2/deliverypoints', {'city_code': '1588'})
+
+        self.assertEqual(result, [{'code': 'PVZ1'}])
+        self.assertEqual(deliverypoints_calls, ['Bearer expired-token', 'Bearer fresh-token'])
+
     @override_settings(
         CDEK_CLIENT_ID='client',
         CDEK_CLIENT_SECRET='secret',

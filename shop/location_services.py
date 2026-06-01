@@ -1,6 +1,7 @@
 import json
 from hashlib import sha256
 from functools import lru_cache
+from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -11,6 +12,7 @@ from django.core.cache import cache
 REQUEST_TIMEOUT = getattr(settings, 'CDEK_REQUEST_TIMEOUT', 15)
 LOCATION_CACHE_TIMEOUT = getattr(settings, 'CDEK_LOCATION_CACHE_SECONDS', 6 * 60 * 60)
 LOCATION_CACHE_VERSION = 'v4'
+CDEK_TOKEN_CACHE_KEY = 'cdek_oauth_token'
 
 CDEK_COUNTRY_TITLES = {
     'RU': 'Россия',
@@ -138,8 +140,12 @@ def cdek_enabled():
     return bool(settings.CDEK_CLIENT_ID and settings.CDEK_CLIENT_SECRET)
 
 
-@lru_cache(maxsize=1)
-def cdek_token():
+def cdek_token(force_refresh=False):
+    if not force_refresh:
+        cached_token = cache.get(CDEK_TOKEN_CACHE_KEY)
+        if cached_token:
+            return cached_token
+
     payload = urlencode({
         'grant_type': 'client_credentials',
         'client_id': settings.CDEK_CLIENT_ID,
@@ -151,7 +157,11 @@ def cdek_token():
         headers={'Content-Type': 'application/x-www-form-urlencoded'},
         method='POST',
     )
-    return cdek_request_json(request)['access_token']
+    data = cdek_request_json(request)
+    token = data['access_token']
+    expires_in = int(data.get('expires_in') or 3600)
+    cache.set(CDEK_TOKEN_CACHE_KEY, token, max(60, expires_in - 60))
+    return token
 
 
 def cdek_request_json(request, attempts=2):
@@ -169,11 +179,19 @@ def cdek_request_json(request, attempts=2):
 
 def cdek_get(path, params):
     query = urlencode({key: value for key, value in params.items() if value not in (None, '', [])})
-    request = Request(
-        f'{settings.CDEK_API_BASE_URL.rstrip("/")}{path}?{query}',
-        headers={'Authorization': f'Bearer {cdek_token()}', 'Accept': 'application/json'},
-    )
-    return cdek_request_json(request)
+
+    for force_refresh in (False, True):
+        request = Request(
+            f'{settings.CDEK_API_BASE_URL.rstrip("/")}{path}?{query}',
+            headers={'Authorization': f'Bearer {cdek_token(force_refresh=force_refresh)}', 'Accept': 'application/json'},
+        )
+        try:
+            return cdek_request_json(request)
+        except HTTPError as error:
+            if error.code == 401 and not force_refresh:
+                cache.delete(CDEK_TOKEN_CACHE_KEY)
+                continue
+            raise
 
 
 def cached_cdek_get(cache_name, path, params):
@@ -190,17 +208,24 @@ def cached_cdek_get(cache_name, path, params):
 
 
 def cdek_post(path, payload):
-    request = Request(
-        f'{settings.CDEK_API_BASE_URL.rstrip("/")}{path}',
-        data=json.dumps(payload).encode('utf-8'),
-        headers={
-            'Authorization': f'Bearer {cdek_token()}',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        method='POST',
-    )
-    return cdek_request_json(request)
+    for force_refresh in (False, True):
+        request = Request(
+            f'{settings.CDEK_API_BASE_URL.rstrip("/")}{path}',
+            data=json.dumps(payload).encode('utf-8'),
+            headers={
+                'Authorization': f'Bearer {cdek_token(force_refresh=force_refresh)}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            method='POST',
+        )
+        try:
+            return cdek_request_json(request)
+        except HTTPError as error:
+            if error.code == 401 and not force_refresh:
+                cache.delete(CDEK_TOKEN_CACHE_KEY)
+                continue
+            raise
 
 
 def fallback_countries():
