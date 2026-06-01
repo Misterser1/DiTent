@@ -289,7 +289,7 @@ function fillClientFromUser(user) {
     Object.entries(fields).forEach(([key, value]) => {
         const input = document.querySelector(`[data-client-field="${key}"]`);
 
-        if (input && value && !input.value) {
+        if (input && value) {
             input.value = value;
         }
     });
@@ -603,25 +603,63 @@ async function removeItem(id) {
 }
 
 async function validateAuth() {
-    const savedAuth = getAuthState();
-
-    if (savedAuth?.email) {
-        return true;
-    }
-
     const status = await loadAuthStatus();
     return Boolean(status.authenticated);
 }
 
-function validateClient() {
-    const requiredFields = ['lastName', 'firstName', 'phone', 'email'];
-    let isValid = true;
+function isValidPhone(phone) {
+    const value = String(phone || '').trim();
 
-    requiredFields.forEach(field => {
+    if (!value) {
+        return false;
+    }
+
+    if (/[^0-9\s()+.-]/.test(value)) {
+        return false;
+    }
+
+    if ((value.match(/\+/g) || []).length > 1 || (value.includes('+') && !value.startsWith('+'))) {
+        return false;
+    }
+
+    const digits = value.replace(/\D/g, '');
+    return digits.length >= 10 && digits.length <= 15;
+}
+
+function isValidEmail(email) {
+    const value = String(email || '').trim();
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value) && value.length <= 254;
+}
+
+function isValidPersonName(name) {
+    const value = String(name || '').trim();
+    return value.length >= 2
+        && value.length <= 80
+        && /^[A-Za-zА-Яа-яЁё]+(?:[ '-][A-Za-zА-Яа-яЁё]+)*$/.test(value);
+}
+
+function validateClient() {
+    let isValid = true;
+    const fields = {
+        lastName: {
+            valid: value => isValidPersonName(value),
+        },
+        firstName: {
+            valid: value => isValidPersonName(value),
+        },
+        phone: {
+            valid: value => isValidPhone(value),
+        },
+        email: {
+            valid: value => isValidEmail(value),
+        },
+    };
+
+    Object.entries(fields).forEach(([field, rule]) => {
         const input = document.querySelector(`[data-client-field="${field}"]`);
         const value = input?.value.trim() || '';
 
-        if (!value || (field === 'email' && !value.includes('@'))) {
+        if (!rule.valid(value)) {
             markField(input);
             isValid = false;
         }

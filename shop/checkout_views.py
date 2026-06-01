@@ -97,23 +97,71 @@ def text_value(payload, key, max_length=255):
     return value[:max_length]
 
 
-def validate_checkout_payload(payload):
+def is_valid_phone(phone):
+    phone = (phone or '').strip()
+
+    if not phone:
+        return False
+
+    if any(char not in '0123456789 +().-' for char in phone):
+        return False
+
+    if phone.count('+') > 1 or ('+' in phone and not phone.startswith('+')):
+        return False
+
+    digits = ''.join(char for char in phone if char.isdigit())
+    return 10 <= len(digits) <= 15
+
+
+def authenticated_checkout_client(user, client):
+    if not getattr(user, 'is_authenticated', False):
+        return client
+
+    profile, _ = CustomerProfile.objects.get_or_create(user=user)
+    merged = dict(client)
+    merged['email'] = user.email or merged.get('email', '')
+
+    if user.first_name:
+        merged['firstName'] = user.first_name
+    if user.last_name:
+        merged['lastName'] = user.last_name
+    if profile.middle_name:
+        merged['middleName'] = profile.middle_name
+    if is_valid_phone(profile.phone):
+        merged['phone'] = profile.phone
+    if not merged.get('type') and profile.customer_type:
+        merged['type'] = profile.customer_type
+
+    return merged
+
+
+def validate_checkout_payload(payload, user=None):
     client = payload.get('client') or {}
     delivery = payload.get('delivery') or {}
     location = payload.get('location') or {}
     errors = {}
+    client_data = {
+        'type': text_value(client, 'type', 40),
+        'email': text_value(client, 'email', 254).lower(),
+        'firstName': text_value(client, 'firstName', 120),
+        'lastName': text_value(client, 'lastName', 120),
+        'middleName': text_value(client, 'middleName', 120),
+        'phone': text_value(client, 'phone', 40),
+        'comment': text_value(client, 'comment', 1000),
+    }
+    client_data = authenticated_checkout_client(user, client_data)
 
-    email = text_value(client, 'email', 254).lower()
+    email = client_data['email']
     try:
         validate_email(email)
     except ValidationError:
         errors['email'] = 'Введите корректный e-mail.'
 
-    if not text_value(client, 'firstName', 120) and not text_value(client, 'lastName', 120):
+    if not client_data['firstName'] and not client_data['lastName']:
         errors['name'] = 'Укажите имя или фамилию клиента.'
 
-    if not text_value(client, 'phone', 40):
-        errors['phone'] = 'Укажите телефон.'
+    if not is_valid_phone(client_data['phone']):
+        errors['phone'] = 'Введите корректный номер телефона.'
 
     if not text_value(delivery, 'type', 40):
         errors['delivery'] = 'Выберите способ доставки.'
@@ -128,15 +176,7 @@ def validate_checkout_payload(payload):
         raise ValidationError(errors)
 
     return {
-        'client': {
-            'type': text_value(client, 'type', 40),
-            'email': email,
-            'firstName': text_value(client, 'firstName', 120),
-            'lastName': text_value(client, 'lastName', 120),
-            'middleName': text_value(client, 'middleName', 120),
-            'phone': text_value(client, 'phone', 40),
-            'comment': text_value(client, 'comment', 1000),
-        },
+        'client': client_data,
         'delivery': {
             'type': text_value(delivery, 'type', 40),
             'address': text_value(delivery, 'address', 500),
@@ -287,7 +327,7 @@ def checkout_order_api(request):
         if not payload.get('returnTermsAccepted'):
             return JsonResponse({'ok': False, 'error': 'Подтвердите условия возврата перед оформлением заказа.'}, status=400)
 
-        validated = validate_checkout_payload(payload)
+        validated = validate_checkout_payload(payload, request.user)
         validate_catalog_stock(cart)
         selected_pickup_point = None
         if validated['delivery']['type'] == 'cdek-point' and cdek_enabled():

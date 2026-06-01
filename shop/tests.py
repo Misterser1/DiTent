@@ -308,9 +308,75 @@ class CheckoutSecurityTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn('email', response.json()['errors'])
         self.assertIn('name', response.json()['errors'])
         self.assertIn('phone', response.json()['errors'])
+
+    def test_checkout_rejects_short_numeric_phone(self):
+        User = get_user_model()
+        user = User.objects.create_user(username='checkout-short-phone', email='checkout-short-phone@example.com', password='password123')
+        self.client.force_login(user)
+        self.add_checkout_product('CHECKOUT-SHORT-PHONE-1')
+
+        response = self.client.post(
+            '/checkout/api/orders/',
+            data=json.dumps({
+                'returnTermsAccepted': True,
+                'client': {
+                    'firstName': 'Short',
+                    'lastName': 'Phone',
+                    'phone': '4819',
+                    'email': 'academy.goahead@gmail.com',
+                },
+                'delivery': {'type': 'manager'},
+                'payment': {'type': 'invoice'},
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('phone', response.json()['errors'])
+        self.assertFalse(Order.objects.filter(user=user).exists())
+
+    def test_checkout_prefers_authenticated_profile_over_stale_guest_client_data(self):
+        User = get_user_model()
+        user = User.objects.create_user(
+            username='checkout-profile-priority',
+            email='server.osmanov26@mail.ru',
+            password='password123',
+            first_name='Осман',
+            last_name='Османов',
+        )
+        CustomerProfile.objects.create(
+            user=user,
+            middle_name='Серверович',
+            phone='+79990000000',
+            customer_type=CustomerType.PERSON,
+        )
+        self.client.force_login(user)
+        self.add_checkout_product('CHECKOUT-PROFILE-PRIORITY-1')
+
+        response = self.client.post(
+            '/checkout/api/orders/',
+            data=json.dumps({
+                'returnTermsAccepted': True,
+                'client': {
+                    'firstName': 'Абдураманов',
+                    'lastName': 'Зиннур',
+                    'middleName': 'Шевкетович',
+                    'phone': '+78889990000',
+                    'email': 'academy.goahead@gmail.com',
+                },
+                'delivery': {'type': 'manager'},
+                'payment': {'type': 'invoice'},
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        order = Order.objects.get(user=user)
+        self.assertEqual(order.email, 'server.osmanov26@mail.ru')
+        self.assertEqual(order.phone, '+79990000000')
+        self.assertEqual(order.customer_name, 'Османов Осман Серверович')
 
     def test_checkout_reports_stale_catalog_item_without_creating_order(self):
         User = get_user_model()
