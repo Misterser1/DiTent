@@ -202,8 +202,12 @@ if not DEBUG:
         },
     }
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / os.getenv('MEDIA_ROOT', 'media')
+if IS_VERCEL:
+    MEDIA_URL = f'{STATIC_URL}generated-media/'
+    MEDIA_ROOT = BASE_DIR / 'assets' / 'generated-media'
+else:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / os.getenv('MEDIA_ROOT', 'media')
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = env_int('DATA_UPLOAD_MAX_MEMORY_SIZE', 10 * 1024 * 1024)
 FILE_UPLOAD_MAX_MEMORY_SIZE = env_int('FILE_UPLOAD_MAX_MEMORY_SIZE', 10 * 1024 * 1024)
