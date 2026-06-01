@@ -1185,7 +1185,13 @@ function initSection(section) {
         }
 
         const item = await loadItem(section, id);
-        section.querySelectorAll('tr').forEach((tableRow) => tableRow.classList.toggle('is-selected', tableRow === row));
+        section.querySelectorAll('tr').forEach((tableRow) => {
+            const isSelected = tableRow === row;
+            tableRow.classList.toggle('is-selected', isSelected);
+            if (tableRow.hasAttribute('aria-selected')) {
+                tableRow.setAttribute('aria-selected', String(isSelected));
+            }
+        });
         fillForm(section, item);
         form.dataset.currentItem = JSON.stringify(item);
         setMode(section, 'edit', id);
@@ -1243,6 +1249,40 @@ function initSection(section) {
             }
         });
     });
+
+    if (entity === 'orders' || entity === 'drawing-orders') {
+        section.querySelectorAll('tbody tr[data-admin-id]').forEach((row) => {
+            row.tabIndex = 0;
+            row.setAttribute('role', 'button');
+            row.setAttribute('aria-selected', 'false');
+            row.title = 'Открыть карточку заказа';
+
+            const openRow = async () => {
+                try {
+                    await editRow(row);
+                } catch (error) {
+                    window.alert(error.message);
+                }
+            };
+
+            row.addEventListener('click', (event) => {
+                if (event.target.closest('button, a, input, select, textarea, label')) {
+                    return;
+                }
+
+                openRow();
+            });
+
+            row.addEventListener('keydown', (event) => {
+                if (event.key !== 'Enter' && event.key !== ' ') {
+                    return;
+                }
+
+                event.preventDefault();
+                openRow();
+            });
+        });
+    }
 
     section.querySelectorAll('[data-delete-row]').forEach((button) => {
         button.addEventListener('click', async () => {

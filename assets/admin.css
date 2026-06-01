@@ -935,6 +935,20 @@
     background: #F8FBFD;
 }
 
+.admin-table--orders tbody tr[data-admin-id] {
+    cursor: pointer;
+}
+
+.admin-table--orders tbody tr[data-admin-id]:hover td,
+.admin-table--orders tbody tr[data-admin-id]:focus-visible td {
+    background: #F4FAFE;
+}
+
+.admin-table--orders tbody tr[data-admin-id]:focus-visible {
+    outline: 2px solid #6CAFD8;
+    outline-offset: -2px;
+}
+
 .admin-table-filter {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(180px, .8fr);
