@@ -1,5 +1,10 @@
 {
   "buildCommand": "python manage.py migrate --noinput && python manage.py seed_production_content && python manage.py collectstatic --noinput",
+  "functions": {
+    "config/wsgi.py": {
+      "excludeFiles": "{assets/**,staticfiles/**,media/**,docs/**,shop/tests.py,**/__pycache__/**,*.sqlite3,*.log,.deploy-cache/**,.playwright-mcp/**,.codex-*.png}"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
