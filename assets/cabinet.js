@@ -4,18 +4,40 @@ const contents = document.querySelectorAll('.cabinet-content');
 const moreButtons = document.querySelectorAll('.order-item__inner-item__more');
 const profileEmailInputs = document.querySelectorAll('[data-profile-email], [data-profile-field="email"]');
 const profileFields = document.querySelectorAll('[data-profile-field]');
-const profileTypeInputs = document.querySelectorAll('[data-profile-type]');
 const profileSaveButtons = document.querySelectorAll('[data-profile-save]');
 const profileMessage = document.querySelector('[data-profile-message]');
 const profileTypeTitle = document.querySelector('[data-profile-type-title]');
+const profileTypeValue = document.querySelector('[data-profile-type-value]');
+const profileRequisites = document.querySelector('[data-profile-requisites]');
+const profileLegalFormSelect = document.querySelector('[data-profile-legal-form-select]');
+const profileLegalFormButton = document.querySelector('[data-profile-legal-form-button]');
+const profileLegalFormInput = document.querySelector('[data-profile-field="companyLegalForm"]');
 const logoutButton = document.querySelector('.cabinet-nav__button');
 const ordersList = document.querySelector('[data-cabinet-orders]');
+const orderModal = document.querySelector('[data-order-modal]');
+const orderModalTitle = document.querySelector('[data-order-modal-title]');
+const orderModalDate = document.querySelector('[data-order-modal-date]');
+const orderModalBody = document.querySelector('[data-order-modal-body]');
+
+let currentOrders = [];
 
 const profileTypeTitleMap = {
     person: 'Для физических лиц',
     entrepreneur: 'Для ИП',
     company: 'Для юридических лиц',
 };
+
+const profileLegalFormLabels = {
+    '': 'Выберите форму',
+    'ИП': 'ИП',
+    'ООО': 'ООО',
+    'АО': 'АО',
+    'ПАО': 'ПАО',
+    'НКО': 'НКО',
+    'Другое': 'Другое',
+};
+
+let currentProfileType = 'person';
 
 function getCookie(name) {
     const value = `; ${document.cookie}`;
@@ -58,22 +80,14 @@ function setProfileMessage(text, type = 'error') {
 
 function isValidEmail(email) {
     const value = String(email || '').trim();
-    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value) && value.length <= 254;
+    return /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(value)
+        && value.length <= 254;
 }
 
 function isValidPhone(phone) {
-    const value = String(phone || '').trim();
-
-    if (!value || /[^0-9\s()+.-]/.test(value)) {
-        return false;
-    }
-
-    if ((value.match(/\+/g) || []).length > 1 || (value.includes('+') && !value.startsWith('+'))) {
-        return false;
-    }
-
-    const digits = value.replace(/\D/g, '');
-    return digits.length >= 10 && digits.length <= 15;
+    return window.ditentIsRuPhone
+        ? window.ditentIsRuPhone(phone)
+        : /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/.test(String(phone || '').trim());
 }
 
 function isValidPersonName(name, required = true) {
@@ -86,6 +100,42 @@ function isValidPersonName(name, required = true) {
     return value.length >= 2
         && value.length <= 80
         && /^[A-Za-zА-Яа-яЁё]+(?:[ '-][A-Za-zА-Яа-яЁё]+)*$/.test(value);
+}
+
+function onlyDigits(value) {
+    return String(value || '').replace(/\D/g, '');
+}
+
+function isBusinessProfileType(type = currentProfileType) {
+    return type === 'entrepreneur' || type === 'company';
+}
+
+function setProfileLegalForm(value) {
+    const normalized = Object.prototype.hasOwnProperty.call(profileLegalFormLabels, value) ? value : '';
+
+    if (profileLegalFormInput) {
+        profileLegalFormInput.value = normalized;
+    }
+
+    if (profileLegalFormButton) {
+        profileLegalFormButton.textContent = profileLegalFormLabels[normalized];
+        profileLegalFormButton.classList.toggle('is-placeholder', !normalized);
+    }
+}
+
+function updateProfileRequisitesVisibility() {
+    const type = currentProfileType || 'person';
+    const isBusiness = isBusinessProfileType(type);
+
+    if (profileRequisites) {
+        profileRequisites.hidden = !isBusiness;
+    }
+
+    if (type === 'entrepreneur') {
+        setProfileLegalForm('ИП');
+    } else if (type === 'company' && profileLegalFormInput?.value === 'ИП') {
+        setProfileLegalForm('');
+    }
 }
 
 function setProfileValue(field, value) {
@@ -106,15 +156,26 @@ function fillProfile(profile) {
     setProfileValue('middleName', profile.middleName);
     setProfileValue('phone', profile.phone);
     setProfileValue('email', profile.email);
+    setProfileLegalForm(profile.companyLegalForm || '');
+    setProfileValue('companyName', profile.companyName);
+    setProfileValue('inn', profile.inn);
+    setProfileValue('kpp', profile.kpp);
+    setProfileValue('ogrn', profile.ogrn);
+    setProfileValue('legalAddress', profile.legalAddress);
+    setProfileValue('settlementAccount', profile.settlementAccount);
+    setProfileValue('bank', profile.bank);
 
     const type = profile.type || 'person';
-    profileTypeInputs.forEach(input => {
-        input.checked = input.value === type;
-    });
+    currentProfileType = type;
 
     if (profileTypeTitle) {
         profileTypeTitle.textContent = profileTypeTitleMap[type] || profile.typeTitle || 'Личные данные';
     }
+    if (profileTypeValue) {
+        profileTypeValue.textContent = profile.typeTitle || profileTypeTitleMap[type]?.replace('Для ', '') || 'Физическое лицо';
+    }
+
+    updateProfileRequisitesVisibility();
 }
 
 function getProfilePayload() {
@@ -129,7 +190,15 @@ function getProfilePayload() {
         lastName: field('lastName'),
         middleName: field('middleName'),
         phone: field('phone'),
-        type: document.querySelector('[data-profile-type]:checked')?.value || 'person',
+        type: currentProfileType || 'person',
+        companyLegalForm: field('companyLegalForm'),
+        companyName: field('companyName'),
+        inn: onlyDigits(field('inn')),
+        kpp: onlyDigits(field('kpp')),
+        ogrn: onlyDigits(field('ogrn')),
+        legalAddress: field('legalAddress'),
+        settlementAccount: onlyDigits(field('settlementAccount')),
+        bank: field('bank'),
     };
 }
 
@@ -152,6 +221,35 @@ function validateProfilePayload(payload) {
 
     if (!isValidPhone(payload.phone)) {
         return 'Введите корректный номер телефона.';
+    }
+
+    if (isBusinessProfileType(payload.type)) {
+        const isCompany = payload.type === 'company';
+
+        if (!payload.companyLegalForm) {
+            return 'Выберите форму юр. лица.';
+        }
+        if (!payload.companyName || payload.companyName.length < 2) {
+            return 'Введите название компании.';
+        }
+        if (!((isCompany && payload.inn.length === 10) || (!isCompany && payload.inn.length === 12))) {
+            return 'Введите корректный ИНН.';
+        }
+        if ((isCompany && payload.kpp.length !== 9) || (!isCompany && payload.kpp && payload.kpp.length !== 9)) {
+            return isCompany ? 'Введите корректный КПП.' : 'Введите корректный КПП или оставьте поле пустым.';
+        }
+        if (!((isCompany && payload.ogrn.length === 13) || (!isCompany && payload.ogrn.length === 15))) {
+            return 'Введите корректный ОГРН или ОГРНИП.';
+        }
+        if (!payload.legalAddress || payload.legalAddress.length < 5) {
+            return 'Введите юридический адрес.';
+        }
+        if (payload.settlementAccount.length !== 20) {
+            return 'Введите 20 цифр расчетного счета.';
+        }
+        if (!payload.bank || payload.bank.length < 2) {
+            return 'Введите банк.';
+        }
     }
 
     return '';
@@ -343,6 +441,203 @@ function renderOrderPosition(item, index) {
     `;
 }
 
+function renderOrderRequisites(order) {
+    const client = order.client || {};
+    if (client.type !== 'entrepreneur' && client.type !== 'company') {
+        return '';
+    }
+
+    const rows = [
+        ['Тип клиента', client.typeTitle],
+        ['Форма', client.companyLegalForm],
+        ['Компания', client.companyName],
+        ['ИНН', client.inn],
+        ['КПП', client.kpp],
+        ['ОГРН / ОГРНИП', client.ogrn],
+        ['Юр. адрес', client.legalAddress],
+        ['Расчетный счет', client.settlementAccount],
+        ['Банк', client.bank],
+    ].filter(([, value]) => value);
+
+    if (!rows.length) {
+        return '';
+    }
+
+    return `
+        <div class="order-item__requisites">
+            ${rows.map(([label, value]) => `<p><span>${escapeHtml(label)}:</span> ${escapeHtml(value)}</p>`).join('')}
+        </div>
+    `;
+}
+
+function compactRows(rows) {
+    return rows.filter(([, value]) => value !== null && value !== undefined && value !== '');
+}
+
+function renderDetailRows(rows) {
+    const visibleRows = compactRows(rows);
+
+    if (!visibleRows.length) {
+        return '<p class="cabinet-order-modal__empty">Данные не указаны.</p>';
+    }
+
+    return `
+        <dl>
+            ${visibleRows.map(([label, value]) => `
+                <div>
+                    <dt>${escapeHtml(label)}</dt>
+                    <dd>${escapeHtml(value)}</dd>
+                </div>
+            `).join('')}
+        </dl>
+    `;
+}
+
+function renderDetailSection(title, content, extraClass = '') {
+    return `
+        <section class="cabinet-order-modal__section${extraClass ? ` ${extraClass}` : ''}">
+            <h3>${escapeHtml(title)}</h3>
+            ${content}
+        </section>
+    `;
+}
+
+function deliveryAddressTitle(delivery = {}) {
+    return [delivery.city, delivery.address].filter(Boolean).join(', ');
+}
+
+function deliveryMethodTitle(method) {
+    return {
+        manager: 'Согласовать с менеджером',
+        cdek_courier: 'СДЭК курьером',
+        cdek_pickup: 'СДЭК пункт выдачи',
+        pickup: 'Самовывоз',
+    }[method] || method || 'Не указан';
+}
+
+function renderModalItems(items) {
+    if (!items.length) {
+        return '<p class="cabinet-order-modal__empty">В заказе нет позиций.</p>';
+    }
+
+    return `
+        <div class="cabinet-order-modal__items">
+            ${items.map((item, index) => `
+                <article class="cabinet-order-modal__item">
+                    <div>
+                        <span>Позиция ${index + 1}</span>
+                        <h4>${escapeHtml(item.title || 'Позиция заказа')}</h4>
+                        <p>${escapeHtml(orderItemDetails(item))}</p>
+                    </div>
+                    <strong>${escapeHtml(item.totalTitle || formatMoney(item.totalPrice))}</strong>
+                    ${item.quantity ? `<small>${escapeHtml(item.quantity)} шт.</small>` : ''}
+                </article>
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderModalFiles(order) {
+    const files = order.drawing?.files || [];
+
+    if (!files.length) {
+        return '';
+    }
+
+    return renderDetailSection('Файлы', `
+        <div class="cabinet-order-modal__files">
+            ${files.map(file => `
+                <a href="${escapeHtml(file.url)}" target="_blank" rel="noopener">${escapeHtml(file.name || 'Файл')}</a>
+            `).join('')}
+        </div>
+    `);
+}
+
+function renderModalPayment(order) {
+    const payment = order.payment || {};
+    const canPay = order.canPay === true && order.paymentUrl && order.type !== 'drawing-order';
+    const rows = [
+        ['Статус оплаты', payment.statusTitle || (canPay ? 'Ожидает оплаты' : '')],
+        ['Способ оплаты', payment.methodTitle],
+    ];
+
+    return renderDetailSection('Оплата', `
+        ${renderDetailRows(rows)}
+        ${canPay ? `
+            <button class="cabinet-order-modal__pay" type="button" data-pay-order="${escapeHtml(order.id)}">
+                Оплатить заказ
+                ${orderPayIcon}
+            </button>
+        ` : ''}
+    `);
+}
+
+function renderOrderModal(order) {
+    const items = Array.isArray(order.items) ? order.items : [];
+    const summary = order.summary || {};
+    const delivery = order.delivery || {};
+    const client = order.client || {};
+    const total = summary.totalTitle || formatMoney(summary.total);
+
+    return [
+        renderDetailSection('Состав заказа', renderModalItems(items), 'cabinet-order-modal__section--wide'),
+        renderDetailSection('Доставка', renderDetailRows([
+            ['Способ', deliveryMethodTitle(delivery.method)],
+            ['Адрес', deliveryAddressTitle(delivery)],
+            ['Стоимость', summary.delivery === null || summary.delivery === undefined ? '' : formatMoney(summary.delivery)],
+            ['Трек-номер', delivery.trackNumber],
+            ['Статус СДЭК', delivery.cdekStatusName || delivery.cdekStatusCode],
+        ])),
+        renderModalPayment(order),
+        renderDetailSection('Клиент', renderDetailRows([
+            ['Имя / компания', client.name],
+            ['Тип лица', client.typeTitle],
+            ['Телефон', client.phone],
+            ['Email', client.email],
+            ['Форма юр. лица', client.companyLegalForm],
+            ['Название компании', client.companyName],
+            ['ИНН', client.inn],
+            ['КПП', client.kpp],
+            ['ОГРН / ОГРНИП', client.ogrn],
+            ['Юридический адрес', client.legalAddress],
+            ['Расчетный счет', client.settlementAccount],
+            ['Банк', client.bank],
+        ])),
+        renderModalFiles(order),
+        renderDetailSection('Итого', renderDetailRows([
+            ['Товары', summary.subtotal === null || summary.subtotal === undefined ? summary.totalTitle : formatMoney(summary.subtotal)],
+            ['Скидка', summary.discount ? formatMoney(summary.discount) : '0 руб.'],
+            ['Доставка', summary.delivery === null || summary.delivery === undefined ? '' : formatMoney(summary.delivery)],
+            ['НДС', summary.vat ? formatMoney(summary.vat) : '0 руб.'],
+            ['Итого', total],
+        ]), 'cabinet-order-modal__section--total'),
+    ].filter(Boolean).join('');
+}
+
+function openOrderModal(orderId) {
+    const order = currentOrders.find(item => String(item.id || '') === String(orderId || ''));
+
+    if (!order || !orderModal || !orderModalBody) {
+        return;
+    }
+
+    const isDrawingOrder = order.type === 'drawing-order';
+    orderModalTitle.textContent = `${isDrawingOrder ? 'Заявка по чертежу' : 'Заказ'} №${order.id}`;
+    orderModalDate.textContent = [formatOrderDate(order.createdAt), order.statusTitle].filter(Boolean).join(' · ');
+    orderModalBody.innerHTML = renderOrderModal(order);
+    orderModal.hidden = false;
+    document.body.classList.add('cabinet-order-modal-open');
+}
+
+function closeOrderModal() {
+    if (!orderModal) {
+        return;
+    }
+
+    orderModal.hidden = true;
+    document.body.classList.remove('cabinet-order-modal-open');
+}
+
 function renderOrder(order) {
     const items = Array.isArray(order.items) ? order.items : [];
     const orderId = String(order.id || '');
@@ -364,14 +659,20 @@ function renderOrder(order) {
             <div class="order-item__inner">
                 ${items.length ? items.map(renderOrderPosition).join('') : '<p class="order-list__message">В заказе нет позиций.</p>'}
             </div>
+            ${renderOrderRequisites(order)}
             <div class="order-item__row">
                 <p class="order-item__price">Итого: <b>${escapeHtml(total)}</b></p>
-                ${canRepeat && !isDrawingOrder ? `
+                <div class="order-item__actions">
+                    <button class="order-item__details" type="button" data-order-details="${escapeHtml(orderId)}">
+                        Подробнее
+                    </button>
+                    ${canRepeat && !isDrawingOrder ? `
                     <button type="button" data-repeat-order="${escapeHtml(orderId)}">
                         ${orderRepeatIcon}
                         Повторить заказ
                     </button>
-                ` : ''}
+                    ` : ''}
+                </div>
             </div>
             ${canPay && !isDrawingOrder ? `
                 <button class="order-item__pay" type="button" data-pay-order="${escapeHtml(orderId)}">
@@ -401,6 +702,7 @@ async function loadOrders() {
     try {
         const result = await cabinetApi('cabinet/api/orders/');
         const orders = Array.isArray(result.orders) ? result.orders : [];
+        currentOrders = orders;
 
         if (!orders.length) {
             setOrdersMessage('Заказы пока не созданы.');
@@ -422,16 +724,35 @@ headers.forEach(header => {
 
 navItems.forEach((item, index) => {
     item.addEventListener('click', () => {
-        navItems.forEach(el => {
-            el.classList.remove('cabinet-nav__item--active');
-        });
-        contents.forEach(el => {
-            el.classList.remove('cabinet-content--active');
-        });
-        item.classList.add('cabinet-nav__item--active');
-        contents[index].classList.add('cabinet-content--active');
+        activateCabinetTab(index);
     });
 });
+
+function activateCabinetTab(index) {
+    const item = navItems[index];
+    const content = contents[index];
+
+    if (!item || !content) {
+        return;
+    }
+
+    navItems.forEach(el => {
+        el.classList.remove('cabinet-nav__item--active');
+    });
+    contents.forEach(el => {
+        el.classList.remove('cabinet-content--active');
+    });
+    item.classList.add('cabinet-nav__item--active');
+    content.classList.add('cabinet-content--active');
+}
+
+function syncCabinetHashTab() {
+    if (window.location.hash === '#orders') {
+        activateCabinetTab(1);
+    } else if (window.location.hash === '#profile') {
+        activateCabinetTab(0);
+    }
+}
 
 moreButtons.forEach(button => {
     button.addEventListener('click', () => {
@@ -444,6 +765,12 @@ moreButtons.forEach(button => {
 });
 
 ordersList?.addEventListener('click', async event => {
+    const detailsButton = event.target.closest('[data-order-details]');
+    if (detailsButton && ordersList.contains(detailsButton)) {
+        openOrderModal(detailsButton.dataset.orderDetails);
+        return;
+    }
+
     const moreButton = event.target.closest('[data-order-more]');
     if (moreButton && ordersList.contains(moreButton)) {
         const item = moreButton.closest('.order-item__inner-item');
@@ -486,8 +813,55 @@ ordersList?.addEventListener('click', async event => {
     }
 });
 
+orderModal?.addEventListener('click', event => {
+    const closeButton = event.target.closest('[data-order-modal-close]');
+    if (closeButton && orderModal.contains(closeButton)) {
+        closeOrderModal();
+        return;
+    }
+
+    const payButton = event.target.closest('[data-pay-order]');
+    if (payButton && orderModal.contains(payButton)) {
+        const order = currentOrders.find(item => String(item.id || '') === String(payButton.dataset.payOrder || ''));
+        const paymentUrl = order?.paymentUrl || '';
+
+        if (paymentUrl) {
+            window.location.href = paymentUrl;
+            return;
+        }
+
+        payButton.disabled = true;
+        payButton.textContent = 'Оплата пока не подключена';
+    }
+});
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && orderModal && !orderModal.hidden) {
+        closeOrderModal();
+    }
+});
+
 profileSaveButtons.forEach(button => {
     button.addEventListener('click', saveProfile);
+});
+
+profileLegalFormButton?.addEventListener('click', event => {
+    event.stopPropagation();
+    profileLegalFormSelect?.classList.toggle('open');
+});
+
+profileLegalFormSelect?.querySelectorAll('[data-profile-legal-form-option]').forEach(option => {
+    option.addEventListener('click', event => {
+        event.stopPropagation();
+        setProfileLegalForm(option.value);
+        profileLegalFormSelect.classList.remove('open');
+    });
+});
+
+document.querySelectorAll('[data-profile-field="inn"], [data-profile-field="kpp"], [data-profile-field="ogrn"], [data-profile-field="settlementAccount"]').forEach(input => {
+    input.addEventListener('input', () => {
+        input.value = onlyDigits(input.value);
+    });
 });
 
 profileEmailInputs.forEach(input => {
@@ -509,5 +883,13 @@ logoutButton?.addEventListener('click', async () => {
     }
 });
 
+document.addEventListener('click', () => {
+    profileLegalFormSelect?.classList.remove('open');
+});
+
+setProfileLegalForm(profileLegalFormInput?.value || '');
+updateProfileRequisitesVisibility();
+syncCabinetHashTab();
+window.addEventListener('hashchange', syncCabinetHashTab);
 loadProfile();
 loadOrders();

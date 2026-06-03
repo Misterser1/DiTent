@@ -5,6 +5,7 @@ temp/
 .tmp/
 .local-server*.log
 .django-server*.log
+runserver-*.log
 .env
 db.sqlite3
 media/

@@ -259,6 +259,14 @@ class Order(TimeStampedModel):
     status = models.CharField('Статус заказа', max_length=30, choices=OrderStatus.choices, default=OrderStatus.WAITING_MANAGER)
     payment_status = models.CharField('Статус оплаты', max_length=30, choices=PaymentStatus.choices, default=PaymentStatus.NOT_PAID)
     customer_type = models.CharField('Тип клиента', max_length=30, choices=CustomerType.choices, default=CustomerType.PERSON)
+    company_legal_form = models.CharField('Форма юр. лица', max_length=40, blank=True)
+    company_name = models.CharField('Название компании', max_length=180, blank=True)
+    inn = models.CharField('ИНН', max_length=20, blank=True)
+    kpp = models.CharField('КПП', max_length=20, blank=True)
+    ogrn = models.CharField('ОГРН / ОГРНИП', max_length=30, blank=True)
+    legal_address = models.TextField('Юридический адрес', blank=True)
+    settlement_account = models.CharField('Расчетный счет', max_length=40, blank=True)
+    bank = models.CharField('Банк', max_length=180, blank=True)
     customer_name = models.CharField('Имя / компания', max_length=180)
     phone = models.CharField('Телефон', max_length=40)
     email = models.EmailField('Email')
@@ -382,6 +390,14 @@ class CustomerProfile(TimeStampedModel):
     middle_name = models.CharField('Отчество', max_length=120, blank=True)
     phone = models.CharField('Телефон', max_length=40, blank=True)
     customer_type = models.CharField('Тип клиента', max_length=30, choices=CustomerType.choices, default=CustomerType.PERSON)
+    company_legal_form = models.CharField('Форма юр. лица', max_length=40, blank=True)
+    company_name = models.CharField('Название компании', max_length=180, blank=True)
+    inn = models.CharField('ИНН', max_length=20, blank=True)
+    kpp = models.CharField('КПП', max_length=20, blank=True)
+    ogrn = models.CharField('ОГРН / ОГРНИП', max_length=30, blank=True)
+    legal_address = models.CharField('Юридический адрес', max_length=500, blank=True)
+    settlement_account = models.CharField('Расчетный счет', max_length=40, blank=True)
+    bank = models.CharField('Банк', max_length=180, blank=True)
 
     class Meta:
         verbose_name = 'Профиль клиента'
@@ -417,9 +433,18 @@ class EmailAuthCode(TimeStampedModel):
 class DrawingOrder(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Пользователь', related_name='drawing_orders', on_delete=models.PROTECT, blank=True, null=True)
     status = models.CharField('Статус', max_length=30, choices=OrderStatus.choices, default=OrderStatus.WAITING_MANAGER)
+    customer_type = models.CharField('Тип клиента', max_length=30, choices=CustomerType.choices, default=CustomerType.PERSON)
     customer_name = models.CharField('Имя / компания', max_length=180)
     phone = models.CharField('Телефон', max_length=40)
     email = models.EmailField('Email')
+    company_legal_form = models.CharField('Форма юр. лица', max_length=40, blank=True)
+    company_name = models.CharField('Название компании', max_length=180, blank=True)
+    inn = models.CharField('ИНН', max_length=20, blank=True)
+    kpp = models.CharField('КПП', max_length=20, blank=True)
+    ogrn = models.CharField('ОГРН / ОГРНИП', max_length=30, blank=True)
+    legal_address = models.CharField('Юридический адрес', max_length=500, blank=True)
+    settlement_account = models.CharField('Расчетный счет', max_length=40, blank=True)
+    bank = models.CharField('Банк', max_length=180, blank=True)
     comment = models.TextField('Комментарий', blank=True)
     manager_comment = models.TextField('Комментарий менеджера', blank=True)
     return_terms_accepted = models.BooleanField('Условия возврата подтверждены', default=False)
@@ -460,6 +485,20 @@ class ConstructorGalleryImage(TimeStampedModel):
 
     def __str__(self):
         return self.title
+
+
+class ConstructorGalleryExtraImage(TimeStampedModel):
+    constructor_image = models.ForeignKey(ConstructorGalleryImage, verbose_name='Изображение конструктора', related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField('Изображение', upload_to=upload_to)
+    position = models.PositiveIntegerField('Порядок', default=0)
+
+    class Meta:
+        verbose_name = 'Дополнительное изображение конструктора'
+        verbose_name_plural = 'Дополнительные изображения конструктора'
+        ordering = ('position', 'id')
+
+    def __str__(self):
+        return f'{self.constructor_image} - изображение {self.position}'
 
 
 class GalleryItem(TimeStampedModel):

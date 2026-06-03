@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}DiTent - страница не найдена{% endblock %}
+
+{% block styles %}
+    <base href="/">
+    <link rel="stylesheet" href="{% static 'style.css' %}?v=404-page-1">
+    <link rel="stylesheet" href="{% static '404.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+<main class="not-found-page">
+    <section class="not-found">
+        <div class="wrapper">
+            <div class="not-found__content">
+                <span>404</span>
+                <h1>Страница не найдена</h1>
+                <p>Возможно, ссылка устарела или в адресе есть опечатка. Вернитесь в каталог или создайте чехол по своим размерам.</p>
+                <div class="not-found__actions">
+                    <a href="index.html" class="not-found__primary">На главную</a>
+                    <a href="catalog.html">В каталог</a>
+                    <a href="constructor.html">Создать чехол</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'app.js' %}"></script>
+{% endblock %}

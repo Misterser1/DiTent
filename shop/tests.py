@@ -1,6 +1,7 @@
 import json
 from decimal import Decimal
-from io import StringIO
+from io import BytesIO, StringIO
+from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 from urllib.error import HTTPError
@@ -14,10 +15,12 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import Client, RequestFactory, TestCase, override_settings
 from django.utils import timezone
+from PIL import Image
 
 from .alfa_acquiring import callback_checksum, get_payment_status, register_payment
 from .constructor_services import calculation_metrics, validate_dimensions
-from .models import Cart, CartItem, Category, Color, ConstructorAttachment, CoverShape, CustomerProfile, CustomerType, DrawingOrder, EmailAuthCode, EmailAuthPurpose, Fabric, Fastener, Formula, Order, OrderItem, OrderStatus, PaymentStatus, Product, PublishStatus, SiteSettings
+from .constructor_views import constructor_gallery_images
+from .models import Cart, CartItem, Category, Color, ConstructorAttachment, ConstructorGalleryExtraImage, ConstructorGalleryImage, CoverShape, CustomerProfile, CustomerType, DrawingOrder, EmailAuthCode, EmailAuthPurpose, Fabric, Fastener, Formula, Order, OrderItem, OrderStatus, PaymentStatus, Product, PublishStatus, SiteSettings
 from .validators import validate_uploaded_file
 
 
@@ -138,6 +141,35 @@ class ConstructorFormulaTests(TestCase):
         self.assertEqual(metrics['edging_length'], Decimal('580'))
         self.assertEqual(metrics['extra_seams'], Decimal('2'))
         self.assertEqual(metrics['extra_seam_length'], Decimal('200'))
+
+    def test_constructor_dimensions_reject_decimal_values(self):
+        with self.assertRaises(ValidationError) as context:
+            validate_dimensions(CoverShape.RECTANGULAR, [
+                {'key': 'width', 'value': '100.5'},
+                {'key': 'depth', 'value': 80},
+                {'key': 'height', 'value': 60},
+            ])
+
+        self.assertIn('width', context.exception.message_dict)
+
+    def test_constructor_gallery_images_includes_extra_images(self):
+        item = ConstructorGalleryImage.objects.create(
+            title='Scheme',
+            image='constructor/main.png',
+            position=1,
+            status=PublishStatus.ACTIVE,
+        )
+        ConstructorGalleryExtraImage.objects.create(
+            constructor_image=item,
+            image='constructor/extra.png',
+            position=1,
+        )
+
+        items = constructor_gallery_images()
+
+        self.assertEqual(len(items), 2)
+        self.assertTrue(items[0]['url'].endswith('/constructor/main.png'))
+        self.assertTrue(items[1]['url'].endswith('/constructor/extra.png'))
 
     def test_constructor_calculate_rejects_malformed_json(self):
         response = self.client.post('/constructor/api/calculate/', data='{bad', content_type='application/json')
@@ -342,6 +374,32 @@ class CheckoutSecurityTests(TestCase):
         self.assertIn('name', response.json()['errors'])
         self.assertIn('phone', response.json()['errors'])
 
+    def test_checkout_rejects_cyrillic_email(self):
+        User = get_user_model()
+        user = User.objects.create_user(username='checkout-cyrillic-email', email='клиент@example.com', password='password123')
+        self.client.force_login(user)
+        self.add_checkout_product('CHECKOUT-CYRILLIC-EMAIL-1')
+
+        response = self.client.post(
+            '/checkout/api/orders/',
+            data=json.dumps({
+                'returnTermsAccepted': True,
+                'client': {
+                    'firstName': 'Client',
+                    'lastName': 'Email',
+                    'phone': '+79990000000',
+                    'email': 'checkout-cyrillic@example.com',
+                },
+                'delivery': {'type': 'manager'},
+                'payment': {'type': 'invoice'},
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('email', response.json()['errors'])
+        self.assertFalse(Order.objects.filter(user=user).exists())
+
     def test_checkout_rejects_short_numeric_phone(self):
         User = get_user_model()
         user = User.objects.create_user(username='checkout-short-phone', email='checkout-short-phone@example.com', password='password123')
@@ -406,8 +464,68 @@ class CheckoutSecurityTests(TestCase):
         self.assertEqual(response.status_code, 200)
         order = Order.objects.get(user=user)
         self.assertEqual(order.email, 'server.osmanov26@mail.ru')
-        self.assertEqual(order.phone, '+79990000000')
+        self.assertEqual(order.phone, '+7 (999) 000-00-00')
         self.assertEqual(order.customer_name, 'Османов Осман Серверович')
+
+    def test_checkout_copies_business_requisites_from_profile_to_order_snapshot(self):
+        User = get_user_model()
+        user = User.objects.create_user(
+            username='checkout-business-profile',
+            email='business-profile@example.com',
+            password='password123',
+            first_name='Иван',
+            last_name='Петров',
+        )
+        CustomerProfile.objects.create(
+            user=user,
+            middle_name='Иванович',
+            phone='+79990000000',
+            customer_type=CustomerType.COMPANY,
+            company_legal_form='ООО',
+            company_name='ДиТент',
+            inn='7701234567',
+            kpp='770101001',
+            ogrn='1234567890123',
+            legal_address='Москва, Тестовая улица, 1',
+            settlement_account='40702810900000000001',
+            bank='Тест Банк',
+        )
+        self.client.force_login(user)
+        self.add_checkout_product('CHECKOUT-BUSINESS-PROFILE-1')
+
+        response = self.client.post(
+            '/checkout/api/orders/',
+            data=json.dumps({
+                'returnTermsAccepted': True,
+                'client': {
+                    'firstName': 'Guest',
+                    'lastName': 'Guest',
+                    'phone': '+78889990000',
+                    'email': 'guest@example.com',
+                },
+                'delivery': {'type': 'manager'},
+                'payment': {'type': 'invoice'},
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        order = Order.objects.get(user=user)
+        self.assertEqual(order.customer_type, CustomerType.COMPANY)
+        self.assertEqual(order.company_legal_form, 'ООО')
+        self.assertEqual(order.company_name, 'ДиТент')
+        self.assertEqual(order.inn, '7701234567')
+        self.assertEqual(order.kpp, '770101001')
+        self.assertEqual(order.ogrn, '1234567890123')
+        self.assertEqual(order.legal_address, 'Москва, Тестовая улица, 1')
+        self.assertEqual(order.settlement_account, '40702810900000000001')
+        self.assertEqual(order.bank, 'Тест Банк')
+
+        orders_response = self.client.get('/cabinet/api/orders/')
+        order_payload = next(item for item in orders_response.json()['orders'] if item['id'] == order.number)
+        self.assertEqual(order_payload['client']['type'], CustomerType.COMPANY)
+        self.assertEqual(order_payload['client']['companyLegalForm'], 'ООО')
+        self.assertEqual(order_payload['client']['settlementAccount'], '40702810900000000001')
 
     def test_checkout_reports_stale_catalog_item_without_creating_order(self):
         User = get_user_model()
@@ -674,6 +792,14 @@ class CheckoutSecurityTests(TestCase):
                     'lastName': 'Company',
                     'phone': '+79990000000',
                     'email': 'company@example.com',
+                    'companyLegalForm': 'ООО',
+                    'companyName': 'ДиТент',
+                    'inn': '7701234567',
+                    'kpp': '770101001',
+                    'ogrn': '1234567890123',
+                    'legalAddress': 'Москва, Тестовая улица, 1',
+                    'settlementAccount': '40702810900000000001',
+                    'bank': 'Тест Банк',
                 },
                 'delivery': {
                     'type': 'manager',
@@ -687,9 +813,12 @@ class CheckoutSecurityTests(TestCase):
         self.assertEqual(response.status_code, 200)
         order = Order.objects.get(user=user)
         self.assertEqual(order.customer_type, CustomerType.COMPANY)
+        self.assertEqual(order.company_name, 'ДиТент')
+        self.assertEqual(order.inn, '7701234567')
         self.assertEqual(order.delivery_address, 'Москва, тестовый адрес')
         user.customer_profile.refresh_from_db()
         self.assertEqual(user.customer_profile.customer_type, CustomerType.COMPANY)
+        self.assertEqual(user.customer_profile.company_name, 'ДиТент')
 
     @override_settings(DITENT_EMAIL_NOTIFICATIONS_ENABLED=False)
     def test_checkout_allows_duplicate_catalog_lines_up_to_stock_and_decrements_stock(self):
@@ -977,6 +1106,54 @@ class AdminOrderVisibilityTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('price', response.json()['errors'])
         self.assertFalse(Product.objects.filter(sku='NEG-PRICE-1').exists())
+
+    @override_settings(
+        DEBUG=True,
+        DITENT_MAX_UPLOAD_SIZE=1024 * 1024,
+        DITENT_MAX_UPLOAD_COUNT=10,
+        DITENT_ALLOWED_UPLOAD_TYPES=['image/png'],
+        DITENT_ALLOWED_UPLOAD_EXTENSIONS=['.png'],
+    )
+    def test_admin_constructor_image_api_saves_extra_gallery_images(self):
+        image_buffer = BytesIO()
+        Image.new('RGB', (1, 1), color='white').save(image_buffer, format='PNG')
+        png = image_buffer.getvalue()
+
+        with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            response = self.client.post('/custom-admin/api/constructor-images/', data={
+                'title': 'Constructor scheme',
+                'position': '1',
+                'status': PublishStatus.ACTIVE,
+                'image': SimpleUploadedFile('main.png', png, content_type='image/png'),
+                'gallery_images': [
+                    SimpleUploadedFile('extra-1.png', png, content_type='image/png'),
+                    SimpleUploadedFile('extra-2.png', png, content_type='image/png'),
+                ],
+            })
+
+            self.assertEqual(response.status_code, 201)
+            item = ConstructorGalleryImage.objects.get(title='Constructor scheme')
+            self.assertEqual(item.images.count(), 2)
+            self.assertEqual(len(response.json()['item']['gallery_items']), 2)
+
+            kept_image = item.images.order_by('position', 'id').first()
+            update_response = self.client.post(f'/custom-admin/api/constructor-images/{item.pk}/', data={
+                'title': 'Constructor scheme updated',
+                'position': '2',
+                'status': PublishStatus.ACTIVE,
+                'gallery_keep_ids': [str(kept_image.pk)],
+                'gallery_images': [
+                    SimpleUploadedFile('extra-3.png', png, content_type='image/png'),
+                ],
+            })
+
+            self.assertEqual(update_response.status_code, 200)
+            item.refresh_from_db()
+            self.assertEqual(item.title, 'Constructor scheme updated')
+            self.assertEqual(item.images.count(), 2)
+            self.assertTrue(ConstructorGalleryExtraImage.objects.filter(pk=kept_image.pk, constructor_image=item).exists())
+            self.assertIn('extra-3', ConstructorGalleryExtraImage.objects.filter(constructor_image=item).latest('id').image.name)
+            self.assertEqual(len(update_response.json()['item']['gallery_items']), 2)
 
     @override_settings(DEBUG=True)
     def test_admin_order_api_rejects_negative_totals(self):
@@ -2108,8 +2285,51 @@ class EmailAuthTests(TestCase):
         user = get_user_model().objects.get(email='new@example.com')
         self.assertEqual(user.first_name, 'Ivan')
         self.assertEqual(user.last_name, 'Ivanov')
-        self.assertEqual(user.customer_profile.phone, '+79990000000')
+        self.assertEqual(user.customer_profile.phone, '+7 (999) 000-00-00')
         self.assertEqual(user.customer_profile.customer_type, CustomerType.PERSON)
+
+    def test_registers_business_user_with_requisites_after_code_confirmation(self):
+        response = self.client.post(
+            '/auth/api/code/request/',
+            data=json.dumps({
+                'purpose': 'register',
+                'email': 'business@example.com',
+                'firstName': 'Ivan',
+                'lastName': 'Ivanov',
+                'phone': '+79990000000',
+                'customerType': 'Юридическое лицо',
+                'companyLegalForm': 'ООО',
+                'companyName': 'ДиТент',
+                'inn': '7701234567',
+                'kpp': '770101001',
+                'ogrn': '1234567890123',
+                'legalAddress': 'Москва, Тестовая улица, 1',
+                'settlementAccount': '40702810900000000001',
+                'bank': 'Тест Банк',
+                'agreement': True,
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        code = response.json()['debugCode']
+        verify_response = self.client.post(
+            '/auth/api/code/verify/',
+            data=json.dumps({'purpose': 'register', 'email': 'business@example.com', 'code': code}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(verify_response.status_code, 200)
+        profile = get_user_model().objects.get(email='business@example.com').customer_profile
+        self.assertEqual(profile.customer_type, CustomerType.COMPANY)
+        self.assertEqual(profile.company_legal_form, 'ООО')
+        self.assertEqual(profile.company_name, 'ДиТент')
+        self.assertEqual(profile.inn, '7701234567')
+        self.assertEqual(profile.kpp, '770101001')
+        self.assertEqual(profile.ogrn, '1234567890123')
+        self.assertEqual(profile.legal_address, 'Москва, Тестовая улица, 1')
+        self.assertEqual(profile.settlement_account, '40702810900000000001')
+        self.assertEqual(profile.bank, 'Тест Банк')
 
     def test_registration_rejects_invalid_phone(self):
         response = self.client.post(
@@ -2150,6 +2370,25 @@ class EmailAuthTests(TestCase):
         self.assertEqual(response.json()['errors']['lastName'], 'Введите корректную фамилию.')
         self.assertEqual(response.json()['errors']['middleName'], 'Введите корректное отчество.')
         self.assertFalse(EmailAuthCode.objects.filter(email='invalid-email').exists())
+
+    def test_code_request_rejects_cyrillic_email(self):
+        response = self.client.post(
+            '/auth/api/code/request/',
+            data=json.dumps({
+                'purpose': 'register',
+                'email': 'клиент@example.com',
+                'firstName': 'Ivan',
+                'lastName': 'Ivanov',
+                'phone': '+79990000000',
+                'customerType': 'Физическое лицо',
+                'agreement': True,
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['errors']['email'], 'Введите корректный e-mail.')
+        self.assertFalse(EmailAuthCode.objects.filter(email='клиент@example.com').exists())
 
     def test_login_existing_user_after_code_confirmation(self):
         user = get_user_model().objects.create_user(username='existing', email='existing@example.com')
@@ -2322,11 +2561,12 @@ class CabinetProfileTests(TestCase):
         self.assertEqual(response.json()['user']['firstName'], 'Иван')
         self.assertEqual(response.json()['user']['lastName'], 'Петров')
         self.assertEqual(response.json()['user']['middleName'], 'Иванович')
-        self.assertEqual(response.json()['user']['phone'], '+79990000000')
+        self.assertEqual(response.json()['user']['phone'], '+7 (999) 000-00-00')
         self.assertEqual(response.json()['user']['type'], CustomerType.ENTREPRENEUR)
 
-    def test_updates_default_customer_type_with_profile(self):
+    def test_profile_update_keeps_registered_customer_type_and_saves_requisites(self):
         user = get_user_model().objects.create_user(username='cabinet-user', email='cabinet@example.com')
+        CustomerProfile.objects.create(user=user, customer_type=CustomerType.COMPANY)
         self.client.force_login(user)
 
         response = self.client.post(
@@ -2337,7 +2577,15 @@ class CabinetProfileTests(TestCase):
                 'lastName': 'Петров',
                 'middleName': '',
                 'phone': '+79990000000',
-                'type': CustomerType.COMPANY,
+                'type': CustomerType.PERSON,
+                'companyLegalForm': 'ООО',
+                'companyName': 'ДиТент',
+                'inn': '7701234567',
+                'kpp': '770101001',
+                'ogrn': '1234567890123',
+                'legalAddress': 'Москва, Тестовая улица, 1',
+                'settlementAccount': '40702810900000000001',
+                'bank': 'Тест Банк',
             }),
             content_type='application/json',
         )
@@ -2346,7 +2594,16 @@ class CabinetProfileTests(TestCase):
         user.refresh_from_db()
         self.assertEqual(user.email, 'cabinet-new@example.com')
         self.assertEqual(user.customer_profile.customer_type, CustomerType.COMPANY)
+        self.assertEqual(user.customer_profile.company_legal_form, 'ООО')
+        self.assertEqual(user.customer_profile.company_name, 'ДиТент')
+        self.assertEqual(user.customer_profile.inn, '7701234567')
+        self.assertEqual(user.customer_profile.kpp, '770101001')
+        self.assertEqual(user.customer_profile.ogrn, '1234567890123')
+        self.assertEqual(user.customer_profile.legal_address, 'Москва, Тестовая улица, 1')
+        self.assertEqual(user.customer_profile.settlement_account, '40702810900000000001')
+        self.assertEqual(user.customer_profile.bank, 'Тест Банк')
         self.assertEqual(response.json()['profile']['type'], CustomerType.COMPANY)
+        self.assertEqual(response.json()['profile']['companyLegalForm'], 'ООО')
 
     def test_profile_update_rejects_invalid_fields(self):
         user = get_user_model().objects.create_user(username='invalid-profile', email='invalid-profile@example.com')
@@ -2366,6 +2623,28 @@ class CabinetProfileTests(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['error'], 'Введите корректный e-mail.')
+
+    def test_profile_update_rejects_cyrillic_email(self):
+        user = get_user_model().objects.create_user(username='profile-cyrillic-email', email='profile-cyrillic@example.com')
+        self.client.force_login(user)
+
+        response = self.client.post(
+            '/cabinet/api/profile/update/',
+            data=json.dumps({
+                'email': 'почта@example.com',
+                'firstName': 'Иван',
+                'lastName': 'Петров',
+                'middleName': '',
+                'phone': '+79990000000',
+                'type': CustomerType.PERSON,
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['error'], 'Введите корректный e-mail.')
+        user.refresh_from_db()
+        self.assertEqual(user.email, 'profile-cyrillic@example.com')
 
     def test_cabinet_orders_returns_real_orders_for_current_user(self):
         User = get_user_model()
@@ -2453,6 +2732,8 @@ class CabinetProfileTests(TestCase):
         payable_payload = next(item for item in payload['orders'] if item['id'] == 'ORD-PAYABLE')
         self.assertTrue(payable_payload['canPay'])
         self.assertEqual(payable_payload['paymentUrl'], 'https://bank.example/pay-order')
+        self.assertEqual(payable_payload['payment']['status'], PaymentStatus.WAITING_PAYMENT)
+        self.assertEqual(payable_payload['payment']['statusTitle'], PaymentStatus.WAITING_PAYMENT.label)
         drawing_payload = next(item for item in payload['orders'] if item['id'] == f'DR-{drawing_order.pk:06d}')
         self.assertEqual(catalog_payload['items'][0]['title'], 'Тестовый товар')
         self.assertEqual(drawing_payload['type'], 'drawing-order')
@@ -2592,6 +2873,55 @@ class DrawingOrderTests(TestCase):
         DITENT_ALLOWED_UPLOAD_TYPES=['application/pdf'],
         DITENT_ALLOWED_UPLOAD_EXTENSIONS=['.pdf'],
     )
+    def test_creates_business_drawing_order_with_requisites(self):
+        User = get_user_model()
+        user = User.objects.create_user(username='drawing-business', email='drawing-business@example.com', password='password123')
+        self.client.force_login(user)
+
+        response = self.client.post(
+            '/api/drawing-orders/',
+            data={
+                'clientName': 'Client',
+                'phone': '+79990000000',
+                'email': 'drawing-business@example.com',
+                'clientType': 'Юридическое лицо',
+                'companyLegalForm': 'ООО',
+                'companyName': 'ДиТент',
+                'inn': '7701234567',
+                'kpp': '770101001',
+                'ogrn': '1234567890123',
+                'legalAddress': 'Москва, Тестовая улица, 1',
+                'settlementAccount': '40702810900000000001',
+                'bank': 'Тест Банк',
+                'agreement': 'on',
+                'itemName': 'Table',
+                'dimensions': '100 x 80 x 60',
+                'drawing': SimpleUploadedFile('drawing.pdf', b'%PDF-1.4', content_type='application/pdf'),
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        order = DrawingOrder.objects.get(user=user)
+        self.assertEqual(order.customer_type, CustomerType.COMPANY)
+        self.assertEqual(order.company_legal_form, 'ООО')
+        self.assertEqual(order.company_name, 'ДиТент')
+        self.assertEqual(order.inn, '7701234567')
+        self.assertEqual(order.kpp, '770101001')
+        self.assertEqual(order.ogrn, '1234567890123')
+        self.assertEqual(order.legal_address, 'Москва, Тестовая улица, 1')
+        self.assertEqual(order.settlement_account, '40702810900000000001')
+        self.assertEqual(order.bank, 'Тест Банк')
+        profile = user.customer_profile
+        profile.refresh_from_db()
+        self.assertEqual(profile.customer_type, CustomerType.COMPANY)
+        self.assertEqual(profile.company_name, 'ДиТент')
+
+    @override_settings(
+        DITENT_MAX_UPLOAD_SIZE=20 * 1024 * 1024,
+        DITENT_MAX_UPLOAD_COUNT=10,
+        DITENT_ALLOWED_UPLOAD_TYPES=['application/pdf'],
+        DITENT_ALLOWED_UPLOAD_EXTENSIONS=['.pdf'],
+    )
     def test_rejects_invalid_drawing_order_phone(self):
         User = get_user_model()
         user = User.objects.create_user(username='drawing-invalid-phone', email='drawing-invalid@example.com')
@@ -2610,6 +2940,26 @@ class DrawingOrderTests(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['errors']['phone'], 'Введите корректный номер телефона.')
+        self.assertFalse(DrawingOrder.objects.filter(user=user).exists())
+
+    def test_rejects_cyrillic_drawing_order_email(self):
+        User = get_user_model()
+        user = User.objects.create_user(username='drawing-cyrillic-email', email='drawing-cyrillic@example.com')
+        self.client.force_login(user)
+
+        response = self.client.post(
+            '/api/drawing-orders/',
+            data={
+                'clientName': 'Client',
+                'phone': '+79990000000',
+                'email': 'чертеж@example.com',
+                'agreement': 'on',
+                'drawing': SimpleUploadedFile('drawing.pdf', b'%PDF-1.4', content_type='application/pdf'),
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['errors']['email'], 'Введите корректный e-mail.')
         self.assertFalse(DrawingOrder.objects.filter(user=user).exists())
 
     @override_settings(

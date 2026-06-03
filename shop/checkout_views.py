@@ -6,7 +6,6 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.core.validators import validate_email
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -33,6 +32,7 @@ from .models import (
     PublishStatus,
 )
 from .notifications import send_order_created_notifications, send_order_paid_notifications
+from .validators import validate_latin_email, validate_ru_phone
 
 
 logger = logging.getLogger(__name__)
@@ -54,10 +54,32 @@ def finalize_order_number(order):
 def get_customer(request, client):
     user = request.user
     profile, _ = CustomerProfile.objects.get_or_create(user=user)
+    customer_type = customer_type_from_payload(client.get('type'))
     profile.middle_name = client.get('middleName', profile.middle_name)
     profile.phone = client.get('phone', profile.phone)
-    profile.customer_type = customer_type_from_payload(client.get('type'))
-    profile.save(update_fields=['middle_name', 'phone', 'customer_type', 'updated_at'])
+    profile.customer_type = customer_type
+    profile.company_legal_form = client.get('companyLegalForm', '')
+    profile.company_name = client.get('companyName', '')
+    profile.inn = client.get('inn', '')
+    profile.kpp = client.get('kpp', '')
+    profile.ogrn = client.get('ogrn', '')
+    profile.legal_address = client.get('legalAddress', '')
+    profile.settlement_account = client.get('settlementAccount', '')
+    profile.bank = client.get('bank', '')
+    profile.save(update_fields=[
+        'middle_name',
+        'phone',
+        'customer_type',
+        'company_legal_form',
+        'company_name',
+        'inn',
+        'kpp',
+        'ogrn',
+        'legal_address',
+        'settlement_account',
+        'bank',
+        'updated_at',
+    ])
     return user
 
 
@@ -66,6 +88,10 @@ def customer_type_from_payload(value):
         'Физическое лицо': CustomerType.PERSON,
         'ИП': CustomerType.ENTREPRENEUR,
         'Юридическое лицо': CustomerType.COMPANY,
+        'individual': CustomerType.PERSON,
+        'person': CustomerType.PERSON,
+        'entrepreneur': CustomerType.ENTREPRENEUR,
+        'company': CustomerType.COMPANY,
         CustomerType.PERSON: CustomerType.PERSON,
         CustomerType.ENTREPRENEUR: CustomerType.ENTREPRENEUR,
         CustomerType.COMPANY: CustomerType.COMPANY,
@@ -97,20 +123,82 @@ def text_value(payload, key, max_length=255):
     return value[:max_length]
 
 
+def only_digits(value):
+    return ''.join(char for char in str(value or '') if char.isdigit())
+
+
+def business_requisites_from_payload(payload):
+    return {
+        'companyLegalForm': text_value(payload, 'companyLegalForm', 40),
+        'companyName': text_value(payload, 'companyName', 180),
+        'inn': text_value(payload, 'inn', 20),
+        'kpp': text_value(payload, 'kpp', 20),
+        'ogrn': text_value(payload, 'ogrn', 30),
+        'legalAddress': text_value(payload, 'legalAddress', 500),
+        'settlementAccount': text_value(payload, 'settlementAccount', 40),
+        'bank': text_value(payload, 'bank', 180),
+    }
+
+
+def business_requisites_from_profile(profile):
+    return {
+        'companyLegalForm': profile.company_legal_form,
+        'companyName': profile.company_name,
+        'inn': profile.inn,
+        'kpp': profile.kpp,
+        'ogrn': profile.ogrn,
+        'legalAddress': profile.legal_address,
+        'settlementAccount': profile.settlement_account,
+        'bank': profile.bank,
+    }
+
+
+def is_business_customer_type(customer_type):
+    return customer_type in {CustomerType.ENTREPRENEUR, CustomerType.COMPANY}
+
+
+def validate_business_requisites(errors, client_data):
+    customer_type = customer_type_from_payload(client_data.get('type'))
+    if not is_business_customer_type(customer_type):
+        return
+
+    is_company = customer_type == CustomerType.COMPANY
+    if not client_data.get('companyLegalForm'):
+        errors['companyLegalForm'] = 'Выберите форму юр. лица.'
+    if not client_data.get('companyName') or len(client_data.get('companyName', '')) < 2:
+        errors['companyName'] = 'Введите название компании.'
+
+    inn = only_digits(client_data.get('inn'))
+    if len(inn) not in ({10} if is_company else {12}):
+        errors['inn'] = 'Введите корректный ИНН.'
+
+    kpp = only_digits(client_data.get('kpp'))
+    if is_company and len(kpp) != 9:
+        errors['kpp'] = 'Введите корректный КПП.'
+    if not is_company and kpp and len(kpp) != 9:
+        errors['kpp'] = 'Введите корректный КПП или оставьте поле пустым.'
+
+    ogrn = only_digits(client_data.get('ogrn'))
+    if len(ogrn) not in ({13} if is_company else {15}):
+        errors['ogrn'] = 'Введите корректный ОГРН или ОГРНИП.'
+
+    if not client_data.get('legalAddress') or len(client_data.get('legalAddress', '')) < 5:
+        errors['legalAddress'] = 'Введите юридический адрес.'
+
+    if len(only_digits(client_data.get('settlementAccount'))) != 20:
+        errors['settlementAccount'] = 'Введите 20 цифр расчетного счета.'
+
+    if not client_data.get('bank') or len(client_data.get('bank', '')) < 2:
+        errors['bank'] = 'Введите банк.'
+
+
 def is_valid_phone(phone):
-    phone = (phone or '').strip()
-
-    if not phone:
+    try:
+        validate_ru_phone(phone)
+    except ValidationError:
         return False
 
-    if any(char not in '0123456789 +().-' for char in phone):
-        return False
-
-    if phone.count('+') > 1 or ('+' in phone and not phone.startswith('+')):
-        return False
-
-    digits = ''.join(char for char in phone if char.isdigit())
-    return 10 <= len(digits) <= 15
+    return True
 
 
 def authenticated_checkout_client(user, client):
@@ -128,9 +216,14 @@ def authenticated_checkout_client(user, client):
     if profile.middle_name:
         merged['middleName'] = profile.middle_name
     if is_valid_phone(profile.phone):
-        merged['phone'] = profile.phone
+        merged['phone'] = validate_ru_phone(profile.phone)
     if not merged.get('type') and profile.customer_type:
         merged['type'] = profile.customer_type
+
+    profile_requisites = business_requisites_from_profile(profile)
+    for key, value in profile_requisites.items():
+        if not merged.get(key) and value:
+            merged[key] = value
 
     return merged
 
@@ -148,12 +241,12 @@ def validate_checkout_payload(payload, user=None):
         'middleName': text_value(client, 'middleName', 120),
         'phone': text_value(client, 'phone', 40),
         'comment': text_value(client, 'comment', 1000),
+        **business_requisites_from_payload(client),
     }
     client_data = authenticated_checkout_client(user, client_data)
 
-    email = client_data['email']
     try:
-        validate_email(email)
+        client_data['email'] = validate_latin_email(client_data['email'])
     except ValidationError:
         errors['email'] = 'Введите корректный e-mail.'
 
@@ -162,6 +255,10 @@ def validate_checkout_payload(payload, user=None):
 
     if not is_valid_phone(client_data['phone']):
         errors['phone'] = 'Введите корректный номер телефона.'
+    else:
+        client_data['phone'] = validate_ru_phone(client_data['phone'])
+
+    validate_business_requisites(errors, client_data)
 
     if not text_value(delivery, 'type', 40):
         errors['delivery'] = 'Выберите способ доставки.'
@@ -433,6 +530,14 @@ def checkout_order_api(request):
                 status=OrderStatus.WAITING_MANAGER,
                 payment_status=PaymentStatus.NOT_PAID,
                 customer_type=customer_type_from_payload(client.get('type')),
+                company_legal_form=client.get('companyLegalForm', ''),
+                company_name=client.get('companyName', ''),
+                inn=client.get('inn', ''),
+                kpp=client.get('kpp', ''),
+                ogrn=client.get('ogrn', ''),
+                legal_address=client.get('legalAddress', ''),
+                settlement_account=client.get('settlementAccount', ''),
+                bank=client.get('bank', ''),
                 customer_name=customer_name(client),
                 phone=client.get('phone', ''),
                 email=client.get('email', user.email),

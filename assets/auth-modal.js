@@ -2,8 +2,22 @@ const authModal = document.querySelector('[data-auth-modal]');
 const authLoginForm = document.querySelector('[data-auth-login-form]');
 const authRegisterForm = document.querySelector('[data-auth-register-form]');
 const authOpenLinks = document.querySelectorAll('.header-actions__link[href="cabinet.html"], [data-auth-open]');
+const authRequisites = document.querySelector('[data-auth-requisites]');
+const authCompanyLegalFormSelect = document.querySelector('[data-auth-company-legal-form-select]');
+const authCompanyLegalForm = document.querySelector('[data-auth-company-legal-form]');
+const authCompanyLegalFormButton = document.querySelector('[data-auth-company-legal-form-button]');
 
 let authMode = 'login';
+
+const authCompanyLegalFormLabels = {
+    '': 'Выберите форму',
+    'ИП': 'ИП',
+    'ООО': 'ООО',
+    'АО': 'АО',
+    'ПАО': 'ПАО',
+    'НКО': 'НКО',
+    'Другое': 'Другое',
+};
 
 function getCookie(name) {
     const value = `; ${document.cookie}`;
@@ -66,17 +80,7 @@ function updateAuthModalScale() {
         return;
     }
 
-    if (window.matchMedia('(max-width: 768px)').matches) {
-        authModal.style.setProperty('--auth-modal-scale', '1');
-        return;
-    }
-
-    const isCodeSent = authModal.classList.contains('auth-modal--code-sent');
-    const baseHeight = authMode === 'register' ? (isCodeSent ? 360 : 790) : 335;
-    const scaleByHeight = (window.innerHeight - 72) / baseHeight;
-    const scaleByWidth = (window.innerWidth - 96) / 660;
-    const scale = Math.min(1, scaleByHeight, scaleByWidth);
-    authModal.style.setProperty('--auth-modal-scale', Math.max(0.72, scale).toFixed(3));
+    authModal.style.setProperty('--auth-modal-scale', '1');
 }
 
 function hideCodeSteps() {
@@ -182,27 +186,15 @@ function showAuthMessage(text, type = 'error') {
 }
 
 function isValidPhone(phone) {
-    const value = String(phone || '').trim();
-
-    if (!value) {
-        return false;
-    }
-
-    if (/[^0-9\s()+.-]/.test(value)) {
-        return false;
-    }
-
-    if ((value.match(/\+/g) || []).length > 1 || (value.includes('+') && !value.startsWith('+'))) {
-        return false;
-    }
-
-    const digits = value.replace(/\D/g, '');
-    return digits.length >= 10 && digits.length <= 15;
+    return window.ditentIsRuPhone
+        ? window.ditentIsRuPhone(phone)
+        : /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/.test(String(phone || '').trim());
 }
 
 function isValidEmail(email) {
     const value = String(email || '').trim();
-    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value) && value.length <= 254;
+    return /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(value)
+        && value.length <= 254;
 }
 
 function isValidPersonName(name, required = true) {
@@ -215,6 +207,89 @@ function isValidPersonName(name, required = true) {
     return value.length >= 2
         && value.length <= 80
         && /^[A-Za-zА-Яа-яЁё]+(?:[ '-][A-Za-zА-Яа-яЁё]+)*$/.test(value);
+}
+
+function isBusinessAuthType(value) {
+    return value === 'Юридическое лицо' || value === 'ИП';
+}
+
+function setAuthCompanyLegalForm(value) {
+    const normalized = Object.prototype.hasOwnProperty.call(authCompanyLegalFormLabels, value) ? value : '';
+
+    if (authCompanyLegalForm) {
+        authCompanyLegalForm.value = normalized;
+        authCompanyLegalForm.setCustomValidity('');
+    }
+
+    if (authCompanyLegalFormButton) {
+        authCompanyLegalFormButton.textContent = authCompanyLegalFormLabels[normalized];
+        authCompanyLegalFormButton.classList.toggle('is-placeholder', !normalized);
+    }
+}
+
+function onlyDigits(value) {
+    return String(value || '').replace(/\D/g, '');
+}
+
+function updateAuthRequisitesVisibility() {
+    if (!authRegisterForm || !authRequisites) {
+        return;
+    }
+
+    const selectedType = String(new FormData(authRegisterForm).get('authCustomerType') || '');
+    const isBusiness = isBusinessAuthType(selectedType);
+    authRequisites.hidden = !isBusiness;
+    authModal?.classList.toggle('auth-modal--business-register', isBusiness);
+
+    if (authCompanyLegalForm && selectedType === 'ИП') {
+        setAuthCompanyLegalForm('ИП');
+    } else if (authCompanyLegalForm && authCompanyLegalForm.value === 'ИП' && selectedType === 'Юридическое лицо') {
+        setAuthCompanyLegalForm('');
+    }
+
+    authRequisites.querySelectorAll('input:not([type="hidden"]), select').forEach(field => {
+        if (field.name === 'kpp') {
+            field.required = selectedType === 'Юридическое лицо';
+            return;
+        }
+
+        field.required = isBusiness;
+    });
+
+    updateAuthModalScale();
+}
+
+function validateAuthRequisites(payload, form) {
+    if (!isBusinessAuthType(payload.customerType)) {
+        return true;
+    }
+
+    const isCompany = payload.customerType === 'Юридическое лицо';
+    const checks = [
+        ['companyLegalForm', payload.companyLegalForm, 'Выберите форму юр. лица.'],
+        ['companyName', payload.companyName && payload.companyName.length >= 2, 'Введите название компании.'],
+        ['inn', isCompany ? onlyDigits(payload.inn).length === 10 : onlyDigits(payload.inn).length === 12, 'Введите корректный ИНН.'],
+        ['kpp', isCompany ? onlyDigits(payload.kpp).length === 9 : (!payload.kpp || onlyDigits(payload.kpp).length === 9), isCompany ? 'Введите корректный КПП.' : 'Введите корректный КПП или оставьте поле пустым.'],
+        ['ogrn', isCompany ? onlyDigits(payload.ogrn).length === 13 : onlyDigits(payload.ogrn).length === 15, 'Введите корректный ОГРН или ОГРНИП.'],
+        ['legalAddress', payload.legalAddress && payload.legalAddress.length >= 5, 'Введите юридический адрес.'],
+        ['settlementAccount', onlyDigits(payload.settlementAccount).length === 20, 'Введите 20 цифр расчетного счета.'],
+        ['bank', payload.bank && payload.bank.length >= 2, 'Введите банк.'],
+    ];
+
+    const failed = checks.find(([, valid]) => !valid);
+    if (!failed) {
+        return true;
+    }
+
+    showAuthMessage(failed[2]);
+
+    if (failed[0] === 'companyLegalForm') {
+        authCompanyLegalFormButton?.focus();
+    } else {
+        form.querySelector(`[name="${failed[0]}"]`)?.focus();
+    }
+
+    return false;
 }
 
 function formatWaitTime(seconds) {
@@ -243,6 +318,14 @@ function authPayloadFromForm(form, purpose) {
         payload.middleName = String(formData.get('middleName') || '').trim();
         payload.phone = String(formData.get('phone') || '').trim();
         payload.customerType = String(formData.get('authCustomerType') || '').trim();
+        payload.companyLegalForm = String(formData.get('companyLegalForm') || '').trim();
+        payload.companyName = String(formData.get('companyName') || '').trim();
+        payload.inn = onlyDigits(formData.get('inn'));
+        payload.kpp = onlyDigits(formData.get('kpp'));
+        payload.ogrn = onlyDigits(formData.get('ogrn'));
+        payload.legalAddress = String(formData.get('legalAddress') || '').trim();
+        payload.settlementAccount = onlyDigits(formData.get('settlementAccount'));
+        payload.bank = String(formData.get('bank') || '').trim();
     }
 
     return payload;
@@ -278,6 +361,10 @@ async function requestAuthCode(form, purpose) {
     if (purpose === 'register' && !isValidPhone(payload.phone)) {
         showAuthMessage('Введите корректный номер телефона.');
         form.querySelector('input[name="phone"]')?.focus();
+        return;
+    }
+
+    if (purpose === 'register' && !validateAuthRequisites(payload, form)) {
         return;
     }
 
@@ -352,6 +439,32 @@ document.querySelectorAll('[data-auth-mode-switch]').forEach(button => {
     });
 });
 
+authRegisterForm?.querySelectorAll('input[name="authCustomerType"]').forEach(input => {
+    input.addEventListener('change', updateAuthRequisitesVisibility);
+});
+
+authCompanyLegalFormButton?.addEventListener('click', event => {
+    event.stopPropagation();
+    authCompanyLegalFormSelect?.classList.toggle('open');
+});
+
+authCompanyLegalFormSelect?.querySelectorAll('[data-auth-company-legal-form-option]').forEach(option => {
+    option.addEventListener('click', event => {
+        event.stopPropagation();
+        setAuthCompanyLegalForm(option.value);
+        authCompanyLegalFormSelect.classList.remove('open');
+    });
+});
+
+authRegisterForm?.querySelectorAll('input[name="inn"], input[name="kpp"], input[name="ogrn"], input[name="settlementAccount"]').forEach(input => {
+    input.addEventListener('input', () => {
+        input.value = onlyDigits(input.value);
+    });
+});
+
+setAuthCompanyLegalForm(authCompanyLegalForm?.value || '');
+updateAuthRequisitesVisibility();
+
 document.querySelectorAll('[data-auth-code-verify]').forEach(button => {
     button.addEventListener('click', () => {
         verifyAuthCode(button.dataset.authCodeVerify);
@@ -362,6 +475,10 @@ document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && authModal && !authModal.hidden) {
         closeAuthModal();
     }
+});
+
+document.addEventListener('click', () => {
+    authCompanyLegalFormSelect?.classList.remove('open');
 });
 
 window.addEventListener('resize', () => {

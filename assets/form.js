@@ -15,6 +15,10 @@ function readJson(key, fallback = []) {
 
 function writeJson(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
+    if (key === CART_KEY) {
+        window.ditentUpdateCartBadge?.(value);
+        window.dispatchEvent(new CustomEvent('ditent:cart-updated', { detail: { items: value } }));
+    }
 }
 
 function getCookie(name) {

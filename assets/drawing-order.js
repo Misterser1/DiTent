@@ -13,6 +13,17 @@ const emailInput = drawingForm?.querySelector('input[name="email"]');
 const clientTypeSelect = drawingForm?.querySelector('[data-client-type-select]');
 const clientTypeInput = drawingForm?.querySelector('[data-client-type-input]');
 const clientTypeButton = drawingForm?.querySelector('[data-client-type-button]');
+const requisitesFields = drawingForm?.querySelector('[data-requisites-fields]');
+const companyLegalFormSelect = drawingForm?.querySelector('[data-company-legal-form-select]');
+const companyLegalFormInput = drawingForm?.querySelector('[data-company-legal-form-input]');
+const companyLegalFormButton = drawingForm?.querySelector('[data-company-legal-form-button]');
+const companyNameInput = drawingForm?.querySelector('[name="companyName"]');
+const innInput = drawingForm?.querySelector('[name="inn"]');
+const kppInput = drawingForm?.querySelector('[name="kpp"]');
+const ogrnInput = drawingForm?.querySelector('[name="ogrn"]');
+const legalAddressInput = drawingForm?.querySelector('[name="legalAddress"]');
+const settlementAccountInput = drawingForm?.querySelector('[name="settlementAccount"]');
+const bankInput = drawingForm?.querySelector('[name="bank"]');
 const itemNameInput = drawingForm?.querySelector('input[name="itemName"]');
 const dimensionsInput = drawingForm?.querySelector('input[name="dimensions"]');
 const commentInput = drawingForm?.querySelector('textarea[name="comment"]');
@@ -21,6 +32,16 @@ const clientTypeLabels = {
     individual: 'Физическое лицо',
     entrepreneur: 'ИП',
     company: 'Юридическое лицо',
+};
+
+const companyLegalFormLabels = {
+    '': 'Выберите форму',
+    'ИП': 'ИП',
+    'ООО': 'ООО',
+    'АО': 'АО',
+    'ПАО': 'ПАО',
+    'НКО': 'НКО',
+    'Другое': 'Другое',
 };
 
 function getCookie(name) {
@@ -72,6 +93,51 @@ function setClientType(value) {
     if (clientTypeButton) {
         clientTypeButton.textContent = clientTypeLabels[normalized];
     }
+
+    updateRequisitesVisibility(normalized);
+}
+
+function setCompanyLegalForm(value) {
+    const normalized = Object.prototype.hasOwnProperty.call(companyLegalFormLabels, value) ? value : '';
+
+    if (companyLegalFormInput) {
+        companyLegalFormInput.value = normalized;
+        companyLegalFormInput.setCustomValidity('');
+    }
+
+    if (companyLegalFormButton) {
+        companyLegalFormButton.textContent = companyLegalFormLabels[normalized];
+        companyLegalFormButton.classList.toggle('is-placeholder', !normalized);
+    }
+}
+
+function isBusinessClientType(value = clientTypeInput?.value) {
+    return value === 'entrepreneur' || value === 'company';
+}
+
+function updateRequisitesVisibility(value = clientTypeInput?.value) {
+    const isBusiness = isBusinessClientType(value);
+
+    if (requisitesFields) {
+        requisitesFields.hidden = !isBusiness;
+    }
+
+    if (companyLegalFormInput && value === 'entrepreneur') {
+        setCompanyLegalForm('ИП');
+    } else if (companyLegalFormInput && companyLegalFormInput.value === 'ИП' && value === 'company') {
+        setCompanyLegalForm('');
+    }
+
+    [companyLegalFormInput, companyNameInput, innInput, ogrnInput, legalAddressInput, settlementAccountInput, bankInput].forEach(field => {
+        if (field) {
+            field.required = isBusiness;
+        }
+    });
+
+    if (kppInput) {
+        kppInput.required = value === 'company';
+        kppInput.closest('label')?.classList.toggle('is-optional', value === 'entrepreneur');
+    }
 }
 
 function fullNameFromUser(user) {
@@ -99,6 +165,16 @@ function fillContactsFromUser(user) {
     setFieldValueIfEmpty(clientNameInput, fullNameFromUser(user) || user.email || '');
     setFieldValueIfEmpty(phoneInput, user.phone || '');
     setFieldValueIfEmpty(emailInput, user.email || '');
+    if (companyLegalFormInput && user.companyLegalForm && !companyLegalFormInput.value.trim()) {
+        setCompanyLegalForm(user.companyLegalForm);
+    }
+    setFieldValueIfEmpty(companyNameInput, user.companyName || '');
+    setFieldValueIfEmpty(innInput, user.inn || '');
+    setFieldValueIfEmpty(kppInput, user.kpp || '');
+    setFieldValueIfEmpty(ogrnInput, user.ogrn || '');
+    setFieldValueIfEmpty(legalAddressInput, user.legalAddress || '');
+    setFieldValueIfEmpty(settlementAccountInput, user.settlementAccount || '');
+    setFieldValueIfEmpty(bankInput, user.bank || '');
 
     if (clientTypeSelect && !clientTypeSelect.dataset.userChanged) {
         setClientType(drawingClientTypeFromProfile(user.type));
@@ -150,11 +226,20 @@ function openDrawingAuthModal(formData) {
     setFieldValue(registerForm.querySelector('input[name="firstName"]'), clientName.firstName);
     setFieldValue(registerForm.querySelector('input[name="middleName"]'), clientName.middleName);
     setFieldValue(registerForm.querySelector('input[name="phone"]'), phone);
+    setFieldValue(registerForm.querySelector('[name="companyLegalForm"]'), formData.get('companyLegalForm') || '');
+    setFieldValue(registerForm.querySelector('input[name="companyName"]'), formData.get('companyName') || '');
+    setFieldValue(registerForm.querySelector('input[name="inn"]'), formData.get('inn') || '');
+    setFieldValue(registerForm.querySelector('input[name="kpp"]'), formData.get('kpp') || '');
+    setFieldValue(registerForm.querySelector('input[name="ogrn"]'), formData.get('ogrn') || '');
+    setFieldValue(registerForm.querySelector('input[name="legalAddress"]'), formData.get('legalAddress') || '');
+    setFieldValue(registerForm.querySelector('input[name="settlementAccount"]'), formData.get('settlementAccount') || '');
+    setFieldValue(registerForm.querySelector('input[name="bank"]'), formData.get('bank') || '');
 
     const typeInput = Array.from(registerForm.querySelectorAll('input[name="authCustomerType"]'))
         .find(input => input.value === authCustomerTypeLabel(clientType));
     if (typeInput) {
         typeInput.checked = true;
+        typeInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     modal.hidden = false;
@@ -224,32 +309,83 @@ function validateFile(file) {
 }
 
 function normalizePhone(value) {
-    let result = String(value || '').replace(/[^0-9\s()+.-]/g, '');
+    return window.ditentFormatRuPhone
+        ? window.ditentFormatRuPhone(value)
+        : String(value || '').replace(/[^0-9\s()+.-]/g, '');
+}
 
-    if (result.includes('+')) {
-        result = `+${result.replace(/\+/g, '')}`;
-    }
-
-    return result;
+function onlyDigits(value) {
+    return String(value || '').replace(/\D/g, '');
 }
 
 function isValidPhone(phone) {
-    const value = String(phone || '').trim();
+    return window.ditentIsRuPhone
+        ? window.ditentIsRuPhone(phone)
+        : /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/.test(String(phone || '').trim());
+}
 
-    if (!value || /[^0-9\s()+.-]/.test(value)) {
-        return false;
+function validateRequisites() {
+    const clientType = clientTypeInput?.value || 'individual';
+
+    if (!isBusinessClientType(clientType)) {
+        return true;
     }
 
-    if ((value.match(/\+/g) || []).length > 1 || (value.includes('+') && !value.startsWith('+'))) {
-        return false;
-    }
+    const isCompany = clientType === 'company';
+    const legalForm = companyLegalFormInput?.value.trim() || '';
+    const companyName = companyNameInput?.value.trim() || '';
+    const inn = onlyDigits(innInput?.value);
+    const kpp = onlyDigits(kppInput?.value);
+    const ogrn = onlyDigits(ogrnInput?.value);
+    const legalAddress = legalAddressInput?.value.trim() || '';
+    const settlementAccount = onlyDigits(settlementAccountInput?.value);
+    const bank = bankInput?.value.trim() || '';
 
-    const digits = value.replace(/\D/g, '');
-    return digits.length >= 10 && digits.length <= 15;
+    if (!legalForm) {
+        return setFieldValidity(companyLegalFormInput, 'Выберите форму юр. лица.');
+    }
+    setFieldValidity(companyLegalFormInput, '');
+
+    if (!companyName || companyName.length < 2) {
+        return setFieldValidity(companyNameInput, 'Введите название компании.');
+    }
+    setFieldValidity(companyNameInput, '');
+
+    if (!((isCompany && inn.length === 10) || (!isCompany && inn.length === 12))) {
+        return setFieldValidity(innInput, 'Введите корректный ИНН.');
+    }
+    setFieldValidity(innInput, '');
+
+    if ((isCompany && kpp.length !== 9) || (!isCompany && kpp && kpp.length !== 9)) {
+        return setFieldValidity(kppInput, isCompany ? 'Введите корректный КПП.' : 'Введите корректный КПП или оставьте поле пустым.');
+    }
+    setFieldValidity(kppInput, '');
+
+    if (!((isCompany && ogrn.length === 13) || (!isCompany && ogrn.length === 15))) {
+        return setFieldValidity(ogrnInput, 'Введите корректный ОГРН или ОГРНИП.');
+    }
+    setFieldValidity(ogrnInput, '');
+
+    if (!legalAddress || legalAddress.length < 5) {
+        return setFieldValidity(legalAddressInput, 'Введите юридический адрес.');
+    }
+    setFieldValidity(legalAddressInput, '');
+
+    if (settlementAccount.length !== 20) {
+        return setFieldValidity(settlementAccountInput, 'Введите 20 цифр расчетного счета.');
+    }
+    setFieldValidity(settlementAccountInput, '');
+
+    if (!bank || bank.length < 2) {
+        return setFieldValidity(bankInput, 'Введите банк.');
+    }
+    setFieldValidity(bankInput, '');
+
+    return true;
 }
 
 function hasMeaningfulText(value) {
-    return /[A-Za-zА-Яа-яЁё0-9]/.test(String(value || ''));
+    return [...String(value || '')].some(char => /[\p{L}\p{N}]/u.test(char));
 }
 
 function isValidDimensions(value) {
@@ -318,6 +454,10 @@ function validateDrawingForm() {
     }
 
     setFieldValidity(commentInput, '');
+    if (!validateRequisites()) {
+        return false;
+    }
+
     return true;
 }
 
@@ -351,12 +491,26 @@ phoneInput?.addEventListener('input', () => {
     });
 });
 
+[innInput, kppInput, ogrnInput, settlementAccountInput].forEach(field => {
+    field?.addEventListener('input', () => {
+        field.value = onlyDigits(field.value);
+        field.setCustomValidity('');
+    });
+});
+
+[companyLegalFormInput, companyNameInput, legalAddressInput, bankInput].forEach(field => {
+    field?.addEventListener('input', () => {
+        field.setCustomValidity('');
+    });
+});
+
 clientTypeSelect?.addEventListener('change', () => {
     clientTypeSelect.dataset.userChanged = 'true';
 });
 
 clientTypeButton?.addEventListener('click', event => {
     event.stopPropagation();
+    companyLegalFormSelect?.classList.remove('open');
     clientTypeSelect?.classList.toggle('open');
 });
 
@@ -369,8 +523,26 @@ clientTypeSelect?.querySelectorAll('[data-client-type-option]').forEach(option =
     });
 });
 
+companyLegalFormButton?.addEventListener('click', event => {
+    event.stopPropagation();
+    clientTypeSelect?.classList.remove('open');
+    companyLegalFormSelect?.classList.toggle('open');
+});
+
+companyLegalFormSelect?.querySelectorAll('[data-company-legal-form-option]').forEach(option => {
+    option.addEventListener('click', event => {
+        event.stopPropagation();
+        setCompanyLegalForm(option.value);
+        companyLegalFormSelect.classList.remove('open');
+    });
+});
+
+setCompanyLegalForm(companyLegalFormInput?.value || '');
+updateRequisitesVisibility();
+
 document.addEventListener('click', () => {
     clientTypeSelect?.classList.remove('open');
+    companyLegalFormSelect?.classList.remove('open');
 });
 
 ['dragenter', 'dragover'].forEach(eventName => {
@@ -463,6 +635,14 @@ drawingForm?.addEventListener('submit', async event => {
             phone: formData.get('phone') || '',
             email: formData.get('email') || '',
             type: formData.get('clientType') || 'individual',
+            companyLegalForm: formData.get('companyLegalForm') || '',
+            companyName: formData.get('companyName') || '',
+            inn: formData.get('inn') || '',
+            kpp: formData.get('kpp') || '',
+            ogrn: formData.get('ogrn') || '',
+            legalAddress: formData.get('legalAddress') || '',
+            settlementAccount: formData.get('settlementAccount') || '',
+            bank: formData.get('bank') || '',
         },
         product: {
             itemName: formData.get('itemName') || '',

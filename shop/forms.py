@@ -2,7 +2,7 @@ from django import forms
 from django.core.files.uploadedfile import UploadedFile
 
 from .models import Accessory, Category, Color, ConstructorGalleryImage, DrawingOrder, Fabric, Fastener, Formula, GalleryItem, Order, Product, Review, SiteSettings
-from .validators import validate_uploaded_file
+from .validators import validate_latin_email, validate_ru_phone, validate_uploaded_file
 
 
 class SafeUploadModelForm(forms.ModelForm):
@@ -13,11 +13,17 @@ class SafeUploadModelForm(forms.ModelForm):
             if isinstance(value, UploadedFile):
                 validate_uploaded_file(value)
 
+        if cleaned_data.get('email'):
+            cleaned_data['email'] = validate_latin_email(cleaned_data['email'])
+        if cleaned_data.get('phone'):
+            cleaned_data['phone'] = validate_ru_phone(cleaned_data['phone'])
+
         return cleaned_data
 
 
 class NonNegativeFieldsMixin:
     non_negative_fields = ()
+    integer_fields = ()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -26,6 +32,11 @@ class NonNegativeFieldsMixin:
             value = cleaned_data.get(field_name)
             if value is not None and value < 0:
                 self.add_error(field_name, 'Значение не может быть отрицательным.')
+
+        for field_name in self.integer_fields:
+            value = cleaned_data.get(field_name)
+            if value is not None and int(value) != value:
+                self.add_error(field_name, 'Укажите целое число.')
 
         return cleaned_data
 
@@ -50,6 +61,7 @@ class CategoryForm(SafeUploadModelForm):
 
 class ProductForm(NonNegativeFieldsMixin, SafeUploadModelForm):
     non_negative_fields = ('price', 'width_cm', 'depth_cm', 'height_cm', 'stock')
+    integer_fields = ('width_cm', 'depth_cm', 'height_cm', 'stock')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -86,6 +98,7 @@ class ProductForm(NonNegativeFieldsMixin, SafeUploadModelForm):
 
 class FabricForm(NonNegativeFieldsMixin, SafeUploadModelForm):
     non_negative_fields = ('price_per_square_meter', 'roll_width_cm', 'uv_resistance', 'durability')
+    integer_fields = ('roll_width_cm',)
 
     class Meta:
         model = Fabric
@@ -137,6 +150,7 @@ class FormulaForm(NonNegativeFieldsMixin, SafeUploadModelForm):
         'min_size_cm',
         'max_size_cm',
     )
+    integer_fields = ('min_size_cm', 'max_size_cm')
 
     def clean(self):
         cleaned_data = super().clean()
@@ -177,6 +191,14 @@ class OrderForm(NonNegativeFieldsMixin, SafeUploadModelForm):
             'status',
             'payment_status',
             'customer_type',
+            'company_legal_form',
+            'company_name',
+            'inn',
+            'kpp',
+            'ogrn',
+            'legal_address',
+            'settlement_account',
+            'bank',
             'customer_name',
             'phone',
             'email',
@@ -206,9 +228,18 @@ class DrawingOrderForm(SafeUploadModelForm):
         model = DrawingOrder
         fields = (
             'status',
+            'customer_type',
             'customer_name',
             'phone',
             'email',
+            'company_legal_form',
+            'company_name',
+            'inn',
+            'kpp',
+            'ogrn',
+            'legal_address',
+            'settlement_account',
+            'bank',
             'comment',
             'manager_comment',
             'return_terms_accepted',
@@ -243,7 +274,7 @@ class SiteSettingsForm(SafeUploadModelForm):
         ]
 
         for email in emails:
-            forms.EmailField().clean(email)
+            validate_latin_email(email)
 
         return '\n'.join(emails)
 

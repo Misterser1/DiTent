@@ -36,6 +36,10 @@ function readJson(key, fallback) {
 
 function writeJson(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
+    if (key === CART_KEY) {
+        window.ditentUpdateCartBadge?.(value);
+        window.dispatchEvent(new CustomEvent('ditent:cart-updated', { detail: { items: value } }));
+    }
 }
 
 function getCookie(name) {
@@ -237,6 +241,7 @@ function fillAuthModalFromCheckout(client) {
 
     if (typeIndex !== undefined && typeInputs[typeIndex]) {
         typeInputs[typeIndex].checked = true;
+        typeInputs[typeIndex].dispatchEvent(new Event('change', { bubbles: true }));
     }
 }
 
@@ -546,6 +551,7 @@ function renderSummary(cart = getCart()) {
 
 function renderCart() {
     const cart = getCart();
+    window.ditentUpdateCartBadge?.(cart);
 
     if (!cartList) {
         return;
@@ -608,27 +614,15 @@ async function validateAuth() {
 }
 
 function isValidPhone(phone) {
-    const value = String(phone || '').trim();
-
-    if (!value) {
-        return false;
-    }
-
-    if (/[^0-9\s()+.-]/.test(value)) {
-        return false;
-    }
-
-    if ((value.match(/\+/g) || []).length > 1 || (value.includes('+') && !value.startsWith('+'))) {
-        return false;
-    }
-
-    const digits = value.replace(/\D/g, '');
-    return digits.length >= 10 && digits.length <= 15;
+    return window.ditentIsRuPhone
+        ? window.ditentIsRuPhone(phone)
+        : /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/.test(String(phone || '').trim());
 }
 
 function isValidEmail(email) {
     const value = String(email || '').trim();
-    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value) && value.length <= 254;
+    return /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(value)
+        && value.length <= 254;
 }
 
 function isValidPersonName(name) {
@@ -691,6 +685,8 @@ function createOrder() {
     orders.unshift(order);
     writeJson(ORDERS_KEY, orders);
     localStorage.removeItem(CART_KEY);
+    window.ditentUpdateCartBadge?.([]);
+    window.dispatchEvent(new CustomEvent('ditent:cart-updated', { detail: { items: [] } }));
 
     return order;
 }
@@ -717,7 +713,10 @@ async function submitOrderToBackend() {
     const result = await response.json().catch(() => ({}));
 
     if (!response.ok || result.ok === false) {
-        throw new Error(result.error || 'Не удалось создать заказ.');
+        const errors = result.errors && typeof result.errors === 'object'
+            ? Object.values(result.errors).flat().join(' ')
+            : '';
+        throw new Error(result.error || errors || 'Не удалось создать заказ.');
     }
 
     return result.order;

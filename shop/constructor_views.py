@@ -63,11 +63,16 @@ def serialize_accessory(accessory):
 
 
 def constructor_gallery_images():
-    items = [
-        {'url': image.image.url, 'title': image.title}
-        for image in ConstructorGalleryImage.objects.filter(status=PublishStatus.ACTIVE).order_by('position', 'id')
-        if image.image
-    ]
+    items = []
+    queryset = ConstructorGalleryImage.objects.filter(status=PublishStatus.ACTIVE).prefetch_related('images').order_by('position', 'id')
+
+    for image in queryset:
+        if image.image:
+            items.append({'url': image.image.url, 'title': image.title})
+
+        for extra_image in image.images.all().order_by('position', 'id'):
+            if extra_image.image:
+                items.append({'url': extra_image.image.url, 'title': image.title})
 
     return items or [
         {'url': 'assets/image/img-1.png', 'title': 'Схема чехла'},

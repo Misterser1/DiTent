@@ -98,7 +98,54 @@
                 </label>
                 <label class="auth-modal__field">
                     <span>Номер телефона</span>
-                    <input type="tel" name="phone" placeholder="+7" autocomplete="tel" inputmode="tel" pattern="^\+?[0-9\s().-]{10,24}$">
+                    <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" autocomplete="tel" inputmode="tel" pattern="^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$" maxlength="18">
+                </label>
+            </div>
+
+            <div class="auth-modal__requisites" data-auth-requisites hidden>
+                <label class="auth-modal__field">
+                    <span>Форма юр. лица</span>
+                    <div class="auth-select" data-auth-company-legal-form-select>
+                        <button class="auth-select__button is-placeholder" type="button" data-auth-company-legal-form-button>Выберите форму</button>
+                        <input type="hidden" name="companyLegalForm" value="" data-auth-company-legal-form>
+                        <div class="auth-select__list">
+                            <button type="button" data-auth-company-legal-form-option value="">Выберите форму</button>
+                            <button type="button" data-auth-company-legal-form-option value="ИП">ИП</button>
+                            <button type="button" data-auth-company-legal-form-option value="ООО">ООО</button>
+                            <button type="button" data-auth-company-legal-form-option value="АО">АО</button>
+                            <button type="button" data-auth-company-legal-form-option value="ПАО">ПАО</button>
+                            <button type="button" data-auth-company-legal-form-option value="НКО">НКО</button>
+                            <button type="button" data-auth-company-legal-form-option value="Другое">Другое</button>
+                        </div>
+                    </div>
+                </label>
+                <label class="auth-modal__field">
+                    <span>Название компании</span>
+                    <input type="text" name="companyName" maxlength="180" placeholder="Например, ДиТент">
+                </label>
+                <label class="auth-modal__field">
+                    <span>ИНН</span>
+                    <input type="text" name="inn" inputmode="numeric" maxlength="20" placeholder="10 или 12 цифр">
+                </label>
+                <label class="auth-modal__field">
+                    <span>КПП</span>
+                    <input type="text" name="kpp" inputmode="numeric" maxlength="20" placeholder="Для юр. лиц">
+                </label>
+                <label class="auth-modal__field">
+                    <span>ОГРН / ОГРНИП</span>
+                    <input type="text" name="ogrn" inputmode="numeric" maxlength="30" placeholder="13 или 15 цифр">
+                </label>
+                <label class="auth-modal__field">
+                    <span>Расчетный счет</span>
+                    <input type="text" name="settlementAccount" inputmode="numeric" maxlength="40" placeholder="20 цифр">
+                </label>
+                <label class="auth-modal__field auth-modal__field--wide">
+                    <span>Юридический адрес</span>
+                    <input type="text" name="legalAddress" maxlength="500" placeholder="Индекс, город, улица, дом, офис">
+                </label>
+                <label class="auth-modal__field auth-modal__field--wide">
+                    <span>Банк</span>
+                    <input type="text" name="bank" maxlength="180" placeholder="Название банка">
                 </label>
             </div>
 

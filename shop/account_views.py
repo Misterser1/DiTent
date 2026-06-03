@@ -12,7 +12,6 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.mail import send_mail
-from django.core.validators import validate_email
 from django.db import transaction
 from django.http import JsonResponse
 from django.utils import timezone
@@ -21,6 +20,7 @@ from django.views.decorators.http import require_GET, require_POST
 from .cart_services import attach_cart_to_user, cart_payload, normalize_item, save_session_cart
 from .checkout_views import sync_alfa_order_payment_status
 from .models import CustomerProfile, CustomerType, DrawingOrder, EmailAuthCode, EmailAuthPurpose, Order, OrderItemType, OrderStatus
+from .validators import validate_latin_email, validate_ru_phone
 
 
 logger = logging.getLogger(__name__)
@@ -54,11 +54,21 @@ def customer_type_from_label(value):
         'Физическое лицо': CustomerType.PERSON,
         'ИП': CustomerType.ENTREPRENEUR,
         'Юридическое лицо': CustomerType.COMPANY,
+        'individual': CustomerType.PERSON,
+        'entrepreneur': CustomerType.ENTREPRENEUR,
+        'company': CustomerType.COMPANY,
         CustomerType.PERSON: CustomerType.PERSON,
         CustomerType.ENTREPRENEUR: CustomerType.ENTREPRENEUR,
         CustomerType.COMPANY: CustomerType.COMPANY,
     }
     return labels.get(value, CustomerType.PERSON)
+
+
+def phone_payload(value):
+    try:
+        return validate_ru_phone(value)
+    except ValidationError:
+        return value or ''
 
 
 def user_payload(user):
@@ -69,9 +79,17 @@ def user_payload(user):
         'firstName': user.first_name,
         'lastName': user.last_name,
         'middleName': profile.middle_name,
-        'phone': profile.phone,
+        'phone': phone_payload(profile.phone),
         'type': profile.customer_type,
         'typeTitle': profile.get_customer_type_display(),
+        'companyLegalForm': profile.company_legal_form,
+        'companyName': profile.company_name,
+        'inn': profile.inn,
+        'kpp': profile.kpp,
+        'ogrn': profile.ogrn,
+        'legalAddress': profile.legal_address,
+        'settlementAccount': profile.settlement_account,
+        'bank': profile.bank,
     }
 
 
@@ -129,8 +147,18 @@ def order_payload(order):
         },
         'client': {
             'email': order.email,
-            'phone': order.phone,
+            'phone': phone_payload(order.phone),
             'name': order.customer_name,
+            'type': order.customer_type,
+            'typeTitle': order.get_customer_type_display(),
+            'companyLegalForm': order.company_legal_form,
+            'companyName': order.company_name,
+            'inn': order.inn,
+            'kpp': order.kpp,
+            'ogrn': order.ogrn,
+            'legalAddress': order.legal_address,
+            'settlementAccount': order.settlement_account,
+            'bank': order.bank,
         },
         'delivery': {
             'method': order.delivery_method,
@@ -141,6 +169,12 @@ def order_payload(order):
             'cdekStatusName': order.cdek_status_name,
             'cdekStatusUpdatedAt': order.cdek_status_updated_at.isoformat() if order.cdek_status_updated_at else '',
             'cdekTrackingCheckedAt': order.cdek_tracking_checked_at.isoformat() if order.cdek_tracking_checked_at else '',
+        },
+        'payment': {
+            'method': order.payment_method,
+            'methodTitle': order.get_payment_method_display() if order.payment_method else '',
+            'status': order.payment_status,
+            'statusTitle': order.get_payment_status_display(),
         },
         'canRepeat': True,
         'canPay': bool(order.status == 'waiting_payment' and order.payment_ready_at and order.payment_form_url),
@@ -187,13 +221,29 @@ def drawing_order_payload(order):
         },
         'client': {
             'email': order.email,
-            'phone': order.phone,
+            'phone': phone_payload(order.phone),
             'name': order.customer_name,
+            'type': order.customer_type,
+            'typeTitle': order.get_customer_type_display(),
+            'companyLegalForm': order.company_legal_form,
+            'companyName': order.company_name,
+            'inn': order.inn,
+            'kpp': order.kpp,
+            'ogrn': order.ogrn,
+            'legalAddress': order.legal_address,
+            'settlementAccount': order.settlement_account,
+            'bank': order.bank,
         },
         'drawing': {
             'files': files,
             'filesCount': len(files),
             'comment': order.comment,
+        },
+        'payment': {
+            'method': '',
+            'methodTitle': '',
+            'status': '',
+            'statusTitle': '',
         },
         'canRepeat': False,
         'canPay': False,
@@ -275,20 +325,78 @@ def truthy(value):
     return str(value).strip().lower() in {'1', 'true', 'yes', 'on', 'checked'}
 
 
+def text_payload(payload, key, max_length):
+    return str(payload.get(key) or '').strip()[:max_length]
+
+
+def only_digits(value):
+    return ''.join(char for char in str(value or '') if char.isdigit())
+
+
+def is_business_customer_type(value):
+    return customer_type_from_label(value) in {CustomerType.ENTREPRENEUR, CustomerType.COMPANY}
+
+
+def requisites_payload(payload):
+    return {
+        'companyLegalForm': text_payload(payload, 'companyLegalForm', 40),
+        'companyName': text_payload(payload, 'companyName', 180),
+        'inn': text_payload(payload, 'inn', 20),
+        'kpp': text_payload(payload, 'kpp', 20),
+        'ogrn': text_payload(payload, 'ogrn', 30),
+        'legalAddress': text_payload(payload, 'legalAddress', 500),
+        'settlementAccount': text_payload(payload, 'settlementAccount', 40),
+        'bank': text_payload(payload, 'bank', 180),
+    }
+
+
+def validate_requisites_payload(payload, customer_type):
+    if not is_business_customer_type(customer_type):
+        return {}
+
+    errors = {}
+    requisites = requisites_payload(payload)
+    is_company = customer_type_from_label(customer_type) == CustomerType.COMPANY
+
+    if not requisites['companyLegalForm']:
+        errors['companyLegalForm'] = 'Выберите форму юр. лица.'
+    if not requisites['companyName'] or len(requisites['companyName']) < 2:
+        errors['companyName'] = 'Введите название компании.'
+
+    inn = only_digits(requisites['inn'])
+    if len(inn) not in ({10} if is_company else {12}):
+        errors['inn'] = 'Введите корректный ИНН.'
+
+    kpp = only_digits(requisites['kpp'])
+    if is_company and len(kpp) != 9:
+        errors['kpp'] = 'Введите корректный КПП.'
+    if not is_company and kpp and len(kpp) != 9:
+        errors['kpp'] = 'Введите корректный КПП или оставьте поле пустым.'
+
+    ogrn = only_digits(requisites['ogrn'])
+    if len(ogrn) not in ({13} if is_company else {15}):
+        errors['ogrn'] = 'Введите корректный ОГРН или ОГРНИП.'
+
+    if not requisites['legalAddress'] or len(requisites['legalAddress']) < 5:
+        errors['legalAddress'] = 'Введите юридический адрес.'
+
+    settlement_account = only_digits(requisites['settlementAccount'])
+    if len(settlement_account) != 20:
+        errors['settlementAccount'] = 'Введите 20 цифр расчетного счета.'
+
+    if not requisites['bank'] or len(requisites['bank']) < 2:
+        errors['bank'] = 'Введите банк.'
+
+    return errors
+
+
 def is_valid_phone(phone):
-    phone = (phone or '').strip()
-
-    if not phone:
+    try:
+        validate_ru_phone(phone)
+    except ValidationError:
         return False
 
-    if re.search(r'[^\d\s()+.-]', phone):
-        return False
-
-    if phone.count('+') > 1 or ('+' in phone and not phone.startswith('+')):
-        return False
-
-    digits = re.sub(r'\D', '', phone)
-    return 10 <= len(digits) <= 15
+    return True
 
 
 def is_valid_person_name(value, required=True):
@@ -304,12 +412,12 @@ def is_valid_person_name(value, required=True):
 
 
 def validate_email_auth_payload(payload, purpose):
-    email = (payload.get('email') or '').strip().lower()
     errors = {}
 
     try:
-        validate_email(email)
+        email = validate_latin_email(payload.get('email'))
     except ValidationError:
+        email = (payload.get('email') or '').strip().lower()
         errors['email'] = 'Введите корректный e-mail.'
 
     if purpose == EmailAuthPurpose.REGISTER:
@@ -321,8 +429,11 @@ def validate_email_auth_payload(payload, purpose):
             errors['middleName'] = 'Введите корректное отчество.'
         if not is_valid_phone(payload.get('phone')):
             errors['phone'] = 'Введите корректный номер телефона.'
+        else:
+            payload['phone'] = validate_ru_phone(payload.get('phone'))
         if not truthy(payload.get('agreement')):
             errors['agreement'] = 'Подтвердите согласие на обработку данных.'
+        errors.update(validate_requisites_payload(payload, payload.get('customerType')))
 
     if purpose == EmailAuthPurpose.LOGIN and not truthy(payload.get('agreement')):
         errors['agreement'] = 'Подтвердите согласие на обработку данных.'
@@ -353,19 +464,24 @@ def auth_status_api(request):
 @require_POST
 def register_api(request):
     payload = request_json(request)
-    email = (payload.get('email') or '').strip().lower()
     password = payload.get('password') or ''
 
     try:
-        validate_email(email)
+        email = validate_latin_email(payload.get('email'))
     except ValidationError:
         return JsonResponse({'ok': False, 'error': 'Введите корректный e-mail.'}, status=400)
     if len(password) < 6:
         return JsonResponse({'ok': False, 'error': 'Пароль должен быть не короче 6 символов.'}, status=400)
-    if payload.get('phone') and not is_valid_phone(payload.get('phone')):
-        return JsonResponse({'ok': False, 'error': 'Введите корректный номер телефона.'}, status=400)
+    if payload.get('phone'):
+        try:
+            payload['phone'] = validate_ru_phone(payload.get('phone'))
+        except ValidationError:
+            return JsonResponse({'ok': False, 'error': 'Введите корректный номер телефона.'}, status=400)
     if not truthy(payload.get('agreement')):
         return JsonResponse({'ok': False, 'error': 'Подтвердите согласие на обработку данных.'}, status=400)
+    requisite_errors = validate_requisites_payload(payload, payload.get('type') or payload.get('customerType'))
+    if requisite_errors:
+        return JsonResponse({'ok': False, 'errors': requisite_errors, 'error': 'Проверьте реквизиты.'}, status=400)
     if get_user_by_email(email):
         return JsonResponse({'ok': False, 'error': 'Аккаунт с таким e-mail уже существует. Войдите или восстановите пароль.'}, status=400)
 
@@ -387,7 +503,15 @@ def register_api(request):
     profile = profile_for(user)
     profile.middle_name = payload.get('middleName', '')
     profile.phone = payload.get('phone', '')
-    profile.customer_type = customer_type_from_label(payload.get('type'))
+    profile.customer_type = customer_type_from_label(payload.get('type') or payload.get('customerType'))
+    profile.company_legal_form = text_payload(payload, 'companyLegalForm', 40)
+    profile.company_name = text_payload(payload, 'companyName', 180)
+    profile.inn = text_payload(payload, 'inn', 20)
+    profile.kpp = text_payload(payload, 'kpp', 20)
+    profile.ogrn = text_payload(payload, 'ogrn', 30)
+    profile.legal_address = text_payload(payload, 'legalAddress', 500)
+    profile.settlement_account = text_payload(payload, 'settlementAccount', 40)
+    profile.bank = text_payload(payload, 'bank', 180)
     profile.save()
     login(request, user)
     attach_cart_to_user(request, user)
@@ -465,8 +589,9 @@ def auth_code_request_api(request):
             'firstName': (payload.get('firstName') or '').strip(),
             'lastName': (payload.get('lastName') or '').strip(),
             'middleName': (payload.get('middleName') or '').strip(),
-            'phone': (payload.get('phone') or '').strip(),
+            'phone': validate_ru_phone(payload.get('phone')) if payload.get('phone') else '',
             'type': payload.get('type') or payload.get('customerType') or '',
+            **requisites_payload(payload),
         },
         expires_at=now + timedelta(minutes=settings.DITENT_AUTH_CODE_TTL_MINUTES),
     )
@@ -493,11 +618,15 @@ def auth_code_request_api(request):
 @require_POST
 def auth_code_verify_api(request):
     payload = request_json(request)
-    email = (payload.get('email') or '').strip().lower()
     purpose = payload.get('purpose') if payload.get('purpose') in EmailAuthPurpose.values else EmailAuthPurpose.LOGIN
     code = ''.join(char for char in str(payload.get('code') or '') if char.isdigit())
 
-    if not email or '@' not in email or len(code) != 6:
+    try:
+        email = validate_latin_email(payload.get('email'))
+    except ValidationError:
+        email = ''
+
+    if not email or len(code) != 6:
         return JsonResponse({'ok': False, 'error': 'Введите e-mail и 6-значный код.'}, status=400)
 
     auth_code = EmailAuthCode.objects.filter(email=email, purpose=purpose, used_at__isnull=True).first()
@@ -536,7 +665,28 @@ def auth_code_verify_api(request):
         profile.middle_name = auth_code.payload.get('middleName', '')
         profile.phone = auth_code.payload.get('phone', '')
         profile.customer_type = customer_type_from_label(auth_code.payload.get('type'))
-        profile.save(update_fields=['middle_name', 'phone', 'customer_type', 'updated_at'])
+        profile.company_legal_form = auth_code.payload.get('companyLegalForm', '')
+        profile.company_name = auth_code.payload.get('companyName', '')
+        profile.inn = auth_code.payload.get('inn', '')
+        profile.kpp = auth_code.payload.get('kpp', '')
+        profile.ogrn = auth_code.payload.get('ogrn', '')
+        profile.legal_address = auth_code.payload.get('legalAddress', '')
+        profile.settlement_account = auth_code.payload.get('settlementAccount', '')
+        profile.bank = auth_code.payload.get('bank', '')
+        profile.save(update_fields=[
+            'middle_name',
+            'phone',
+            'customer_type',
+            'company_legal_form',
+            'company_name',
+            'inn',
+            'kpp',
+            'ogrn',
+            'legal_address',
+            'settlement_account',
+            'bank',
+            'updated_at',
+        ])
     elif not user:
         return JsonResponse({'ok': False, 'error': 'Аккаунт с таким e-mail не найден. Пройдите регистрацию.'}, status=404)
 
@@ -557,10 +707,9 @@ def logout_api(request):
 @require_POST
 def password_reset_api(request):
     payload = request_json(request)
-    email = (payload.get('email') or '').strip().lower()
 
     try:
-        validate_email(email)
+        email = validate_latin_email(payload.get('email'))
     except ValidationError:
         return JsonResponse({'ok': False, 'error': 'Введите корректный e-mail.'}, status=400)
 
@@ -599,10 +748,10 @@ def cabinet_profile_api(request):
 @require_POST
 def cabinet_profile_update_api(request):
     payload = request_json(request)
-    email = (payload.get('email') or '').strip().lower()
+    profile = profile_for(request.user)
 
     try:
-        validate_email(email)
+        email = validate_latin_email(payload.get('email'))
     except ValidationError:
         return JsonResponse({'ok': False, 'error': 'Введите корректный e-mail.'}, status=400)
     if not is_valid_person_name(payload.get('lastName')):
@@ -611,23 +760,46 @@ def cabinet_profile_update_api(request):
         return JsonResponse({'ok': False, 'error': 'Введите корректное имя.'}, status=400)
     if not is_valid_person_name(payload.get('middleName'), required=False):
         return JsonResponse({'ok': False, 'error': 'Введите корректное отчество.'}, status=400)
-    if not is_valid_phone(payload.get('phone')):
+    try:
+        phone = validate_ru_phone(payload.get('phone'))
+    except ValidationError:
         return JsonResponse({'ok': False, 'error': 'Введите корректный номер телефона.'}, status=400)
+    requisite_errors = validate_requisites_payload(payload, profile.customer_type)
+    if requisite_errors:
+        return JsonResponse({'ok': False, 'error': next(iter(requisite_errors.values())), 'errors': requisite_errors}, status=400)
 
     existing = get_user_by_email(email)
     if existing and existing.pk != request.user.pk:
         return JsonResponse({'ok': False, 'error': 'Этот e-mail уже используется другим аккаунтом.'}, status=400)
 
     user = request.user
-    profile = profile_for(user)
     user.email = email
     user.first_name = payload.get('firstName', '')
     user.last_name = payload.get('lastName', '')
     user.save(update_fields=['email', 'first_name', 'last_name'])
     profile.middle_name = payload.get('middleName', '')
-    profile.phone = payload.get('phone', '')
-    profile.customer_type = customer_type_from_label(payload.get('type'))
-    profile.save(update_fields=['middle_name', 'phone', 'customer_type', 'updated_at'])
+    profile.phone = phone
+    profile.company_legal_form = text_payload(payload, 'companyLegalForm', 40)
+    profile.company_name = text_payload(payload, 'companyName', 180)
+    profile.inn = text_payload(payload, 'inn', 20)
+    profile.kpp = text_payload(payload, 'kpp', 20)
+    profile.ogrn = text_payload(payload, 'ogrn', 30)
+    profile.legal_address = text_payload(payload, 'legalAddress', 500)
+    profile.settlement_account = text_payload(payload, 'settlementAccount', 40)
+    profile.bank = text_payload(payload, 'bank', 180)
+    profile.save(update_fields=[
+        'middle_name',
+        'phone',
+        'company_legal_form',
+        'company_name',
+        'inn',
+        'kpp',
+        'ogrn',
+        'legal_address',
+        'settlement_account',
+        'bank',
+        'updated_at',
+    ])
 
     return JsonResponse({'ok': True, 'profile': user_payload(user)})
 

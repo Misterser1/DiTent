@@ -6,6 +6,8 @@ from shop.models import PublishStatus, Review
 
 
 PAGE_TEMPLATES = {
+    '404-demo.html',
+    '404.html',
     'index.html',
     'about.html',
     'cabinet.html',
@@ -58,3 +60,7 @@ def render_static_page(request, template_name='index.html'):
         }
 
     return render(request, f'pages/{template_name}', context)
+
+
+def page_not_found(request, exception=None):
+    return render(request, 'pages/404.html', status=404)

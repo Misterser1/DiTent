@@ -2,6 +2,58 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+
+
+LATIN_EMAIL_ERROR = 'Введите корректный e-mail латиницей.'
+RU_PHONE_ERROR = 'Введите корректный номер телефона.'
+
+
+def normalize_latin_email(value):
+    return str(value or '').strip().lower()
+
+
+def validate_latin_email(value):
+    email = normalize_latin_email(value)
+
+    try:
+        validate_email(email)
+    except ValidationError as exc:
+        raise ValidationError(LATIN_EMAIL_ERROR) from exc
+
+    if not email or not email.isascii():
+        raise ValidationError(LATIN_EMAIL_ERROR)
+
+    return email
+
+
+def normalize_ru_phone(value):
+    digits = ''.join(char for char in str(value or '') if char.isdigit())
+
+    if len(digits) == 10:
+        digits = f'7{digits}'
+    elif len(digits) == 11 and digits.startswith('8'):
+        digits = f'7{digits[1:]}'
+
+    return digits
+
+
+def format_ru_phone(value):
+    digits = normalize_ru_phone(value)
+
+    if len(digits) != 11 or not digits.startswith('7'):
+        return ''
+
+    return f'+7 ({digits[1:4]}) {digits[4:7]}-{digits[7:9]}-{digits[9:11]}'
+
+
+def validate_ru_phone(value):
+    phone = format_ru_phone(value)
+
+    if not phone:
+        raise ValidationError(RU_PHONE_ERROR)
+
+    return phone
 
 
 SIGNATURES = {

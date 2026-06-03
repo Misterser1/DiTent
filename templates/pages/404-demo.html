@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}DiTent - варианты страницы 404{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="assets/style.css?v=404-demo-1">
+    <link rel="stylesheet" href="assets/404-demo.css?v=1">
+{% endblock %}
+
+{% block content %}
+<main class="not-found-demo-page">
+    <div class="breadcrumbs">
+        <div class="wrapper">
+            <div class="breadcrumbs-wrapper">
+                <a href="index.html">Главная</a>
+                <p>/</p>
+                <p>Варианты 404</p>
+            </div>
+        </div>
+    </div>
+
+    <section class="section not-found-demo">
+        <div class="wrapper">
+            <div class="not-found-demo__head">
+                <div>
+                    <span>Демо варианты</span>
+                    <h1>Страница 404</h1>
+                    <p>Три аккуратных варианта для ситуации, когда клиент перешел по неверной ссылке. После выбора один из них подключим как реальную страницу ошибки.</p>
+                </div>
+                <a href="index.html">На главную</a>
+            </div>
+
+            <nav class="not-found-demo__switcher" aria-label="Варианты страницы 404">
+                <a href="#not-found-1">Вариант 1</a>
+                <a href="#not-found-2">Вариант 2</a>
+                <a href="#not-found-3">Вариант 3</a>
+            </nav>
+
+            <article class="not-found-option not-found-option--clean" id="not-found-1">
+                <div class="not-found-option__label">Вариант 1</div>
+                <div class="not-found-clean">
+                    <div class="not-found-clean__content">
+                        <span>404</span>
+                        <h2>Страница не найдена</h2>
+                        <p>Возможно, ссылка устарела или в адресе есть опечатка. Вернитесь в каталог или создайте чехол по своим размерам.</p>
+                        <div class="not-found-actions">
+                            <a href="index.html" class="not-found-actions__primary">На главную</a>
+                            <a href="catalog.html">В каталог</a>
+                            <a href="constructor.html">Создать чехол</a>
+                        </div>
+                    </div>
+                    <div class="not-found-visual not-found-visual--outline" aria-hidden="true">
+                        <div class="cover-sketch">
+                            <span class="cover-sketch__top"></span>
+                            <span class="cover-sketch__body"></span>
+                            <span class="cover-sketch__seam cover-sketch__seam--one"></span>
+                            <span class="cover-sketch__seam cover-sketch__seam--two"></span>
+                            <span class="cover-sketch__seam cover-sketch__seam--three"></span>
+                            <span class="cover-sketch__badge">DT</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="not-found-option not-found-option--route" id="not-found-2">
+                <div class="not-found-option__label">Вариант 2</div>
+                <div class="not-found-route">
+                    <div class="not-found-route__media">
+                        <img src="assets/video/posters/home-hero-craft.jpg" alt="Производство защитных чехлов">
+                    </div>
+                    <div class="not-found-route__content">
+                        <span>Маршрут потерялся</span>
+                        <h2>Такой страницы нет, но заказ можно продолжить</h2>
+                        <p>Перейдите к готовым изделиям, расчету индивидуального чехла или свяжитесь с нами по контактам.</p>
+                        <div class="not-found-process" aria-label="Процесс заказа">
+                            <div><b>1</b><span>Выбор изделия</span></div>
+                            <div class="is-muted"><b>2</b><span>Проверка ссылки</span></div>
+                            <div><b>3</b><span>Расчет и заказ</span></div>
+                        </div>
+                        <div class="not-found-actions">
+                            <a href="catalog.html" class="not-found-actions__primary">Открыть каталог</a>
+                            <a href="contacts.html">Контакты</a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="not-found-option not-found-option--compact" id="not-found-3">
+                <div class="not-found-option__label">Вариант 3</div>
+                <div class="not-found-compact">
+                    <div class="not-found-compact__code">404</div>
+                    <div class="not-found-compact__content">
+                        <span>Ссылка не сработала</span>
+                        <h2>Найдем нужный раздел</h2>
+                        <p>Выберите один из основных разделов сайта, чтобы быстро вернуться к заказу.</p>
+                    </div>
+                    <div class="not-found-link-grid">
+                        <a href="catalog.html">
+                            <b>Каталог</b>
+                            <span>Готовые изделия</span>
+                        </a>
+                        <a href="constructor.html">
+                            <b>Конструктор</b>
+                            <span>Расчет по размерам</span>
+                        </a>
+                        <a href="drawing-order.html">
+                            <b>Чертеж</b>
+                            <span>Заявка на расчет</span>
+                        </a>
+                        <a href="delivery.html">
+                            <b>Доставка</b>
+                            <span>Оплата и СДЭК</span>
+                        </a>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+    <script src="assets/app.js"></script>
+{% endblock %}

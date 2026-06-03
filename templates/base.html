@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
 {% block styles %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'mobile-menu.css' %}?v=2">
 
     <title>{% block title %}DiTent{% endblock %}</title>
 </head>
@@ -20,7 +21,10 @@
 {% block content %}{% endblock %}
 {% block footer %}{% include "partials/footer.html" %}{% endblock %}
 {% include "partials/auth_modal.html" %}
-<script src="{% static 'auth-modal.js' %}?v=auth-checkout-1"></script>
+<script src="{% static 'input-guard.js' %}?v=integer-sizes-1"></script>
+<script src="{% static 'auth-modal.js' %}?v=phone-mask-1"></script>
+<script src="{% static 'cart-badge.js' %}?v=2"></script>
+<script src="{% static 'mobile-menu.js' %}?v=2"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

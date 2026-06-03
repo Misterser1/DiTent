@@ -3,7 +3,7 @@
 {% block title %}DiTent - Кабинет{% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="assets/style.css?v=cabinet-orders-2">
+    <link rel="stylesheet" href="assets/style.css?v=order-details-1">
 {% endblock %}
 
 {% block content %}
@@ -83,7 +83,7 @@
                                     </label>
                                     <label class="card-item__label card-item__label--big">
                                         Номер телефона
-                                        <input type="tel" placeholder="+7" class="card-item__input" data-profile-field="phone">
+                                        <input type="tel" placeholder="+7 (___) ___-__-__" class="card-item__input" data-profile-field="phone" inputmode="tel" maxlength="18">
                                     </label>
                                     <label class="card-item__label card-item__label--big">
                                         E-mail
@@ -92,19 +92,58 @@
                                 </div>
                             </div>
                             <div class="user-item">
-                                <h2>Тип лица по-умолчанию:</h2>
-                                <div class="card-item__user">
-                                    <label class="card-item__user-label">
-                                        Физическое лицо
-                                        <input type="radio" name="profileCustomerType" value="person" data-profile-type checked>
+                                <h2>Тип лица</h2>
+                                <div class="cabinet-profile-type" data-profile-type-display>
+                                    <b data-profile-type-value>Физическое лицо</b>
+                                    <span>Тип выбран при регистрации и не изменяется в личном кабинете.</span>
+                                </div>
+                            </div>
+                            <div class="user-item cabinet-requisites" data-profile-requisites hidden>
+                                <h2>Реквизиты</h2>
+                                <div class="cabinet-requisites__grid">
+                                    <label class="card-item__label">
+                                        Форма юр. лица
+                                        <div class="cabinet-select" data-profile-legal-form-select>
+                                            <button class="cabinet-select__button is-placeholder" type="button" data-profile-legal-form-button>Выберите форму</button>
+                                            <input type="hidden" data-profile-field="companyLegalForm" value="">
+                                            <div class="cabinet-select__list">
+                                                <button type="button" data-profile-legal-form-option value="">Выберите форму</button>
+                                                <button type="button" data-profile-legal-form-option value="ИП">ИП</button>
+                                                <button type="button" data-profile-legal-form-option value="ООО">ООО</button>
+                                                <button type="button" data-profile-legal-form-option value="АО">АО</button>
+                                                <button type="button" data-profile-legal-form-option value="ПАО">ПАО</button>
+                                                <button type="button" data-profile-legal-form-option value="НКО">НКО</button>
+                                                <button type="button" data-profile-legal-form-option value="Другое">Другое</button>
+                                            </div>
+                                        </div>
                                     </label>
-                                    <label class="card-item__user-label">
-                                        ИП
-                                        <input type="radio" name="profileCustomerType" value="entrepreneur" data-profile-type>
+                                    <label class="card-item__label">
+                                        Название компании
+                                        <input type="text" placeholder="Например, ДиТент" class="card-item__input" data-profile-field="companyName">
                                     </label>
-                                    <label class="card-item__user-label">
-                                        Юридическое лицо
-                                        <input type="radio" name="profileCustomerType" value="company" data-profile-type>
+                                    <label class="card-item__label">
+                                        ИНН
+                                        <input type="text" placeholder="10 или 12 цифр" class="card-item__input" data-profile-field="inn" inputmode="numeric" maxlength="20">
+                                    </label>
+                                    <label class="card-item__label">
+                                        КПП
+                                        <input type="text" placeholder="Для юр. лиц" class="card-item__input" data-profile-field="kpp" inputmode="numeric" maxlength="20">
+                                    </label>
+                                    <label class="card-item__label">
+                                        ОГРН / ОГРНИП
+                                        <input type="text" placeholder="13 или 15 цифр" class="card-item__input" data-profile-field="ogrn" inputmode="numeric" maxlength="30">
+                                    </label>
+                                    <label class="card-item__label">
+                                        Расчетный счет
+                                        <input type="text" placeholder="20 цифр" class="card-item__input" data-profile-field="settlementAccount" inputmode="numeric" maxlength="40">
+                                    </label>
+                                    <label class="card-item__label cabinet-requisites__wide">
+                                        Юридический адрес
+                                        <input type="text" placeholder="Индекс, город, улица, дом, офис" class="card-item__input" data-profile-field="legalAddress" maxlength="500">
+                                    </label>
+                                    <label class="card-item__label cabinet-requisites__wide">
+                                        Банк
+                                        <input type="text" placeholder="Название банка" class="card-item__input" data-profile-field="bank" maxlength="180">
                                     </label>
                                 </div>
                             </div>
@@ -304,9 +343,22 @@
         </div>
     </section>
 </main>
+<div class="cabinet-order-modal" data-order-modal hidden>
+    <button class="cabinet-order-modal__backdrop" type="button" data-order-modal-close aria-label="Закрыть детали заказа"></button>
+    <section class="cabinet-order-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="cabinet-order-modal-title">
+        <div class="cabinet-order-modal__head">
+            <div>
+                <p data-order-modal-date></p>
+                <h2 id="cabinet-order-modal-title" data-order-modal-title>Детали заказа</h2>
+            </div>
+            <button class="cabinet-order-modal__close" type="button" data-order-modal-close aria-label="Закрыть детали заказа">x</button>
+        </div>
+        <div class="cabinet-order-modal__body" data-order-modal-body></div>
+    </section>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script src="assets/app.js"></script>
-<script src="assets/cabinet.js?v=cabinet-drawing-orders-2"></script>
+<script src="assets/cabinet.js?v=order-details-1"></script>
 {% endblock %}

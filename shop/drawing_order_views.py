@@ -1,14 +1,13 @@
 import re
 
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
 from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-from .models import CustomerType, DrawingOrder, DrawingOrderFile, OrderStatus
+from .models import CustomerProfile, CustomerType, DrawingOrder, DrawingOrderFile, OrderStatus
 from .notifications import send_drawing_order_created_notifications
-from .validators import validate_uploaded_files
+from .validators import validate_latin_email, validate_ru_phone, validate_uploaded_files
 
 
 def text_value(request, name):
@@ -17,31 +16,86 @@ def text_value(request, name):
 
 def customer_type_from_form(value):
     return {
+        'Физическое лицо': CustomerType.PERSON,
+        'ИП': CustomerType.ENTREPRENEUR,
+        'Юридическое лицо': CustomerType.COMPANY,
         'individual': CustomerType.PERSON,
+        'entrepreneur': CustomerType.ENTREPRENEUR,
         'company': CustomerType.COMPANY,
         CustomerType.PERSON: CustomerType.PERSON,
+        CustomerType.ENTREPRENEUR: CustomerType.ENTREPRENEUR,
         CustomerType.COMPANY: CustomerType.COMPANY,
     }.get(value, CustomerType.PERSON)
 
 
+def field_value(request, name, max_length):
+    return text_value(request, name)[:max_length]
+
+
+def only_digits(value):
+    return ''.join(char for char in str(value or '') if char.isdigit())
+
+
+def business_requisites(request):
+    return {
+        'company_legal_form': field_value(request, 'companyLegalForm', 40),
+        'company_name': field_value(request, 'companyName', 180),
+        'inn': field_value(request, 'inn', 20),
+        'kpp': field_value(request, 'kpp', 20),
+        'ogrn': field_value(request, 'ogrn', 30),
+        'legal_address': field_value(request, 'legalAddress', 500),
+        'settlement_account': field_value(request, 'settlementAccount', 40),
+        'bank': field_value(request, 'bank', 180),
+    }
+
+
+def validate_business_requisites(errors, requisites, customer_type):
+    if customer_type not in {CustomerType.ENTREPRENEUR, CustomerType.COMPANY}:
+        return
+
+    is_company = customer_type == CustomerType.COMPANY
+
+    if not requisites['company_legal_form']:
+        errors['companyLegalForm'] = 'Выберите форму юр. лица.'
+    if not requisites['company_name'] or len(requisites['company_name']) < 2:
+        errors['companyName'] = 'Введите название компании.'
+
+    inn = only_digits(requisites['inn'])
+    if len(inn) not in ({10} if is_company else {12}):
+        errors['inn'] = 'Введите корректный ИНН.'
+
+    kpp = only_digits(requisites['kpp'])
+    if is_company and len(kpp) != 9:
+        errors['kpp'] = 'Введите корректный КПП.'
+    if not is_company and kpp and len(kpp) != 9:
+        errors['kpp'] = 'Введите корректный КПП или оставьте поле пустым.'
+
+    ogrn = only_digits(requisites['ogrn'])
+    if len(ogrn) not in ({13} if is_company else {15}):
+        errors['ogrn'] = 'Введите корректный ОГРН или ОГРНИП.'
+
+    if not requisites['legal_address'] or len(requisites['legal_address']) < 5:
+        errors['legalAddress'] = 'Введите юридический адрес.'
+
+    settlement_account = only_digits(requisites['settlement_account'])
+    if len(settlement_account) != 20:
+        errors['settlementAccount'] = 'Введите 20 цифр расчетного счета.'
+
+    if not requisites['bank'] or len(requisites['bank']) < 2:
+        errors['bank'] = 'Введите банк.'
+
+
 def is_valid_phone(phone):
-    value = (phone or '').strip()
-
-    if not value or len(value) > 40:
+    try:
+        validate_ru_phone(phone)
+    except ValidationError:
         return False
 
-    if re.search(r'[^\d\s()+.-]', value):
-        return False
-
-    if value.count('+') > 1 or ('+' in value and not value.startswith('+')):
-        return False
-
-    digits = re.sub(r'\D', '', value)
-    return 10 <= len(digits) <= 15
+    return True
 
 
 def has_meaningful_text(value):
-    return bool(re.search(r'[A-Za-zА-Яа-яЁё0-9]', value or ''))
+    return any(char.isalnum() for char in value or '')
 
 
 def validate_text_length(errors, field, value, max_length, message):
@@ -72,6 +126,8 @@ def drawing_order_create_api(request):
     customer_name = text_value(request, 'clientName')
     phone = text_value(request, 'phone')
     email = text_value(request, 'email').lower()
+    customer_type = customer_type_from_form(text_value(request, 'clientType'))
+    requisites = business_requisites(request)
     item_name = text_value(request, 'itemName')
     dimensions = text_value(request, 'dimensions')
     comment = text_value(request, 'comment')
@@ -88,9 +144,11 @@ def drawing_order_create_api(request):
         errors['phone'] = 'Укажите телефон.'
     elif not is_valid_phone(phone):
         errors['phone'] = 'Введите корректный номер телефона.'
+    else:
+        phone = validate_ru_phone(phone)
 
     try:
-        validate_email(email)
+        email = validate_latin_email(email)
     except ValidationError:
         errors['email'] = 'Введите корректный e-mail.'
     else:
@@ -103,6 +161,7 @@ def drawing_order_create_api(request):
         errors['dimensions'] = 'Укажите размеры в понятном формате, например: 300 x 100 x 75 см.'
 
     validate_text_length(errors, 'comment', comment, 2000, 'Комментарий должен быть не длиннее 2000 символов.')
+    validate_business_requisites(errors, requisites, customer_type)
 
     if request.POST.get('agreement') not in {'on', 'true', '1', 'yes'}:
         errors['agreement'] = 'Подтвердите согласие на обработку данных.'
@@ -118,9 +177,11 @@ def drawing_order_create_api(request):
     drawing_order = DrawingOrder.objects.create(
         user=request.user,
         status=OrderStatus.WAITING_MANAGER,
+        customer_type=customer_type,
         customer_name=customer_name,
         phone=phone,
         email=email,
+        **requisites,
         comment='\n'.join(part for part in [
             f'Изделие: {item_name}' if item_name else '',
             f'Размеры: {dimensions}' if dimensions else '',
@@ -128,6 +189,31 @@ def drawing_order_create_api(request):
         ] if part),
         return_terms_accepted=True,
     )
+
+    profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
+    profile.phone = phone
+    profile.customer_type = customer_type
+    profile.company_legal_form = requisites['company_legal_form']
+    profile.company_name = requisites['company_name']
+    profile.inn = requisites['inn']
+    profile.kpp = requisites['kpp']
+    profile.ogrn = requisites['ogrn']
+    profile.legal_address = requisites['legal_address']
+    profile.settlement_account = requisites['settlement_account']
+    profile.bank = requisites['bank']
+    profile.save(update_fields=[
+        'phone',
+        'customer_type',
+        'company_legal_form',
+        'company_name',
+        'inn',
+        'kpp',
+        'ogrn',
+        'legal_address',
+        'settlement_account',
+        'bank',
+        'updated_at',
+    ])
 
     for file in files:
         DrawingOrderFile.objects.create(

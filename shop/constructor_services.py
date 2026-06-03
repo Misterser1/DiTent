@@ -160,6 +160,9 @@ def validate_dimensions(shape, dimensions):
         raw = values_by_key.get(field['key'], {}).get('value')
         value = to_decimal(raw, field['key'])
 
+        if value != value.to_integral_value():
+            raise ValidationError({field['key']: 'Укажите размер целым числом.'})
+
         if value < MIN_SIZE or value > MAX_SIZE:
             raise ValidationError({field['key']: f'Размер должен быть от {MIN_SIZE} до {MAX_SIZE} см.'})
 

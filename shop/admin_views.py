@@ -35,6 +35,7 @@ from .models import (
     Accessory,
     Category,
     Color,
+    ConstructorGalleryExtraImage,
     ConstructorGalleryImage,
     CoverShape,
     CustomerType,
@@ -227,6 +228,21 @@ def serialize_product(product):
     }
 
 
+def serialize_constructor_gallery_image(instance):
+    data = serialize_model(instance)
+    gallery_items = instance.images.all().order_by('position', 'id')
+    data['gallery_images'] = [image_url(item.image) for item in gallery_items]
+    data['gallery_items'] = [
+        {
+            'id': item.id,
+            'url': image_url(item.image),
+            'name': item.image.name.rsplit('/', 1)[-1] if item.image else '',
+        }
+        for item in gallery_items
+    ]
+    return data
+
+
 def serialize_model(instance):
     data = model_to_dict(instance)
     data['id'] = instance.id
@@ -397,6 +413,7 @@ def prepare_order_payment_after_manager_confirmation(request, order):
 def serialize_drawing_order(order):
     data = serialize_model(order)
     data['status_label'] = order.get_status_display()
+    data['customer_type_label'] = order.get_customer_type_display()
     data['files_count'] = order.files.count()
     data['files'] = [
         {'name': file.original_name or file.file.name, 'url': file.file.url}
@@ -415,7 +432,7 @@ ENTITY_CONFIG = {
     'formulas': (Formula, FormulaForm, serialize_model),
     'orders': (Order, OrderForm, serialize_order),
     'drawing-orders': (DrawingOrder, DrawingOrderForm, serialize_drawing_order),
-    'constructor-images': (ConstructorGalleryImage, ConstructorGalleryImageForm, serialize_model),
+    'constructor-images': (ConstructorGalleryImage, ConstructorGalleryImageForm, serialize_constructor_gallery_image),
     'reviews': (Review, ReviewForm, serialize_model),
     'site-settings': (SiteSettings, SiteSettingsForm, serialize_model),
 }
@@ -508,7 +525,7 @@ def custom_admin_page(request):
         'formulas': Formula.objects.order_by('shape', 'title'),
         'orders': orders,
         'drawing_orders': drawing_orders,
-        'constructor_images': ConstructorGalleryImage.objects.order_by('position', 'id'),
+        'constructor_images': ConstructorGalleryImage.objects.prefetch_related('images').order_by('position', 'id'),
         'reviews': Review.objects.order_by('-created_at'),
         'site_settings': site_settings,
         'summary': {
@@ -543,6 +560,8 @@ def admin_collection_api(request, entity):
             return JsonResponse({'items': [serializer(item) for item in items]})
         elif entity == 'products':
             queryset = queryset.select_related('category', 'fabric', 'color', 'fastener').prefetch_related('images').order_by('title')
+        elif entity == 'constructor-images':
+            queryset = queryset.prefetch_related('images').order_by('position', 'id')
         elif entity == 'colors':
             queryset = queryset.select_related('fabric').order_by('fabric__title', 'title')
         elif entity == 'orders':
@@ -599,6 +618,8 @@ def admin_detail_api(request, entity, pk):
         queryset = real_orders(queryset)
     elif entity == 'drawing-orders':
         queryset = real_drawing_orders(queryset)
+    elif entity == 'constructor-images':
+        queryset = queryset.prefetch_related('images')
     instance = get_object_or_404(queryset, pk=pk)
 
     if request.method == 'GET':
@@ -669,8 +690,20 @@ def admin_order_cdek_tracking_api(request, pk):
     return JsonResponse({'ok': True, 'item': serialize_order(order)})
 
 
+GALLERY_ENTITY_CONFIG = {
+    'products': {
+        'model': ProductImage,
+        'parent_field': 'product',
+    },
+    'constructor-images': {
+        'model': ConstructorGalleryExtraImage,
+        'parent_field': 'constructor_image',
+    },
+}
+
+
 def validate_product_gallery(entity, request):
-    if entity != 'products':
+    if entity not in GALLERY_ENTITY_CONFIG:
         return
 
     gallery_files = request.FILES.getlist('gallery_images')
@@ -681,7 +714,8 @@ def validate_product_gallery(entity, request):
 
 
 def save_product_gallery(entity, instance, request):
-    if entity != 'products':
+    gallery_config = GALLERY_ENTITY_CONFIG.get(entity)
+    if not gallery_config:
         return
 
     gallery_files = request.FILES.getlist('gallery_images')
@@ -696,11 +730,24 @@ def save_product_gallery(entity, instance, request):
         if str(value).isdigit()
     }
 
+    def clear_gallery_cache():
+        if hasattr(instance, '_prefetched_objects_cache'):
+            instance._prefetched_objects_cache.pop('images', None)
+
     if has_keep_ids:
         instance.images.exclude(id__in=keep_ids).delete()
+        clear_gallery_cache()
     elif gallery_files:
         instance.images.all().delete()
+        clear_gallery_cache()
 
     start_position = instance.images.count() + 1
     for index, image in enumerate(gallery_files, start=start_position):
-        ProductImage.objects.create(product=instance, image=image, position=index)
+        gallery_config['model'].objects.create(
+            **{
+                gallery_config['parent_field']: instance,
+                'image': image,
+                'position': index,
+            }
+        )
+    clear_gallery_cache()

@@ -85,12 +85,30 @@ def order_contacts_text(order):
     ])
 
 
+def drawing_requisites_text(order):
+    if order.customer_type not in {'entrepreneur', 'company'}:
+        return 'Тип клиента: Физическое лицо'
+
+    return '\n'.join([
+        f'Тип клиента: {order.get_customer_type_display()}',
+        f'Форма юр. лица: {order.company_legal_form or "-"}',
+        f'Название компании: {order.company_name or "-"}',
+        f'ИНН: {order.inn or "-"}',
+        f'КПП: {order.kpp or "-"}',
+        f'ОГРН / ОГРНИП: {order.ogrn or "-"}',
+        f'Юридический адрес: {order.legal_address or "-"}',
+        f'Расчетный счет: {order.settlement_account or "-"}',
+        f'Банк: {order.bank or "-"}',
+    ])
+
+
 def send_order_created_notifications(order_id, manager_url='', client_url=''):
     order = Order.objects.prefetch_related('items').get(pk=order_id)
     manager_subject = f'Новый заказ {order.number} на сайте DiTent'
     manager_body = '\n\n'.join([
         f'Создан новый заказ {order.number}.',
         order_contacts_text(order),
+        drawing_requisites_text(order),
         'Состав заказа:',
         order_items_text(order),
         f'Итого: {money(order.total)}',
@@ -121,6 +139,7 @@ def send_drawing_order_created_notifications(order_id, manager_url=''):
         f'Клиент: {order.customer_name}',
         f'Телефон: {order.phone}',
         f'E-mail: {order.email}',
+        drawing_requisites_text(order),
         f'Комментарий:\n{order.comment or "-"}',
         f'Файлы:\n{files}',
         f'Открыть в админке: {manager_url or "/ditent-cms/#drawing-orders"}',

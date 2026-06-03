@@ -146,9 +146,9 @@
                     <label><span>Цена, руб.</span><input name="price" type="number" min="0" step="0.01" required></label>
                     <label><span>Остаток</span><input name="stock" type="number" min="0" value="0"></label>
                     <label><span>Статус</span><select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
-                    <label><span>Ширина, см</span><input name="width_cm" type="number" min="10" max="500"></label>
-                    <label><span>Глубина, см</span><input name="depth_cm" type="number" min="10" max="500"></label>
-                    <label><span>Высота, см</span><input name="height_cm" type="number" min="10" max="500"></label>
+                    <label><span>Ширина, см</span><input name="width_cm" type="number" min="10" max="500" step="1" inputmode="numeric" pattern="[0-9]*"></label>
+                    <label><span>Глубина, см</span><input name="depth_cm" type="number" min="10" max="500" step="1" inputmode="numeric" pattern="[0-9]*"></label>
+                    <label><span>Высота, см</span><input name="height_cm" type="number" min="10" max="500" step="1" inputmode="numeric" pattern="[0-9]*"></label>
                     <label><span>Ткань</span><select name="fabric"><option value="">Не выбрана</option>{% for fabric in fabrics %}<option value="{{ fabric.id }}">{{ fabric.title }}</option>{% endfor %}</select></label>
                     <label><span>Цвет</span><select name="color"><option value="">Не выбран</option>{% for color in colors %}<option value="{{ color.id }}">{{ color.title }} / {{ color.fabric.title }}</option>{% endfor %}</select></label>
                     <label><span>Крепление</span><select name="fastener"><option value="">Не выбрано</option>{% for fastener in fasteners %}<option value="{{ fastener.id }}">{{ fastener.title }}</option>{% endfor %}</select></label>
@@ -215,7 +215,7 @@
                     <label><span>Название</span><input name="title" type="text" required></label>
                     <label><span>Плотность</span><input name="density" type="text"></label>
                     <label><span>Цена за м², руб.</span><input name="price_per_square_meter" type="number" min="0" step="0.01" required></label>
-                    <label><span>Ширина полотна, см</span><input name="roll_width_cm" type="number" min="0"></label>
+                    <label><span>Ширина полотна, см</span><input name="roll_width_cm" type="number" min="0" step="1" inputmode="numeric" pattern="[0-9]*"></label>
                     <label><span>Тип свойства</span><input name="property_type" type="text"></label>
                     <label><span>УФ-стойкость</span><input name="uv_resistance" type="number" min="1" max="5"></label>
                     <label><span>Долговечность</span><input name="durability" type="number" min="1" max="5"></label>
@@ -328,8 +328,8 @@
                     <label><span>Стачной шов, руб./см</span><input name="seam_price_cm" type="number" min="0" step="0.01" value="0"></label>
                     <label><span>Отстрочный шов, руб./см</span><input name="topstitch_price_cm" type="number" min="0" step="0.01" value="0"></label>
                     <label><span>Окантовочный шов, руб./см</span><input name="edging_price_cm" type="number" min="0" step="0.01" value="0"></label>
-                    <label><span>Мин. размер, см</span><input name="min_size_cm" type="number" min="10" max="500" value="10"></label>
-                    <label><span>Макс. размер, см</span><input name="max_size_cm" type="number" min="10" max="500" value="500"></label>
+                    <label><span>Мин. размер, см</span><input name="min_size_cm" type="number" min="10" max="500" step="1" inputmode="numeric" pattern="[0-9]*" value="10"></label>
+                    <label><span>Макс. размер, см</span><input name="max_size_cm" type="number" min="10" max="500" step="1" inputmode="numeric" pattern="[0-9]*" value="500"></label>
                     <label><span>Статус</span><select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
                     <input type="hidden" name="parameters" value="{}">
                     <label class="admin-form__wide"><span>Выражение / параметры</span><textarea name="expression"></textarea></label>
@@ -360,8 +360,16 @@
                     <label><span>Статус оплаты</span><select name="payment_status">{% for value, label in payment_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
                     <label><span>Тип клиента</span><select name="customer_type">{% for value, label in customer_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
                     <label><span>Имя / компания</span><input name="customer_name" type="text"></label>
-                    <label><span>Телефон</span><input name="phone" type="tel"></label>
+                    <label><span>Телефон</span><input name="phone" type="tel" placeholder="+7 (___) ___-__-__" inputmode="tel" maxlength="18"></label>
                     <label><span>Email</span><input name="email" type="email"></label>
+                    <label><span>Форма юр. лица</span><input name="company_legal_form" type="text"></label>
+                    <label><span>Название компании</span><input name="company_name" type="text"></label>
+                    <label><span>ИНН</span><input name="inn" type="text"></label>
+                    <label><span>КПП</span><input name="kpp" type="text"></label>
+                    <label><span>ОГРН / ОГРНИП</span><input name="ogrn" type="text"></label>
+                    <label><span>Расчетный счет</span><input name="settlement_account" type="text"></label>
+                    <label class="admin-form__wide"><span>Юридический адрес</span><input name="legal_address" type="text"></label>
+                    <label class="admin-form__wide"><span>Банк</span><input name="bank" type="text"></label>
                     <label><span>Способ доставки</span><input name="delivery_method" type="text"></label>
                     <label><span>Город</span><input name="delivery_city" type="text"></label>
                     <label><span>Трек-номер</span><input name="track_number" type="text"></label>
@@ -405,9 +413,18 @@
                 <form class="admin-form admin-form--order" data-admin-form>
                     <h3>Заявка по чертежу</h3>
                     <label><span>Статус</span><select name="status">{% for value, label in order_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+                    <label><span>Тип клиента</span><select name="customer_type">{% for value, label in customer_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
                     <label><span>Имя / компания</span><input name="customer_name" type="text"></label>
-                    <label><span>Телефон</span><input name="phone" type="tel"></label>
+                    <label><span>Телефон</span><input name="phone" type="tel" placeholder="+7 (___) ___-__-__" inputmode="tel" maxlength="18"></label>
                     <label><span>Email</span><input name="email" type="email"></label>
+                    <label><span>Форма юр. лица</span><input name="company_legal_form" type="text"></label>
+                    <label><span>Название компании</span><input name="company_name" type="text"></label>
+                    <label><span>ИНН</span><input name="inn" type="text"></label>
+                    <label><span>КПП</span><input name="kpp" type="text"></label>
+                    <label><span>ОГРН / ОГРНИП</span><input name="ogrn" type="text"></label>
+                    <label><span>Расчетный счет</span><input name="settlement_account" type="text"></label>
+                    <label class="admin-form__wide"><span>Юридический адрес</span><input name="legal_address" type="text"></label>
+                    <label class="admin-form__wide"><span>Банк</span><input name="bank" type="text"></label>
                     <label class="admin-form__wide"><span>Комментарий клиента</span><textarea name="comment"></textarea></label>
                     <label class="admin-form__wide"><span>Комментарий менеджера</span><textarea name="manager_comment"></textarea></label>
                     <label class="admin-form__wide"><span>Файлы</span><div class="admin-order-items" data-drawing-files></div></label>
@@ -438,6 +455,16 @@
                     <label><span>Порядок</span><input name="position" type="number" min="0" value="0"></label>
                     <label><span>Статус</span><select name="status">{% for value, label in publish_statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
                     <div class="admin-upload admin-upload--image admin-form__wide" data-image-upload><span>Изображение конструктора</span><input class="admin-upload__input" name="image" type="file" accept="image/*"><div class="admin-upload__dropzone admin-upload__dropzone--row is-empty" role="button" tabindex="0"><img src="{% static 'image/img-2.png' %}" alt="" data-preview-field="image"><em>Нет изображения</em><span><b>Нажмите на блок, чтобы выбрать файл</b><small>Или перетащите изображение сюда</small></span></div></div>
+                    <div class="admin-upload admin-upload--image admin-form__wide" data-gallery-upload>
+                        <span>Галерея дополнительных изображений</span>
+                        <input class="admin-upload__input" name="gallery_images" type="file" accept="image/*" multiple>
+                        <div class="admin-upload__dropzone admin-upload__dropzone--gallery is-empty" role="button" tabindex="0">
+                            <img src="{% static 'image/img-2.png' %}" alt="" data-gallery-last-preview>
+                            <em>Нет изображений</em>
+                            <span><b>Нажмите на блок, чтобы выбрать изображения</b><small>Можно выбрать несколько файлов или перетащить их сюда</small></span>
+                        </div>
+                        <div class="admin-gallery-summary"><span data-gallery-count>Изображения не выбраны</span><button type="button" data-gallery-preview hidden>Посмотреть</button></div>
+                    </div>
                     <div class="admin-form__actions admin-form__actions--wide"><button type="button" data-reset-form>Сбросить</button><button type="submit">Создать изображение</button></div>
                 </form>
                 <div class="admin-table">
@@ -500,7 +527,7 @@
                     <label><span>ОГРН</span><input name="ogrn" type="text"></label>
                     <label><span>Дата регистрации</span><input name="registration_date" type="text"></label>
                     <label><span>Руководитель</span><input name="director" type="text"></label>
-                    <label><span>Телефон</span><input name="phone" type="text"></label>
+                    <label><span>Телефон</span><input name="phone" type="tel" placeholder="+7 (___) ___-__-__" inputmode="tel" maxlength="18"></label>
                     <label><span>Телефон для ссылки</span><input name="phone_href" type="text"></label>
                     <label><span>Email</span><input name="email" type="email"></label>
                     <label><span>Адрес</span><input name="address" type="text"></label>
@@ -536,5 +563,5 @@
 {% block footer %}{% endblock %}
 
 {% block scripts %}
-    <script src="{% static 'admin.js' %}?v=46"></script>
+    <script src="{% static 'admin.js' %}?v=47"></script>
 {% endblock %}

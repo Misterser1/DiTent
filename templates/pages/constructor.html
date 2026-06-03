@@ -3,7 +3,7 @@
 {% block title %}DiTent - Конструктор{% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="assets/style.css?v=constructor-backend-1">
+    <link rel="stylesheet" href="assets/style.css?v=constructor-scheme-fit-1">
 {% endblock %}
 
 {% block header %}{% include "partials/header_constructor.html" %}{% endblock %}
@@ -24,11 +24,11 @@
             <div class="constructor" data-constructor-api="constructor/api/calculate/">
                 <div class="product-wrapper">
                     <div class="product-wrapper-img">
-                        <img id="mainImage" src="{{ constructor_main_image.url }}" alt="{{ constructor_main_image.title }}">
+                        <img id="mainImage" src="{{ shapes.0.image }}" alt="{{ shapes.0.title }}">
                     </div>
                     <div class="product-wrapper__list">
                         {% for image in constructor_images %}
-                        <div class="product-list__item{% if image.url == constructor_main_image.url %} active{% endif %}">
+                        <div class="product-list__item">
                             <img src="{{ image.url }}" alt="{{ image.title }}">
                         </div>
                         {% endfor %}
@@ -46,7 +46,7 @@
                         <div class="product-shape__grid">
                             {% for shape in shapes %}
                             <label class="product-shape__item{% if forloop.first %} product-shape__item--active{% endif %}">
-                                <input type="radio" name="cover-shape" value="{{ shape.key }}" {% if forloop.first %}checked{% endif %} data-title="{{ shape.title }}">
+                                <input type="radio" name="cover-shape" value="{{ shape.key }}" {% if forloop.first %}checked{% endif %} data-title="{{ shape.title }}" data-image="{{ shape.image }}">
                                 <span class="product-shape__scheme" aria-hidden="true">
                                     <img src="{{ shape.image }}" alt="">
                                 </span>
@@ -215,5 +215,5 @@
 
 {% block scripts %}
 <script src="assets/app.js"></script>
-<script src="assets/constructor.js?v=constructor-formulas-1"></script>
+<script src="assets/constructor.js?v=shape-main-image-1"></script>
 {% endblock %}

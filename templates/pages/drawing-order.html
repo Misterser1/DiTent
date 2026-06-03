@@ -63,7 +63,7 @@
                             </label>
                             <label>
                                 <span>Телефон</span>
-                                <input type="tel" name="phone" placeholder="+7 900 000-00-00" autocomplete="tel" inputmode="tel" required>
+                                <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" autocomplete="tel" inputmode="tel" pattern="^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$" maxlength="18" required>
                             </label>
                             <label>
                                 <span>Email</span>
@@ -80,6 +80,61 @@
                                         <button type="button" data-client-type-option value="company">Юридическое лицо</button>
                                     </div>
                                 </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="drawing-order__group drawing-order__group--requisites" data-requisites-fields hidden>
+                        <div class="drawing-order__group-head">
+                            <h2>Реквизиты</h2>
+                            <span>Для ИП и юридических лиц</span>
+                        </div>
+                        <div class="drawing-order__fields">
+                            <label>
+                                <span>Форма юр. лица</span>
+                                <div class="drawing-select" data-company-legal-form-select>
+                                    <button class="drawing-select__button is-placeholder" type="button" data-company-legal-form-button>Выберите форму</button>
+                                    <input type="hidden" name="companyLegalForm" value="" data-company-legal-form-input>
+                                    <div class="drawing-select__list">
+                                        <button type="button" data-company-legal-form-option value="">Выберите форму</button>
+                                        <button type="button" data-company-legal-form-option value="ИП">ИП</button>
+                                        <button type="button" data-company-legal-form-option value="ООО">ООО</button>
+                                        <button type="button" data-company-legal-form-option value="АО">АО</button>
+                                        <button type="button" data-company-legal-form-option value="ПАО">ПАО</button>
+                                        <button type="button" data-company-legal-form-option value="НКО">НКО</button>
+                                        <button type="button" data-company-legal-form-option value="Другое">Другое</button>
+                                    </div>
+                                </div>
+                            </label>
+                            <label>
+                                <span>Название компании</span>
+                                <input type="text" name="companyName" maxlength="180" placeholder="Например, ДиТент">
+                            </label>
+                            <label>
+                                <span>ИНН</span>
+                                <input type="text" name="inn" inputmode="numeric" maxlength="20" placeholder="10 или 12 цифр">
+                            </label>
+                            <label>
+                                <span>КПП</span>
+                                <input type="text" name="kpp" inputmode="numeric" maxlength="20" placeholder="Для юр. лиц">
+                            </label>
+                            <label>
+                                <span>ОГРН / ОГРНИП</span>
+                                <input type="text" name="ogrn" inputmode="numeric" maxlength="30" placeholder="13 или 15 цифр">
+                            </label>
+                            <label>
+                                <span>Расчетный счет</span>
+                                <input type="text" name="settlementAccount" inputmode="numeric" maxlength="40" placeholder="20 цифр">
+                            </label>
+                        </div>
+                        <div class="drawing-order__fields drawing-order__fields--wide">
+                            <label>
+                                <span>Юридический адрес</span>
+                                <input type="text" name="legalAddress" maxlength="500" placeholder="Индекс, город, улица, дом, офис">
+                            </label>
+                            <label>
+                                <span>Банк</span>
+                                <input type="text" name="bank" maxlength="180" placeholder="Название банка">
                             </label>
                         </div>
                     </div>
@@ -140,5 +195,5 @@
 {% block footer %}{% include "partials/footer_drawing.html" %}{% endblock %}
 
 {% block scripts %}
-<script src="assets/drawing-order.js?v=drawing-order-auth-modal-1"></script>
+<script src="assets/drawing-order.js?v=phone-mask-1"></script>
 {% endblock %}

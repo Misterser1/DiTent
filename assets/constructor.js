@@ -134,6 +134,7 @@ if (constructorConfig.shapes?.length) {
             seamPriceCm: Number(shape.seamPriceCm || 0),
             topstitchPriceCm: Number(shape.topstitchPriceCm || 0),
             edgingPriceCm: Number(shape.edgingPriceCm || 0),
+            image: shape.image || '',
             fields: shape.fields || [],
         },
     ]));
@@ -158,7 +159,7 @@ function createSizeField(field) {
 
     label.innerHTML = `
         <span>${field.label} <b>${field.code}</b></span>
-        <input type="number" min="${MIN_SIZE}" max="${MAX_SIZE}" step="1" placeholder="-" data-size-input data-key="${field.key}" data-label="${field.label}" data-code="${field.code}">
+        <input type="number" min="${MIN_SIZE}" max="${MAX_SIZE}" step="1" inputmode="numeric" pattern="[0-9]*" placeholder="-" data-size-input data-key="${field.key}" data-label="${field.label}" data-code="${field.code}">
         <span class="product-filter__item-value">см.</span>
         <span class="product-filter__error" aria-live="polite"></span>
     `;
@@ -663,6 +664,8 @@ async function addCartItemToBackend(product) {
     }
 
     localStorage.setItem('ditentCart', JSON.stringify(payload.cart.items || []));
+    window.ditentUpdateCartBadge?.(payload.cart.items || []);
+    window.dispatchEvent(new CustomEvent('ditent:cart-updated', { detail: { items: payload.cart.items || [] } }));
     window.ditentLastCartItem = payload.cart.items?.[payload.cart.items.length - 1] || product;
 
     return payload.cart;
@@ -705,6 +708,19 @@ function selectShape(item) {
         constructorTitle.textContent = input.dataset.title || shape.title;
     }
 
+    if (mainImage) {
+        const shapeImage = input.dataset.image || shape.image || item.querySelector('img')?.getAttribute('src') || '';
+
+        if (shapeImage) {
+            mainImage.src = shapeImage;
+            mainImage.alt = input.dataset.title || shape.title;
+        }
+    }
+
+    galleryItems.forEach(el => {
+        el.classList.remove('active');
+    });
+
     renderSizeFields(currentShape);
     updateProductSummary();
 }
@@ -731,6 +747,8 @@ function saveProductToCart(product) {
 
     cart.push(cartItem);
     localStorage.setItem('ditentCart', JSON.stringify(cart));
+    window.ditentUpdateCartBadge?.(cart);
+    window.dispatchEvent(new CustomEvent('ditent:cart-updated', { detail: { items: cart } }));
     window.ditentLastCartItem = cartItem;
 
     return cartItem;
